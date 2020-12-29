@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 class Story < WorkPackage
@@ -47,12 +40,12 @@ class Story < WorkPackage
     end
 
     candidates.each do |story|
-      last_rank = stories_by_version[story.fixed_version_id].size > 0 ?
-                     stories_by_version[story.fixed_version_id].last.rank :
+      last_rank = stories_by_version[story.version_id].size > 0 ?
+                     stories_by_version[story.version_id].last.rank :
                      0
 
       story.rank = last_rank + 1
-      stories_by_version[story.fixed_version_id] << story
+      stories_by_version[story.version_id] << story
     end
 
     stories_by_version
@@ -142,7 +135,7 @@ class Story < WorkPackage
       extras = ["and not #{WorkPackage.table_name}.position is NULL and #{WorkPackage.table_name}.position <= ?", position]
     end
 
-    @rank ||= WorkPackage.where(Story.condition(project.id, fixed_version_id, extras))
+    @rank ||= WorkPackage.where(Story.condition(project.id, version_id, extras))
               .joins(:status)
               .count
     @rank
@@ -151,7 +144,7 @@ class Story < WorkPackage
   private
 
   def self.condition(project_id, sprint_ids, extras = [])
-    c = ['project_id = ? AND type_id in (?) AND fixed_version_id in (?)',
+    c = ['project_id = ? AND type_id in (?) AND version_id in (?)',
          project_id, Story.types, sprint_ids]
 
     if extras.size > 0

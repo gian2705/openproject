@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -353,7 +353,7 @@ describe Query, type: :model do
                               category created_at due_date estimated_hours
                               parent done_ratio priority responsible
                               spent_hours start_date status subject type
-                              updated_at fixed_version) +
+                              updated_at version) +
                            [:"cf_#{custom_field.id}"] +
                            [:"relations_to_type_#{type.id}"] +
                            %i(relations_of_type_relation1 relations_of_type_relation2)
@@ -370,7 +370,7 @@ describe Query, type: :model do
                               category created_at due_date estimated_hours
                               parent done_ratio priority responsible
                               spent_hours start_date status subject type
-                              updated_at fixed_version) +
+                              updated_at version) +
                            [:"cf_#{custom_field.id}"]
 
         unexpected_columns = [:"relations_to_type_#{type.id}"] +
@@ -647,6 +647,69 @@ describe Query, type: :model do
       query.reload
       query.filters.each do |filter|
         expect(filter.context).to eql(query)
+      end
+    end
+  end
+
+
+  describe 'project limiting filter' do
+    def subproject_filter?(filter)
+      filter.is_a?(Queries::WorkPackages::Filter::SubprojectFilter)
+    end
+
+    def detect_subproject_filter(filters)
+      filters.detect { |filter| subproject_filter?(filter) }
+    end
+
+    context 'when subprojects included', with_settings: { display_subprojects_work_packages: true } do
+      it 'adds a * subproject_id filter' do
+        expect(detect_subproject_filter(query.filters)).to eq nil
+
+        added_filter = detect_subproject_filter(query.send(:statement_filters))
+        expect(added_filter).to be_present
+        expect(added_filter.operator).to eq '*'
+      end
+    end
+
+    context 'when subprojects not included', with_settings: { display_subprojects_work_packages: false } do
+      it 'adds a !* subproject_id filter' do
+        expect(detect_subproject_filter(query.filters)).to eq nil
+
+        added_filter = detect_subproject_filter(query.send(:statement_filters))
+        expect(added_filter).to be_present
+        expect(added_filter.operator).to eq '!*'
+      end
+
+      context 'when subproject filter added manually' do
+        before do
+          query.add_filter('subproject_id', '=', ['1234'])
+        end
+
+        it 'does not add a second subproject id filter' do
+          expect(query.filters.count).to eq(query.send(:statement_filters).count)
+
+          subproject_filters = query.filters.select { |filter| subproject_filter?(filter) }
+          expect(subproject_filters.count).to eq 1
+
+          subproject_filters = query.send(:statement_filters).select { |filter| subproject_filter?(filter) }
+          expect(subproject_filters.count).to eq 1
+        end
+      end
+
+      context 'when only subproject filter added manually' do
+        before do
+          query.add_filter('only_subproject_id', '=', ['1234'])
+        end
+
+        it 'does not add a second subproject id filter' do
+          expect(query.filters.count).to eq(query.send(:statement_filters).count)
+
+          subproject_filters = query.filters.select { |filter| subproject_filter?(filter) }
+          expect(subproject_filters.count).to eq 1
+
+          subproject_filters = query.send(:statement_filters).select { |filter| subproject_filter?(filter) }
+          expect(subproject_filters.count).to eq 1
+        end
       end
     end
   end

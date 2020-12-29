@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,22 +23,22 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
-import {WorkPackageCacheService} from '../work-package-cache.service';
-import {Component, Inject, Input, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
-import {componentDestroyed} from 'ng2-rx-componentdestroyed';
-import {takeUntil} from 'rxjs/operators';
 import {WorkPackageWatchersService} from 'core-components/wp-single-view-tabs/watchers-tab/wp-watchers.service';
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   selector: 'wp-watcher-button',
-  templateUrl: './wp-watcher-button.html'
+  templateUrl: './wp-watcher-button.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkPackageWatcherButtonComponent implements OnInit,  OnDestroy {
+export class WorkPackageWatcherButtonComponent extends UntilDestroyedMixin implements OnInit {
   @Input('workPackage') public workPackage:WorkPackageResource;
   @Input('showText') public showText:boolean = false;
   @Input('disabled') public disabled:boolean = false;
@@ -51,23 +51,25 @@ export class WorkPackageWatcherButtonComponent implements OnInit,  OnDestroy {
 
   constructor(readonly I18n:I18nService,
               readonly wpWatchersService:WorkPackageWatchersService,
-              readonly wpCacheService:WorkPackageCacheService) {
+              readonly apiV3Service:APIV3Service,
+              readonly cdRef:ChangeDetectorRef) {
+    super();
   }
 
   ngOnInit() {
-    this.wpCacheService.loadWorkPackage(this.workPackage.id!)
-      .values$()
+    this
+      .apiV3Service
+      .work_packages
+      .id(this.workPackage)
+      .requireAndStream()
       .pipe(
-        takeUntil(componentDestroyed(this))
+        this.untilDestroyed()
       )
       .subscribe((wp:WorkPackageResource) => {
         this.workPackage = wp;
         this.setWatchStatus();
+        this.cdRef.detectChanges();
       });
-  }
-
-  ngOnDestroy() {
-    // Nothing to do
   }
 
   public get isWatched() {
@@ -83,7 +85,11 @@ export class WorkPackageWatcherButtonComponent implements OnInit,  OnDestroy {
 
     toggleLink(toggleLink.$link.payload).then(() => {
       this.wpWatchersService.clear(this.workPackage.id!);
-      this.wpCacheService.loadWorkPackage(this.workPackage.id!, true);
+      this
+        .apiV3Service
+        .work_packages
+        .id(this.workPackage)
+        .refresh();
     });
   }
 

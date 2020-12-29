@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,7 +24,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 
 require 'spec_helper'
 require 'rack/test'
@@ -91,7 +91,8 @@ describe ::API::V3::Users::UsersAPI, type: :request do
         login: 'myusername',
         firstName: 'Foo',
         lastName: 'Bar',
-        email: 'foobar@example.org'
+        email: 'foobar@example.org',
+        language: 'de'
       }
     }
 
@@ -102,7 +103,7 @@ describe ::API::V3::Users::UsersAPI, type: :request do
       context 'ID' do
         before do
           parameters[:_links] = {
-            authSource: {
+            auth_source: {
               href: "/api/v3/auth_sources/#{auth_source.id}"
             }
           }
@@ -122,7 +123,7 @@ describe ::API::V3::Users::UsersAPI, type: :request do
       context 'name' do
         before do
           parameters[:_links] = {
-            authSource: {
+            auth_source: {
               href: "/api/v3/auth_sources/#{auth_source.name}"
             }
           }
@@ -142,15 +143,15 @@ describe ::API::V3::Users::UsersAPI, type: :request do
       context 'invalid identifier' do
         before do
           parameters[:_links] = {
-            authSource: {
+            auth_source: {
               href: "/api/v3/auth_sources/foobar"
             }
           }
         end
 
-        it 'returns an error for the authSource attribute' do
+        it 'returns an error for the auth_source attribute' do
           send_request
-
+          
           attr = JSON.parse(last_response.body).dig "_embedded", "details", "attribute"
 
           expect(last_response.status).to eq 422

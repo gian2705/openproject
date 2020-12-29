@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -67,7 +67,7 @@ module Pages
     end
 
     def selenium_driver?
-      Capybara.current_driver.to_s.include?('headless')
+      Capybara.current_session.driver.is_a?(Capybara::Selenium::Driver)
     end
 
     def set_items_per_page!(n)
@@ -104,11 +104,19 @@ module Pages
     end
 
     def dismiss_notification!
-      page.find('.notification-box--close').click
+      if notification_type == :angular
+        page.find('.notification-box--close').click
+      else
+        page.find('.flash .icon-close').click
+      end
     end
 
     def expect_no_notification(type: :success, message: nil)
-      expect(page).to have_no_selector(".notification-box.-#{type}", text: message)
+      if type.nil?
+        expect(page).to have_no_selector(".notification-box")
+      else
+        expect(page).to have_no_selector(".notification-box.-#{type}", text: message)
+      end
     end
 
     def path

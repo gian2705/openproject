@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -72,7 +72,8 @@ describe Projects::CreateService, type: :model do
       .to receive(:new)
             .with(user: user,
                   model: created_project,
-                  contract_class: contract_class)
+                  contract_class: contract_class,
+                  contract_options: {})
             .and_return(service)
 
     allow(service)
@@ -111,9 +112,18 @@ describe Projects::CreateService, type: :model do
         .to receive(:in_new_project)
         .and_return(new_project_role)
 
-      expect(created_project)
-        .to receive(:add_member!)
-        .with(user, new_project_role)
+      create_member_instance = double('Members::CreateService instance')
+
+      expect(Members::CreateService)
+        .to receive(:new)
+        .with(user: user, contract_class: EmptyContract)
+        .and_return(create_member_instance)
+
+      expect(create_member_instance)
+        .to receive(:call)
+        .with(principal: user,
+              project: instance_of(Project),
+              roles: [new_project_role])
 
       subject
     end

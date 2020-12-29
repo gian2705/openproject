@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -27,7 +27,7 @@ See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 
-<% html_title(l('activerecord.attributes.project.work_packages')) -%>
+<% html_title(t('activerecord.attributes.project.work_packages')) -%>
 <%= call_hook(:view_work_packages_index_bottom, { project: project, query: query }) %>
 
 <% content_for :sidebar do %>
@@ -35,6 +35,6 @@ See docs/COPYRIGHT.rdoc for more details.
 <% end %>
 
 <% content_for :header_tags do %>
-  <%= auto_discovery_link_tag(:atom, {query_id: query, format: 'atom', page: nil, key: User.current.rss_key}, title: l(:label_work_package_plural)) %>
-  <%= auto_discovery_link_tag(:atom, {controller: '/journals', action: 'index', query_id: query, format: 'atom', page: nil, key: User.current.rss_key}, title: l(:label_changes_details)) %>
+  <%= auto_discovery_link_tag(:atom, {query_id: query, format: 'atom', page: nil, key: User.current.rss_key}, title: t(:label_work_package_plural)) %>
+  <%= auto_discovery_link_tag(:atom, {controller: '/journals', action: 'index', query_id: query, format: 'atom', page: nil, key: User.current.rss_key}, title: t(:label_changes_details)) %>
 <% end %>

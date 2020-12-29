@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,12 +28,12 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Version < ActiveRecord::Base
-  include Version::ProjectSharing
+class Version < ApplicationRecord
+  include ::Versions::ProjectSharing
+  include ::Scopes::Scoped
 
   belongs_to :project
-  has_many :fixed_issues, class_name: 'WorkPackage', foreign_key: 'fixed_version_id', dependent: :nullify
-  has_many :work_packages, foreign_key: :fixed_version_id
+  has_many :work_packages, foreign_key: :version_id, dependent: :nullify
   acts_as_customizable
 
   VERSION_STATUSES = %w(open locked closed).freeze
@@ -41,13 +41,14 @@ class Version < ActiveRecord::Base
 
   validates :name,
             presence: true,
-            uniqueness: { scope: [:project_id], case_sensitive: true }
+            uniqueness: { scope: [:project_id], case_sensitive: false }
 
   validates_format_of :effective_date, with: /\A\d{4}-\d{2}-\d{2}\z/, message: :not_a_date, allow_nil: true
   validates_format_of :start_date, with: /\A\d{4}-\d{2}-\d{2}\z/, message: :not_a_date, allow_nil: true
   validates_inclusion_of :status, in: VERSION_STATUSES
-  validates_inclusion_of :sharing, in: VERSION_SHARINGS
   validate :validate_start_date_before_effective_date
+
+  scope_classes ::Versions::Scopes::OrderBySemverName
 
   scope :visible, ->(*args) {
     joins(:project)
@@ -56,7 +57,7 @@ class Version < ActiveRecord::Base
 
   scope :systemwide, -> { where(sharing: 'system') }
 
-  scope :order_by_name, -> { order(Arel.sql("LOWER(#{Version.table_name}.name)")) }
+  scope :order_by_name, -> { order(Arel.sql("LOWER(#{Version.table_name}.name) ASC")) }
 
   def self.with_status_open
     where(status: 'open')
@@ -67,17 +68,6 @@ class Version < ActiveRecord::Base
     user.allowed_to?(:view_work_packages, project)
   end
 
-  # When a version started.
-  #
-  # Can either be a set date stored in the database or a dynamic one
-  # based on the earlist start_date of the fixed_issues
-  def start_date
-    # when self.id is nil (e.g. when self is a new_record),
-    # minimum('start_date') works on all issues with fixed_version: nil
-    # but we expect only issues belonging to this version
-    read_attribute(:start_date) || fixed_issues.where(WorkPackage.arel_table[:fixed_version_id].not_eq(nil)).minimum('start_date')
-  end
-
   def due_date
     effective_date
   end
@@ -85,14 +75,14 @@ class Version < ActiveRecord::Base
   # Returns the total estimated time for this version
   # (sum of leaves estimated_hours)
   def estimated_hours
-    @estimated_hours ||= fixed_issues.hierarchy_leaves.sum(:estimated_hours).to_f
+    @estimated_hours ||= work_packages.hierarchy_leaves.sum(:estimated_hours).to_f
   end
 
   # Returns the total reported time for this version
   def spent_hours
     @spent_hours ||= TimeEntry
                      .includes(:work_package)
-                     .where(work_packages: { fixed_version_id: id })
+                     .where(work_packages: { version_id: id })
                      .sum(:hours)
                      .to_f
   end
@@ -149,7 +139,7 @@ class Version < ActiveRecord::Base
 
   # Returns assigned issues count
   def issues_count
-    @issue_count ||= fixed_issues.count
+    @issue_count ||= work_packages.count
   end
 
   # Returns the total amount of open issues for this version.
@@ -206,7 +196,7 @@ class Version < ActiveRecord::Base
   # Used to weight unestimated issues in progress calculation
   def estimated_average
     if @estimated_average.nil?
-      average = fixed_issues.average(:estimated_hours).to_f
+      average = work_packages.average(:estimated_hours).to_f
       if average.zero?
         average = 1
       end
@@ -232,7 +222,7 @@ class Version < ActiveRecord::Base
           ["COALESCE(#{WorkPackage.table_name}.estimated_hours, ?) * #{ratio}", estimated_average]
         )
 
-        done = fixed_issues
+        done = work_packages
                .where(statuses: { is_closed: !open })
                .includes(:status)
                .sum(sum_sql)

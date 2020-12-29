@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -135,7 +135,7 @@ describe 'layouts/base', type: :view do
 
     it 'renders main favicon' do
       expect(rendered).to have_selector(
-        "link[type='image/x-icon'][href*='#{OpenProject::Design.favicon_asset_path}']",
+        "link[type='image/x-icon'][href*='#{OpenProject::CustomStyles::Design.favicon_asset_path}']",
         visible: false
       )
     end
@@ -158,7 +158,7 @@ describe 'layouts/base', type: :view do
       visit 'assets/favicon.ico'
       expect(page.status_code).to eq(200)
 
-      visit 'apple-touch-icon-120x120.png'
+      visit 'assets/apple-touch-icon-120x120.png'
       expect(page.status_code).to eq(200)
     end
   end
@@ -200,7 +200,7 @@ describe 'layouts/base', type: :view do
         primary_color
         render
         expect(rendered).to render_template partial: 'custom_styles/_inline_css'
-        expect(rendered).to match /--primary-color:\s*#{primary_color.get_hexcode}/
+        expect(rendered).to match /--primary-color:\s*#{primary_color.hexcode}/
       end
     end
 
@@ -265,6 +265,19 @@ describe 'layouts/base', type: :view do
       it 'has no current_user metatag' do
         expect(rendered).not_to have_selector('meta[name=current_user]', visible: false)
       end
+    end
+  end
+
+  describe 'openproject_initializer meta tag' do
+    let(:current_user) { anonymous }
+    let(:base) { 'meta[name=openproject_initializer]' }
+
+    before do
+      render
+    end
+
+    it 'has the meta tag' do
+      expect(rendered).to have_selector(base, visible: false)
     end
   end
 end

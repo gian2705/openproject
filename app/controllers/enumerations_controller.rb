@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -56,7 +56,7 @@ class EnumerationsController < ApplicationController
     end
 
     if @enumeration.save
-      flash[:notice] = l(:notice_successful_create)
+      flash[:notice] = I18n.t(:notice_successful_create)
       redirect_to action: 'index', type: @enumeration.type
     else
       render action: 'new'
@@ -68,7 +68,7 @@ class EnumerationsController < ApplicationController
     type = permitted_params.enumeration_type
     @enumeration.type = enumeration_class(type).try(:name) || @enumeration.type
     if @enumeration.update enum_params
-      flash[:notice] = l(:notice_successful_update)
+      flash[:notice] = I18n.t(:notice_successful_update)
       redirect_to enumerations_path(type: @enumeration.type)
     else
       render action: 'edit'

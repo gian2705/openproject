@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,7 +31,7 @@
 class WorkPackagesController < ApplicationController
   include QueriesHelper
   include PaginationHelper
-  include Concerns::Layout
+  include Layout
 
   accept_key_auth :index, :show
 
@@ -83,9 +83,15 @@ class WorkPackagesController < ApplicationController
   protected
 
   def export_list(mime_type)
-    exporter = WorkPackage::Exporter.for_list(mime_type)
-    exporter.list(@query, params) do |export|
-      render_export_response export, fallback_path: index_redirect_path
+    job_id = WorkPackages::Exports::ScheduleService
+                     .new(user: current_user)
+                     .call(query: @query, mime_type: mime_type, params: params)
+                     .result
+
+    if request.headers['Accept']&.include?('application/json')
+      render json: { job_id: job_id }
+    else
+      redirect_to job_status_path(job_id)
     end
   end
 
@@ -106,7 +112,7 @@ class WorkPackagesController < ApplicationController
 
   def atom_list
     render_feed(@work_packages,
-                title: "#{@project || Setting.app_title}: #{l(:label_work_package_plural)}")
+                title: "#{@project || Setting.app_title}: #{I18n.t(:label_work_package_plural)}")
   end
 
   private
@@ -115,16 +121,6 @@ class WorkPackagesController < ApplicationController
     if export.error?
       flash[:error] = export.message
       redirect_back(fallback_location: fallback_path)
-    elsif export.content.is_a? File
-      # browsers should not try to guess the content-type
-      response.headers['X-Content-Type-Options'] = 'nosniff'
-
-      # TODO avoid reading the file in memory here again
-      # but currently the tempfile gets removed in between
-      send_data(export.content.read,
-                type: export.mime_type,
-                disposition: 'attachment',
-                filename: export.title)
     else
       send_data(export.content,
                 type: export.mime_type,
@@ -146,16 +142,16 @@ class WorkPackagesController < ApplicationController
   end
 
   def supported_export_formats
-    %w[atom rss] + WorkPackage::Exporter.list_formats.map(&:to_s)
+    %w[atom] + WorkPackage::Exporter.list_formats.map(&:to_s)
   end
 
   def load_and_validate_query
     @query ||= retrieve_query
 
     unless @query.valid?
-      # Ensure outputting a html response
+      # Ensure outputting an html response
       request.format = 'html'
-      return render_400(message: @query.errors.full_messages.join(". "))
+      render_400(message: @query.errors.full_messages.join(". "))
     end
   rescue ActiveRecord::RecordNotFound
     render_404
@@ -207,7 +203,7 @@ class WorkPackagesController < ApplicationController
     @results = @query.results
     @work_packages = if @query.valid?
                        @results
-                         .sorted_work_packages
+                         .work_packages
                          .page(page_param)
                          .per_page(per_page_param)
                      else

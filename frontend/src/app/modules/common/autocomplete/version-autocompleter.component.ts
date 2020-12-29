@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,27 +23,17 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {
-  AfterViewInit,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  ViewChild
-} from '@angular/core';
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
-import {VersionDmService} from "core-app/modules/hal/dm-services/version-dm.service";
+import {AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
 import {CurrentProjectService} from "core-components/projects/current-project.service";
 import {PathHelperService} from "core-app/modules/common/path-helper/path-helper.service";
 import {VersionResource} from "core-app/modules/hal/resources/version-resource";
 import {CreateAutocompleterComponent} from "core-app/modules/common/autocomplete/create-autocompleter.component";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   templateUrl: './create-autocompleter.component.html',
@@ -57,7 +47,7 @@ export class VersionAutocompleterComponent extends CreateAutocompleterComponent 
               readonly currentProject:CurrentProjectService,
               readonly cdRef:ChangeDetectorRef,
               readonly pathHelper:PathHelperService,
-              readonly versionDm:VersionDmService,
+              readonly apiV3Service:APIV3Service,
               readonly halNotification:HalResourceNotificationService) {
     super(I18n, cdRef, currentProject, pathHelper);
   }
@@ -79,20 +69,30 @@ export class VersionAutocompleterComponent extends CreateAutocompleterComponent 
    * @returns {Promise<boolean>}
    */
   public canCreateNewActionElements():Promise<boolean> {
-    return this.versionDm
-      .canCreateVersionInProject(this.currentProject.id!)
+    if (!this.currentProject.id) {
+      return Promise.resolve(false);
+    }
+
+    return this
+      .apiV3Service
+      .versions
+      .available_projects
+      .exists(this.currentProject.id!)
+      .toPromise()
       .catch(() => false);
   }
 
   protected createNewVersion(name:string) {
-    this.versionDm.createVersion(this.getVersionPayload(name))
-      .then((version) => {
-        this.onCreate.emit(version);
-      })
-      .catch(error =>  {
-        this.closeSelect();
-        this.halNotification.handleRawError(error);
-      });
+    this
+      .apiV3Service
+      .versions
+      .post(this.getVersionPayload(name))
+      .subscribe(
+        version => this.onCreate.emit(version),
+        error => {
+          this.closeSelect();
+          this.halNotification.handleRawError(error);
+        });
   }
 
   private getVersionPayload(name:string) {
@@ -100,12 +100,10 @@ export class VersionAutocompleterComponent extends CreateAutocompleterComponent 
     payload['name'] = name;
     payload['_links'] = {
       definingProject: {
-        href: this.pathHelper.api.v3.projects.id(this.currentProject.id!).path
+        href: this.apiV3Service.projects.id(this.currentProject.id!).path
       }
     };
 
     return payload;
   }
 }
-
-DynamicBootstrapper.register({ selector: 'version-autocompleter', cls: VersionAutocompleterComponent  });

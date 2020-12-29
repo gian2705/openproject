@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -33,6 +33,23 @@
 module API
   module Helpers
     module AttachmentRenderer
+      def self.content_endpoint(&block)
+        ->(*) {
+          helpers ::API::Helpers::AttachmentRenderer
+
+          finally do
+            set_cache_headers
+          end
+
+          get do
+            attachment = instance_exec(&block)
+            # Cache that value at max 604799 seconds, which is the max
+            # allowed expiry time for AWS generated links
+            respond_with_attachment attachment, cache_seconds: max_aws_cache_seconds
+          end
+        }
+      end
+
       ##
       # Render an attachment, either by redirecting
       # to the external storage,
@@ -40,17 +57,51 @@ module API
       # or by directly rendering the file
       #
       # @param attachment [Attachment] Attachment to be responded with.
-      # @param external_link_expires_in [ActiveSupport::Duration] Time after which link expires. Default is 5 minutes.
-      #                                                           Only applicable in case of external storage.
-      def respond_with_attachment(attachment, external_link_expires_in: nil)
+      # @param cache_seconds [integer] Time in seconds the cache headers signal the browser to cache the attachment.
+      #                                Defaults to no cache headers.
+      def respond_with_attachment(attachment, cache_seconds: nil)
+        prepare_cache_headers(cache_seconds) if cache_seconds
+
         if attachment.external_storage?
-          redirect attachment.external_url(expires_in: external_link_expires_in).to_s
+          redirect_to_external_attachment(attachment, cache_seconds)
         else
-          content_type attachment.content_type
-          header['Content-Disposition'] = "#{attachment.content_disposition}; filename=#{attachment.filename}"
-          env['api.format'] = :binary
-          attachment.diskfile.read
+          send_attachment(attachment)
         end
+      end
+
+      private
+
+      def redirect_to_external_attachment(attachment, cache_seconds)
+        set_cache_headers!
+        redirect attachment.external_url(expires_in: cache_seconds).to_s
+      end
+
+      def send_attachment(attachment)
+        content_type attachment.content_type
+        header['Content-Disposition'] = "#{attachment.content_disposition}; filename=#{attachment.filename}"
+        env['api.format'] = :binary
+        sendfile attachment.diskfile.path
+      end
+
+      def set_cache_headers
+        set_cache_headers! if @stream
+      end
+
+      def prepare_cache_headers(seconds)
+        @prepared_cache_headers = { "Cache-Control" => "public, max-age=#{seconds}",
+                                    "Expires" => CGI.rfc1123_date(Time.now.utc + seconds) }
+      end
+
+      def set_cache_headers!(seconds = nil)
+        prepare_cache_headers(seconds) if seconds
+
+        (@prepared_cache_headers || {}).each do |key, value|
+          header key, value
+        end
+      end
+
+      def max_aws_cache_seconds
+        604799
       end
 
       def avatar_link_expires_in

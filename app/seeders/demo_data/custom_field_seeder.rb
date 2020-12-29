@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,7 +24,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 module DemoData
   class CustomFieldSeeder < Seeder
     attr_reader :project, :key
@@ -37,28 +37,26 @@ module DemoData
     def seed_data!
       # Careful: The seeding recreates the seeded project before it runs, so any changes
       # on the seeded project will be lost.
-      print '    ↳ Creating custom fields...'
+      print_status '    ↳ Creating custom fields...' do
+        # create some custom fields and add them to the project
+        Array(project_data_for(key,'custom_fields')).each do |name|
+          cf = WorkPackageCustomField.create!(
+            name: name,
+            regexp: '',
+            is_required: false,
+            min_length: false,
+            default_value: '',
+            max_length: false,
+            editable: true,
+            possible_values: '',
+            visible: true,
+            field_format: 'text'
+          )
+          print_status '.'
 
-      # create some custom fields and add them to the project
-      Array(project_data_for(key,'custom_fields')).each do |name|
-        cf = WorkPackageCustomField.create!(
-          name: name,
-          regexp: '',
-          is_required: false,
-          min_length: false,
-          default_value: '',
-          max_length: false,
-          editable: true,
-          possible_values: '',
-          visible: true,
-          field_format: 'text'
-        )
-        print '.'
-
-        project.work_package_custom_fields << cf
+          project.work_package_custom_fields << cf
+        end
       end
-
-      puts
     end
 
     def applicable?

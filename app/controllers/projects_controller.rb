@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -37,6 +37,9 @@ class ProjectsController < ApplicationController
   before_action :authorize_global, only: %i[new create]
   before_action :require_admin, only: %i[archive unarchive destroy destroy_info]
 
+  before_action :assign_default_create_variables, only: %i[new]
+  before_action :new_project, only: %i[new]
+
   include SortHelper
   include PaginationHelper
   include CustomFieldsHelper
@@ -47,14 +50,13 @@ class ProjectsController < ApplicationController
   # Lists visible projects
   def index
     query = load_query
-    set_sorting(query)
 
     unless query.valid?
       flash[:error] = query.errors.full_messages
     end
 
     @projects = load_projects query
-    @custom_fields = ProjectCustomField.visible(User.current)
+    @orders = set_sorting query
 
     render layout: 'no_menu'
   end
@@ -64,10 +66,6 @@ class ProjectsController < ApplicationController
   end
 
   def new
-    assign_default_create_variables
-
-    @project = Project.new
-
     Projects::SetAttributesService
       .new(user: current_user, model: @project, contract_class: EmptyContract)
       .call(params.permit(:parent_id))
@@ -80,16 +78,16 @@ class ProjectsController < ApplicationController
   end
 
   def create
-    call_result = Projects::CreateService
-                  .new(user: current_user)
-                  .call(permitted_params.project)
+    call_result =
+      if params[:from_template].present?
+        create_from_template
+      else
+        create_from_params
+      end
 
-    @project = call_result.result
-
-    if call_result.success?
-      flash[:notice] = t(:notice_successful_create)
-      redirect_work_packages_or_overview
-    else
+    # In success case, nothing to do
+    call_result.on_failure do
+      @project = call_result.result
       @errors = call_result.errors
       assign_default_create_variables
 
@@ -101,25 +99,29 @@ class ProjectsController < ApplicationController
     @altered_project = Project.find(@project.id)
 
     service_call = Projects::UpdateService
-                   .new(user: current_user,
-                        model: @altered_project)
-                   .call(permitted_params.project)
+      .new(user: current_user,
+           model: @altered_project)
+      .call(permitted_params.project)
 
-    @errors = service_call.errors
 
-    flash[:notice] = t(:notice_successful_update) if service_call.success?
-    redirect_to settings_project_path(@altered_project)
+    if service_call.success?
+      flash[:notice] = t(:notice_successful_update)
+      redirect_to settings_generic_project_path(@altered_project)
+    else
+      @errors = service_call.errors
+      render template: 'project_settings/generic'
+    end
   end
 
   def update_identifier
     service_call = Projects::UpdateService
-                   .new(user: current_user,
-                        model: @project)
-                   .call(permitted_params.project)
+      .new(user: current_user,
+           model: @project)
+      .call(permitted_params.project)
 
     if service_call.success?
       flash[:notice] = I18n.t(:notice_successful_update)
-      redirect_to settings_project_path(@project)
+      redirect_to settings_generic_project_path(@project)
     else
       render action: 'identifier'
     end
@@ -127,12 +129,12 @@ class ProjectsController < ApplicationController
 
   def types
     if UpdateProjectsTypesService.new(@project).call(permitted_params.projects_type_ids)
-      flash[:notice] = l('notice_successful_update')
+      flash[:notice] = I18n.t('notice_successful_update')
     else
       flash[:error] = @project.errors.full_messages
     end
 
-    redirect_to settings_project_path(@project.identifier, tab: 'types')
+    redirect_to settings_types_project_path(@project.identifier)
   end
 
   def modules
@@ -140,7 +142,7 @@ class ProjectsController < ApplicationController
     # Ensure the project is touched to update its cache key
     @project.touch
     flash[:notice] = I18n.t(:notice_successful_update)
-    redirect_to settings_project_path(@project, tab: 'modules')
+    redirect_to settings_modules_project_path(@project)
   end
 
   def custom_fields
@@ -154,7 +156,7 @@ class ProjectsController < ApplicationController
         raise ActiveRecord::Rollback
       end
     end
-    redirect_to settings_project_path(@project, tab: 'custom_fields')
+    redirect_to settings_custom_fields_project_path(@project)
   end
 
   def archive
@@ -168,8 +170,8 @@ class ProjectsController < ApplicationController
   # Delete @project
   def destroy
     service_call = ::Projects::ScheduleDeletionService
-                   .new(user: current_user, model: @project)
-                   .call
+      .new(user: current_user, model: @project)
+      .call
 
     if service_call.success?
       flash[:notice] = I18n.t('projects.delete.scheduled')
@@ -254,13 +256,52 @@ class ProjectsController < ApplicationController
     @query
   end
 
-  def filter_projects_by_permission(projects)
-    # Cannot simply use .visible here as it would
-    # filter out archived projects for everybody.
-    if User.current.admin?
-      projects
-    else
-      projects.visible
+  protected
+
+  def create_from_params
+    call_result = Projects::CreateService
+      .new(user: current_user)
+      .call(permitted_params.project)
+    @project = call_result.result
+
+    call_result.on_success do
+      flash[:notice] = t(:notice_successful_create)
+      redirect_work_packages_or_overview
+    end
+
+    call_result
+  end
+
+  def create_from_template
+    call_result = Projects::InstantiateTemplateService
+      .new(user: current_user, template_id: params[:from_template])
+      .call(permitted_params.project)
+
+    call_result.on_success do
+      flash[:notice] = t('project.template.copying')
+      redirect_to job_status_path(call_result.result.job_id)
+    end
+
+    call_result
+  end
+
+  def load_projects(query)
+    query
+      .results
+      .with_required_storage
+      .with_latest_activity
+      .includes(:custom_values, :enabled_modules)
+      .paginate(page: page_param, per_page: per_page_param)
+  end
+
+  def set_sorting(query)
+    query.orders.select(&:valid?).map { |o| [o.attribute.to_s, o.direction.to_s] }
+  end
+
+  def update_demo_project_settings(project, value)
+    # e.g. when one of the demo projects gets deleted or a archived
+    if project.identifier == 'your-scrum-project' || project.identifier == 'demo-project'
+      Setting.demo_projects_available = value
     end
   end
 
@@ -269,28 +310,30 @@ class ProjectsController < ApplicationController
     @types = ::Type.all
   end
 
-  protected
+  def new_project
+    # If a template is passed, assign that as default
+    @template_project = template_project_from_param
+    @project =
+      if @template_project.nil?
+        Project.new
+      else
+        Projects::CopyService
+          .new(user: current_user, source: @template_project)
+          .call(target_project_params: {}, attributes_only: true)
+          .result
+      end
 
-  def set_sorting(query)
-    orders = query.orders.select(&:valid?).map { |o| [o.attribute.to_s, o.direction.to_s] }
-
-    sort_clear
-    sort_init orders
-    sort_update orders.map(&:first)
+    # Allow setting the name when selecting template
+    if params[:name]
+      @project.name = params[:name]
+    end
   end
 
-  def load_projects(query)
-    filter_projects_by_permission(query.results)
-      .with_required_storage
-      .with_latest_activity
-      .includes(:custom_values, :enabled_modules)
-      .paginate(page: page_param, per_page: per_page_param)
-  end
-
-  def update_demo_project_settings(project, value)
-    # e.g. when one of the demo projects gets deleted or a archived
-    if project.identifier == 'your-scrum-project' || project.identifier == 'demo-project'
-      Setting.demo_projects_available = value
+  def template_project_from_param
+    if params[:template_project]
+      ::Projects::InstantiateTemplateContract
+        .visible_templates(current_user)
+        .find_by(id: params[:template_project])
     end
   end
 end

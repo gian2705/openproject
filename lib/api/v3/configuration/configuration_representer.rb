@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -43,6 +43,15 @@ module API
         link :userPreferences do
           {
             href: api_v3_paths.my_preferences
+          }
+        end
+
+        link :prepareAttachment do
+          next unless OpenProject::Configuration.direct_uploads?
+
+          {
+            href: api_v3_paths.prepare_new_attachment_upload,
+            method: :post
           }
         end
 

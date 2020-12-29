@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,16 +30,36 @@
 require 'securerandom'
 
 module SettingsHelper
+  extend self
   include OpenProject::FormTagHelper
 
-  def administration_settings_tabs
+  def system_settings_tabs
     [
-      { name: 'general', partial: 'settings/general', label: :label_general },
-      { name: 'display', partial: 'settings/display', label: :label_display },
-      { name: 'projects', partial: 'settings/projects', label: :label_project_plural },
-      { name: 'notifications', partial: 'settings/notifications', label: Proc.new { User.human_attribute_name(:mail_notification) } },
-      { name: 'mail_handler', partial: 'settings/mail_handler', label: :label_incoming_emails },
-      { name: 'repositories', partial: 'settings/repositories', label: :label_repository_plural }
+      {
+        name: 'general',
+        action: { controller: '/settings/general', action: 'show' },
+        label: :label_general
+      },
+      {
+        name: 'display',
+        action: { controller: '/settings/display', action: 'show' },
+        label: :label_display
+      },
+      {
+        name: 'projects',
+        action: { controller: '/settings/projects', action: 'show' },
+        label: :label_project_plural
+      },
+      {
+        name: 'api',
+        action: { controller: '/settings/api', action: 'show' },
+        label: :label_api_access_key_type
+      },
+      {
+        name: 'repositories',
+        action: { controller: '/settings/repositories', action: 'show' },
+        label: :label_repository_plural
+      }
     ]
   end
 
@@ -60,11 +80,12 @@ module SettingsHelper
       content_tag(:span, class: 'form--field-container -vertical') do
         hidden_field_tag("settings[#{setting}][]", '') +
           choices.map do |choice|
-            text, value = (choice.is_a?(Array) ? choice : [choice, choice])
+            text, value, choice_options = (choice.is_a?(Array) ? choice : [choice, choice])
+            choice_options = (choice_options || {}).merge(options.except(:id))
 
             content_tag(:label, class: 'form--label-with-check-box') do
               styled_check_box_tag("settings[#{setting}][]", value,
-                                   Setting.send(setting).include?(value), options.merge(id: nil)) + text.to_s
+                                   Setting.send(setting).include?(value), choice_options) + text.to_s
             end
           end.join.html_safe
       end
@@ -101,7 +122,13 @@ module SettingsHelper
   def setting_text_area(setting, options = {})
     setting_label(setting, options) +
       wrap_field_outer(options) do
-        styled_text_area_tag("settings[#{setting}]", Setting.send(setting), options)
+        value = Setting.send(setting)
+
+        if value.is_a?(Array)
+          value = value.join("\n")
+        end
+
+        styled_text_area_tag("settings[#{setting}]", value, options)
       end
   end
 

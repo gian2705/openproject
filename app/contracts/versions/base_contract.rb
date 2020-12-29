@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -23,12 +23,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module Versions
   class BaseContract < ::ModelContract
-    include Concerns::AssignableValuesContract
+    include AssignableValuesContract
 
     def self.model
       Version
@@ -38,13 +38,9 @@ module Versions
              :new_record?,
              to: :model
 
-    def validate
-      user_allowed_to_manage
-      validate_project_is_set
-      validate_sharing_included
-
-      super
-    end
+    validate :user_allowed_to_manage
+    validate :validate_project_is_set
+    validate :validate_sharing_included
 
     attribute :name
     attribute :description
@@ -52,7 +48,9 @@ module Versions
     attribute :effective_date
     attribute :status
     attribute :sharing
-    attribute :wiki_page_title
+    attribute :wiki_page_title do
+      validate_page_title_in_wiki
+    end
 
     def assignable_statuses
       Version::VERSION_STATUSES
@@ -79,6 +77,16 @@ module Versions
       end
     end
 
+    def assignable_wiki_pages
+      wiki = model.project.wiki
+
+      if wiki
+        wiki.pages
+      else
+        WikiPage.where('1=0')
+      end
+    end
+
     def assignable_custom_field_values(custom_field)
       custom_field.possible_values
     end
@@ -99,6 +107,12 @@ module Versions
 
     def validate_project_is_set
       errors.add :project_id, :blank if model.project.nil?
+    end
+
+    def validate_page_title_in_wiki
+      return unless model.wiki_page_title.present? && model.project&.wiki
+
+      errors.add :wiki_page_title, :inclusion unless model.project.wiki.find_page(model.wiki_page_title)
     end
   end
 end

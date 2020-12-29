@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -79,7 +79,7 @@ feature 'user memberships through user page', type: :feature, js: true do
     let(:group_page) { Pages::Groups.new.group(group.id) }
 
     before do
-      group.add_member! admin
+      group.add_members! admin
     end
 
     scenario 'it can remove all other roles' do

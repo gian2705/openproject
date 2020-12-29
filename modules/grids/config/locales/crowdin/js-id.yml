@@ -3,6 +3,7 @@ id:
     grid:
       add_widget: 'Add widget'
       remove: 'Remove widget'
+      configure: 'Configure widget'
       upsale:
         text: "Some widgets, like the work package graph widget, are only available in the "
         link: 'enterprise edition.'
@@ -15,7 +16,7 @@ id:
         members:
           title: 'Member'
           no_results: 'No visible members.'
-          view_all_members: 'View all members'
+          view_all_members: 'Lihat semua anggota'
           add: 'Member'
           too_many: 'Displaying %{count} of %{total} members.'
         news:
@@ -37,6 +38,9 @@ id:
         subprojects:
           title: 'Sub Project'
           no_results: 'No subprojects.'
+        time_entries_current_user:
+          title: 'My spent time'
+          displayed_days: 'Days displayed in the widget:'
         time_entries_list:
           title: 'Spent time (last 7 days)'
           no_results: 'No time entries for the last 7 days.'

@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -69,11 +69,11 @@ describe Projects::SetAttributesService, type: :model do
     before do
       allow(project)
         .to receive(:valid?)
-              .and_return(project_valid)
+        .and_return(project_valid)
 
       expect(contract_instance)
         .to receive(:validate)
-              .and_return(contract_valid)
+        .and_return(contract_valid)
     end
 
     subject { instance.call(call_attributes) }
@@ -120,7 +120,7 @@ describe Projects::SetAttributesService, type: :model do
             it 'sets a default identifier' do
               allow(Project)
                 .to receive(:next_identifier)
-                      .and_return('ipsum')
+                .and_return('ipsum')
 
               expect(subject.result.identifier)
                 .to eql 'ipsum'
@@ -146,7 +146,7 @@ describe Projects::SetAttributesService, type: :model do
             it 'stays nil' do
               allow(Project)
                 .to receive(:next_identifier)
-                      .and_return('ipsum')
+                .and_return('ipsum')
 
               expect(subject.result.identifier)
                 .to be_nil
@@ -155,7 +155,7 @@ describe Projects::SetAttributesService, type: :model do
         end
       end
 
-      context 'public default value', with_settings: {default_projects_public: true} do
+      context 'public default value', with_settings: { default_projects_public: true } do
         context 'with a value for is_public provided' do
           let(:call_attributes) do
             {
@@ -177,7 +177,7 @@ describe Projects::SetAttributesService, type: :model do
         end
       end
 
-      context 'enabled_module_names default value', with_settings: {default_projects_modules: ['lorem', 'ipsum']} do
+      context 'enabled_module_names default value', with_settings: { default_projects_modules: ['lorem', 'ipsum'] } do
         context 'with a value for enabled_module_names provided' do
           let(:call_attributes) do
             {

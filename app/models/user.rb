@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,6 +31,8 @@
 require 'digest/sha1'
 
 class User < Principal
+  include ::Scopes::Scoped
+
   USER_FORMATS_STRUCTURE = {
     firstname_lastname:       [:firstname, :lastname],
     firstname:                [:firstname],
@@ -75,8 +78,8 @@ class User < Principal
   }, class_name: 'UserPassword',
      dependent: :destroy,
      inverse_of: :user
-  has_one :rss_token, class_name: '::Token::Rss', dependent: :destroy
-  has_one :api_token, class_name: '::Token::Api', dependent: :destroy
+  has_one :rss_token, class_name: '::Token::RSS', dependent: :destroy
+  has_one :api_token, class_name: '::Token::API', dependent: :destroy
   belongs_to :auth_source
 
   # Authorized OAuth grants
@@ -93,6 +96,8 @@ class User < Principal
   # use lambda here, so time is evaluated on each query
   scope :blocked, -> { create_blocked_scope(self, true) }
   scope :not_blocked, -> { create_blocked_scope(self, false) }
+
+  scope_classes Users::Scopes::FindByLogin
 
   def self.create_blocked_scope(scope, blocked)
     scope.where(blocked_condition(blocked))
@@ -130,6 +135,9 @@ class User < Principal
   validates_confirmation_of :password, allow_nil: true
   validates_inclusion_of :mail_notification, in: MAIL_NOTIFICATION_OPTIONS.map(&:first), allow_blank: true
 
+  auto_strip_attributes :login, nullify: false
+  auto_strip_attributes :mail, nullify: false
+
   validate :login_is_not_special_value
   validate :password_meets_requirements
 
@@ -161,7 +169,7 @@ class User < Principal
 
   scope :admin, -> { where(admin: true) }
 
-  scope :newest, -> { not_builtin.order(created_on: :desc) }
+  scope :newest, -> { not_builtin.order(created_at: :desc) }
 
   def self.unique_attribute
     :login
@@ -199,7 +207,7 @@ class User < Principal
     @name = nil
     @projects_by_role = nil
     @authorization_service = ::Authorization::UserAllowedService.new(self)
-    @project_role_cache = ::User::ProjectRoleCache.new(self)
+    @project_role_cache = ::Users::ProjectRoleCache.new(self)
 
     super
   end
@@ -216,12 +224,13 @@ class User < Principal
   def self.try_to_login(login, password, session = nil)
     # Make sure no one can sign in with an empty password
     return nil if password.to_s.empty?
+
     user = find_by_login(login)
     user = if user
              try_authentication_for_existing_user(user, password, session)
            else
              try_authentication_and_create_user(login, password)
-    end
+           end
     unless prevent_brute_force_attack(user, login).nil?
       user.log_successful_login if user && !user.new_record?
       return user
@@ -265,25 +274,27 @@ class User < Principal
   def self.try_authentication_and_create_user(login, password)
     return nil if OpenProject::Configuration.disable_password_login?
 
-    user = nil
     attrs = AuthSource.authenticate(login, password)
-    if attrs
-      # login is both safe and protected in chilis core code
-      # in case it's intentional we keep it that way
-      user = new(attrs.except(:login))
-      user.login = login
+    try_to_create(attrs) if attrs
+  end
+
+  # Try to create the user from attributes
+  def self.try_to_create(attrs, notify: false)
+    new(attrs).tap do |user|
       user.language = Setting.default_language
 
       if OpenProject::Enterprise.user_limit_reached?
-        OpenProject::Enterprise.send_activation_limit_notification_about user
+        OpenProject::Enterprise.send_activation_limit_notification_about(user) if notify
 
+        Rails.logger.error("User '#{user.login}' could not be created as user limit exceeded.")
         user.errors.add :base, I18n.t(:error_enterprise_activation_user_limit)
       elsif user.save
         user.reload
-        logger.info("User '#{user.login}' created from external auth source: #{user.auth_source.type} - #{user.auth_source.name}") if logger && user.auth_source
+        Rails.logger.info("User '#{user.login}' created from external auth source: #{user.auth_source&.type} - #{user.auth_source&.name}")
+      else
+        Rails.logger.error("User '#{user.login}' could not be created: #{user.errors.full_messages.join(". ")}")
       end
     end
-    user
   end
 
   # Returns the user who matches the given autologin +key+ or nil
@@ -291,7 +302,7 @@ class User < Principal
     token = Token::AutoLogin.find_by_plaintext_value(key)
     # Make sure there's only 1 token that matches the key
     if token
-      if (token.created_on > Setting.autologin.to_i.day.ago) && token.user && token.user.active?
+      if (token.created_at > Setting.autologin.to_i.day.ago) && token.user && token.user.active?
         token.user.log_successful_login
         token.user
       end
@@ -498,7 +509,7 @@ class User < Principal
   def self.find_by_rss_key(key)
     return nil unless Setting.feeds_enabled?
 
-    token = Token::Rss.find_by(value: key)
+    token = Token::RSS.find_by(value: key)
 
     if token&.user&.active?
       token.user
@@ -508,7 +519,7 @@ class User < Principal
   def self.find_by_api_key(key)
     return nil unless Setting.rest_api_enabled?
 
-    token = Token::Api.find_by_plaintext_value(key)
+    token = Token::API.find_by_plaintext_value(key)
 
     if token&.user&.active?
       token.user
@@ -541,7 +552,7 @@ class User < Principal
   end
 
   def rss_key
-    token = rss_token || ::Token::Rss.create(user: self)
+    token = rss_token || ::Token::RSS.create(user: self)
     token.value
   end
 
@@ -678,18 +689,21 @@ class User < Principal
   # Returns the anonymous user.  If the anonymous user does not exist, it is created.  There can be only
   # one anonymous user per database.
   def self.anonymous
-    anonymous_user = AnonymousUser.first
-    if anonymous_user.nil?
-      (anonymous_user = AnonymousUser.new.tap do |u|
-        u.lastname = 'Anonymous'
-        u.login = ''
-        u.firstname = ''
-        u.mail = ''
-        u.status = 0
-      end).save
-      raise 'Unable to create the anonymous user.' if anonymous_user.new_record?
+    RequestStore[:anonymous_user] ||= begin
+      anonymous_user = AnonymousUser.first
+
+      if anonymous_user.nil?
+        (anonymous_user = AnonymousUser.new.tap do |u|
+          u.lastname = 'Anonymous'
+          u.login = ''
+          u.firstname = ''
+          u.mail = ''
+          u.status = User::STATUSES[:active]
+        end).save
+        raise 'Unable to create the anonymous user.' if anonymous_user.new_record?
+      end
+      anonymous_user
     end
-    anonymous_user
   end
 
   def self.system
@@ -762,7 +776,7 @@ class User < Principal
   end
 
   def project_role_cache
-    @project_role_cache ||= ::User::ProjectRoleCache.new(self)
+    @project_role_cache ||= ::Users::ProjectRoleCache.new(self)
   end
 
   def former_passwords_include?(password)
@@ -786,11 +800,13 @@ class User < Principal
       klass.where(['author_id = ?', id]).update_all ['author_id = ?', substitute.id]
     end
 
-    [TimeEntry, Journal, ::Query].each do |klass|
+    [TimeEntry, ::Query].each do |klass|
       klass.where(['user_id = ?', id]).update_all ['user_id = ?', substitute.id]
     end
 
-    JournalManager.update_user_references id, substitute.id
+    Journals::UserReferenceUpdateService
+      .new(self)
+      .call(substitute)
   end
 
   def delete_associated_private_queries
@@ -853,65 +869,3 @@ class User < Principal
     !User.active.find_by_login('admin').try(:current_password).try(:matches_plaintext?, 'admin')
   end
 end
-
-class AnonymousUser < User
-  validate :validate_unique_anonymous_user, on: :create
-
-  # There should be only one AnonymousUser in the database
-  def validate_unique_anonymous_user
-    errors.add :base, 'An anonymous user already exists.' if AnonymousUser.any?
-  end
-
-  def available_custom_fields
-    []
-  end
-
-  # Overrides a few properties
-  def logged?; false end
-
-  def builtin?; true end
-
-  def admin; false end
-
-  def name(*_args); I18n.t(:label_user_anonymous) end
-
-  def mail; nil end
-
-  def time_zone; nil end
-
-  def rss_key; nil end
-
-  def destroy; false end
-end
-
-class DeletedUser < User
-  validate :validate_unique_deleted_user, on: :create
-
-  # There should be only one DeletedUser in the database
-  def validate_unique_deleted_user
-    errors.add :base, 'A DeletedUser already exists.' if DeletedUser.any?
-  end
-
-  def self.first
-    super || create(type: to_s, status: STATUSES[:active])
-  end
-
-  # Overrides a few properties
-  def logged?; false end
-
-  def builtin?; true end
-
-  def admin; false end
-
-  def name(*_args); I18n.t('user.deleted') end
-
-  def mail; nil end
-
-  def time_zone; nil end
-
-  def rss_key; nil end
-
-  def destroy; false end
-end
-
-require_dependency "system_user"

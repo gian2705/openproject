@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,7 +29,7 @@
 #++
 
 # The contract is not actually used for validations but rather to display the unimbedded schema
-# as the writable attributes differ depdending on whether the user has the necessary permissions.
+# as the writable attributes differ depending on whether the user has the necessary permissions.
 # As we do not know the context of the schema, other than when it is embedded inside a form, we have to allow
 # both possible permissions.
 module API

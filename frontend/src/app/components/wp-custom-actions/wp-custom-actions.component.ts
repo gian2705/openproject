@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,21 +23,44 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
+import {CustomActionResource} from "core-app/modules/hal/resources/custom-action-resource";
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
 
 @Component({
   selector: 'wp-custom-actions',
-  templateUrl: './wp-custom-actions.component.html'
+  templateUrl: './wp-custom-actions.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WpCustomActionsComponent {
+export class WpCustomActionsComponent extends UntilDestroyedMixin implements OnInit {
 
   @Input() workPackage:WorkPackageResource;
 
-  public get actions() {
-    return this.workPackage.customActions;
+  actions:CustomActionResource[] = [];
+
+  constructor(readonly apiV3Service:APIV3Service,
+              readonly cdRef:ChangeDetectorRef) {
+    super();
   }
+
+  ngOnInit() {
+    this
+      .apiV3Service
+      .work_packages
+      .id(this.workPackage.id!)
+      .requireAndStream()
+      .pipe(
+        this.untilDestroyed()
+      )
+      .subscribe((wp) => {
+        this.actions = wp.customActions ? [...wp.customActions] : [];
+        this.cdRef.detectChanges();
+      });
+  }
+
 }

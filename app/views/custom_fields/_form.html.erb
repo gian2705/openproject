@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -87,14 +87,30 @@ See docs/COPYRIGHT.rdoc for more details.
   <% end %>
   <div id="custom_field_default_value_attributes">
     <div class="form--field" id="default_value_text">
-      <% if @custom_field.new_record? || @custom_field.field_format != 'bool' %>
-        <%= f.text_field(:default_value, container_class: '-wide') %>
+      <% if @custom_field.new_record? || !%w[text bool].include?(@custom_field.field_format) %>
+        <%= f.text_field :default_value,
+                         id: 'custom_fields_default_value_text',
+                         for: 'custom_fields_default_value_text',
+                         container_class: '-wide' %>
       <% end %>
     </div>
     <div class="form--field" style="display:none" id="default_value_bool">
       <% if @custom_field.new_record? || @custom_field.field_format == 'bool' %>
-        <%= f.check_box(:default_value) %>
+        <%= f.check_box :default_value,
+                        id: 'custom_fields_default_value_bool',
+                        for: 'custom_fields_default_value_bool' %>
       <% end %>
+    </div>
+    <div class="form--field" style="display:none" id="default_value_long_text">
+      <% if @custom_field.new_record? || @custom_field.field_format == 'text' %>
+        <%= f.text_area :default_value,
+                        id: 'custom_fields_default_value_longtext',
+                        for: 'custom_fields_default_value_longtext',
+                        cols: 100,
+                        rows: 20,
+                        class: 'wiki-edit',
+                        with_text_formatting: true %>
+    <% end %>
     </div>
   </div>
   <%= call_hook(:view_custom_fields_form_upper_box, custom_field: @custom_field, form: f) %>
@@ -107,6 +123,7 @@ See docs/COPYRIGHT.rdoc for more details.
     <div class="form--field"><%= f.check_box :is_for_all %></div>
     <div class="form--field"><%= f.check_box :is_filter %></div>
     <div class="form--field" id="searchable_container"><%= f.check_box :searchable %></div>
+    <div class="form--field" id="custom_field_text_orientation"><%= f.check_box :content_right_to_left %></div>
   <% when "UserCustomField" %>
     <div class="form--field"><%= f.check_box :is_required %></div>
     <div class="form--field"><%= f.check_box :visible %></div>

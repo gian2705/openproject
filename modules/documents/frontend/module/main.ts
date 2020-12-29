@@ -26,32 +26,29 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
+import {NgModule} from '@angular/core';
 import {OpenProjectPluginContext} from "core-app/modules/plugins/plugin-context";
 import {DocumentResource} from './hal/resources/document-resource';
 import {multiInput} from 'reactivestates';
 
 export function initializeDocumentPlugin() {
-    return () => {
-        window.OpenProject.getPluginContext()
-            .then((pluginContext:OpenProjectPluginContext) => {
-                let halResourceService = pluginContext.services.halResource;
-                halResourceService.registerResource('Document', { cls: DocumentResource });
+  window.OpenProject.getPluginContext()
+    .then((pluginContext:OpenProjectPluginContext) => {
+      let halResourceService = pluginContext.services.halResource;
+      halResourceService.registerResource('Document', {cls: DocumentResource});
 
-                let states = pluginContext.services.states;
-                states.add('documents', multiInput<DocumentResource>());
-            });
-    };
+      let states = pluginContext.services.states;
+      states.add('documents', multiInput<DocumentResource>());
+    });
 }
 
 
-@NgModule({
-    providers: [
-        { provide: APP_INITIALIZER, useFactory: initializeDocumentPlugin, deps: [Injector], multi: true },
-    ],
-})
+@NgModule()
 export class PluginModule {
+  constructor() {
+    initializeDocumentPlugin();
+  }
 }

@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Injectable} from "@angular/core";
@@ -47,6 +47,21 @@ export function withLoadingIndicator<T>(indicator:LoadingIndicator, delayStopTim
   };
 }
 
+export function withDelayedLoadingIndicator<T>(indicator:() => LoadingIndicator):(source:Observable<T>) => Observable<T> {
+  return (source$:Observable<T>) => {
+    setTimeout(() => indicator().start());
+
+    return source$.pipe(
+      tap(
+        () => undefined,
+        () => indicator().stop(),
+        () => indicator().stop()
+      )
+    );
+  };
+}
+
+
 export class LoadingIndicator {
 
   private indicatorTemplate:string =
@@ -61,7 +76,8 @@ export class LoadingIndicator {
     </div>
    `;
 
-  constructor(public indicator:JQuery) {}
+  constructor(public indicator:JQuery) {
+  }
 
   public set promise(promise:Promise<unknown>) {
     this.start();
@@ -89,13 +105,27 @@ export class LoadingIndicator {
   }
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class LoadingIndicatorService {
 
   // Provide shortcut to the primarily used indicators
-  public get table() { return this.indicator('table'); }
-  public get wpDetails() { return this.indicator('wpDetails'); }
-  public get modal() { return this.indicator('modal'); }
+  public get table() {
+    return this.indicator('table');
+  }
+
+  public get wpDetails() {
+    return this.indicator('wpDetails');
+  }
+
+  public get modal() {
+    return this.indicator('modal');
+  }
+
+  // Returns a getter function to an indicator
+  // in case the indicator is shown conditionally
+  public getter(name:string):() => LoadingIndicator {
+    return this.indicator.bind(this, name);
+  }
 
   // Return an indicator by name or element
   public indicator(indicator:string|JQuery):LoadingIndicator {

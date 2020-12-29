@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,15 +28,16 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Member < ActiveRecord::Base
-  extend DeprecatedAlias
+class Member < ApplicationRecord
+  include ::Scopes::Scoped
 
+  extend DeprecatedAlias
   belongs_to :principal, foreign_key: 'user_id'
-  has_many :member_roles, dependent: :destroy, autosave: true
+  has_many :member_roles, dependent: :destroy, autosave: true, validate: false
   has_many :roles, through: :member_roles
   belongs_to :project
 
-  validates_presence_of :project, :principal
+  validates_presence_of :principal
   validates_uniqueness_of :user_id, scope: :project_id
 
   validate :validate_presence_of_role
@@ -48,18 +50,9 @@ class Member < ActiveRecord::Base
   after_save :save_notification
   after_destroy :destroy_notification
 
-  scope :of, ->(project) {
-    where(project_id: project)
-  }
-
-  def self.visible(user)
-    view_members = Project.where(id: Project.allowed_to(user, :view_members))
-    manage_members = Project.where(id: Project.allowed_to(user, :manage_members))
-
-    project_scope = view_members.or(manage_members)
-
-    where(project_id: project_scope.select(:id))
-  end
+  scope_classes Members::Scopes::Global,
+                Members::Scopes::Visible,
+                Members::Scopes::Of
 
   def name
     principal.name
@@ -241,7 +234,7 @@ class Member < ActiveRecord::Base
   #       Accordingly it has to be changed there too should this bit change at all.
   def unwatch_from_permission_change
     if principal
-      Watcher.prune(user: principal, project_id: project.id)
+      Watcher.prune(user: principal, project_id: project_id)
     end
   end
 

@@ -1,20 +1,13 @@
 <%#-- copyright
-OpenProject Backlogs Plugin
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
-Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-Copyright (C)2010-2011 friflaj
-Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-Copyright (C)2009-2010 Mark Maglana
-Copyright (C)2009 Joe Heck, Nate Lowrie
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License version 3.
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License version 3.
-
-OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-The copyright follows:
-Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+Copyright (C) 2006-2017 Jean-Philippe Lang
+Copyright (C) 2010-2013 the ChiliProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,36 +23,36 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-See doc/COPYRIGHT.rdoc for more details.
+See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 
 <% content_for :header_tags do %>
   <%= render :partial => 'shared/backlogs_header' %>
-  <%= stylesheet_link_tag 'backlogs/taskboard.css' %>
 <% end %>
+
 <% html_title @sprint.name %>
 <%= toolbar title: @sprint.name do %>
   <li class="toolbar-item toolbar-input-group" id="col_width">
     <div>
-      <label for="col_width_input"><%= l('backlogs.column_width') %></label>
+      <label for="col_width_input"><%= t('backlogs.column_width') %></label>
     </div>
     <input type="text" id="col_width_input">
   </li>
   <% if @sprint.has_burndown? %>
     <li class="toolbar-item">
-      <%= show_burndown_link(@sprint) %>
+      <%= show_burndown_link(@project, @sprint) %>
     </li>
   <% end %>
 <% end %>
 
-<% breadcrumb_paths(link_to(l(:label_backlogs), backlogs_project_backlogs_path(@project)), link_to(@sprint.name, backlogs_project_backlogs_path(@sprint))) %>
+<% breadcrumb_paths(link_to(t(:label_backlogs), backlogs_project_backlogs_path(@project)), link_to(@sprint.name, backlogs_project_backlogs_path(@sprint))) %>
 
 <div id='rb'>
   <div id="taskboard">
     <table id="board_header" cellspacing="0">
       <tr>
-        <td><%= l(:backlogs_story) %></td>
+        <td><%= t(:backlogs_story) %></td>
         <% @statuses.each do |status| %>
           <td class="swimlane"><%= status.name %></td>
         <% end %>
@@ -68,7 +61,7 @@ See doc/COPYRIGHT.rdoc for more details.
 
     <table id="impediments" class="board" cellspacing="0">
       <tr>
-        <td><div class="label_sprint_impediments"><%= l(:label_sprint_impediments) %></div></td>
+        <td><div class="label_sprint_impediments"><%= t(:label_sprint_impediments) %></div></td>
         <% if User.current.allowed_to?(:add_work_packages, @project) %>
           <td class ="add_new clickable">+</td>
         <% else %>
@@ -104,7 +97,7 @@ See doc/COPYRIGHT.rdoc for more details.
                   <% if story.assigned_to.present? %>
                     <%= link_to_user(story.assigned_to) %>
                   <% else %>
-                    <em><%= l('backlogs.unassigned') %></em>
+                    <em><%= t('backlogs.unassigned') %></em>
                   <% end %>
                 </div>
                 <div class="story-points">

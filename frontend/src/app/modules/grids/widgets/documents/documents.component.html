@@ -3,6 +3,7 @@
     [editable]="isEditable">
 
   <widget-menu
+      slot="menu"
       [resource]="resource">
   </widget-menu>
 </widget-header>
@@ -21,7 +22,7 @@
       <em [textContent]="documentCreated(document)"></em>
     </p>
 
-    <div class="wiki grid--widget-limited-text"
+    <div class="wiki grid--widget-limited-text op-uc-container"
          [innerHtml]="documentDescription(document)">
     </div>
   </ng-container>

@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,6 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'spec_helper'
@@ -22,7 +31,7 @@ require 'spec_helper'
 describe ::API::V3::CostEntries::CostEntryRepresenter do
   include API::V3::Utilities::PathHelper
 
-  let(:cost_entry) { FactoryBot.build(:cost_entry, id: 42) }
+  let(:cost_entry) { FactoryBot.build_stubbed(:cost_entry) }
   let(:representer) { described_class.new(cost_entry, current_user: double('current_user')) }
 
   subject { representer.to_json }
@@ -44,7 +53,7 @@ describe ::API::V3::CostEntries::CostEntryRepresenter do
 
   it_behaves_like 'has a titled link' do
     let(:link) { 'user' }
-    let(:href) { api_v3_paths.user cost_entry.user.id }
+    let(:href) { api_v3_paths.user cost_entry.user_id }
     let(:title) { cost_entry.user.name }
   end
 
@@ -74,12 +83,12 @@ describe ::API::V3::CostEntries::CostEntryRepresenter do
   end
 
   it_behaves_like 'has UTC ISO 8601 date and time' do
-    let(:date) { cost_entry.created_on }
+    let(:date) { cost_entry.created_at }
     let(:json_path) { 'createdAt' }
   end
 
   it_behaves_like 'has UTC ISO 8601 date and time' do
-    let(:date) { cost_entry.updated_on }
+    let(:date) { cost_entry.updated_at }
     let(:json_path) { 'updatedAt' }
   end
 end

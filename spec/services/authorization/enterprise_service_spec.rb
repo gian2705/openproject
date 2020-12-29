@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -38,7 +38,7 @@ describe Authorization::EnterpriseService do
 
     token
   end
-  let(:token) { mock_model(EnterpriseToken, token_object: token_object) }
+  let(:token) { double('EnterpriseToken', token_object: token_object) }
   let(:instance) { described_class.new(token) }
   let(:result) { instance.call(action) }
   let(:action) { :an_action }

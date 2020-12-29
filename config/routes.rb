@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -41,7 +42,10 @@ OpenProject::Application.routes.draw do
   get '/issues(/)'    => redirect("#{rails_relative_url_root}/work_packages")
   # The URI.escape doesn't escape / unless you ask it to.
   # see https://github.com/rails/rails/issues/5688
-  get '/issues/*rest' => redirect { |params, _req| "#{rails_relative_url_root}/work_packages/#{URI.escape(params[:rest])}" }
+  get '/issues/*rest' => redirect { |params, _req|
+    "#{rails_relative_url_root}/work_packages/#{URI::RFC2396_Parser.new.escape(params[:rest])}"
+  }
+
 
   # Respond with 410 gone for APIV2 calls
   match '/api/v2(/*unmatched_route)', to: proc { [410, {}, ['']] }, via: :all
@@ -49,7 +53,9 @@ OpenProject::Application.routes.draw do
 
   # Redirect wp short url for work packages to full URL
   get '/wp(/)'    => redirect("#{rails_relative_url_root}/work_packages")
-  get '/wp/*rest' => redirect { |params, _req| "#{rails_relative_url_root}/work_packages/#{URI.escape(params[:rest])}" }
+  get '/wp/*rest' => redirect { |params, _req|
+    "#{rails_relative_url_root}/work_packages/#{URI::RFC2396_Parser.new.escape(params[:rest])}"
+  }
 
   # Add catch method for Rack OmniAuth to allow route helpers
   # Note: This renders a 404 in rails but is caught by omniauth in Rack before
@@ -61,7 +67,7 @@ OpenProject::Application.routes.draw do
   # forward requests to the proxy
   if FrontendAssetHelper.assets_proxied?
     match '/assets/frontend/*appendix',
-          to: redirect("http://localhost:4200/assets/frontend/%{appendix}", status: 307),
+          to: redirect(FrontendAssetHelper.cli_proxy + "/assets/frontend/%{appendix}", status: 307),
           format: false,
           via: :all
   end
@@ -91,7 +97,7 @@ OpenProject::Application.routes.draw do
   # returned for all routes for which the v3 has also resources. Grape does
   # remove the prefix (v3) before checking whether the method is supported. I
   # don't understand why that should make sense.
-  mount API::Root => '/'
+  mount API::Root => '/api'
 
   # OAuth authorization routes
   use_doorkeeper do
@@ -163,15 +169,10 @@ OpenProject::Application.routes.draw do
 
   resources :projects, except: %i[show edit] do
     member do
-      # this route let's you access the project specific settings (by tab)
-      #
-      #   settings_project_path(@project)
-      #     => "/projects/1/settings"
-      #
-      #   settings_project_path(@project, tab: 'members')
-      #     => "/projects/1/settings/members"
-      #
-      get 'settings(/:tab)', controller: 'project_settings', action: 'show', as: :settings
+      ProjectSettingsHelper.project_settings_tabs.each do |tab|
+        get "settings/#{tab[:name]}", controller: "project_settings/#{tab[:name]}", action: 'show', as: "settings_#{tab[:name]}"
+      end
+      get "settings", controller: "project_settings/generic", action: 'show', as: "project_settings"
 
       get 'identifier', action: 'identifier'
       patch 'identifier', action: 'update_identifier'
@@ -180,6 +181,7 @@ OpenProject::Application.routes.draw do
             constraints: { coming_from: /(admin|settings)/ }
       match 'copy_from_(:coming_from)' => 'copy_projects#copy', via: :post, as: :copy,
             constraints: { coming_from: /(admin|settings)/ }
+
       put :modules
       put :custom_fields
       put :archive
@@ -196,7 +198,7 @@ OpenProject::Application.routes.draw do
       get :level_list
     end
 
-    resource :enumerations, controller: 'project_enumerations', only: %i[update destroy]
+    resource :time_entry_activities, controller: 'projects/time_entry_activities', only: %i[update]
 
     resources :versions, only: %i[new create] do
       collection do
@@ -210,11 +212,6 @@ OpenProject::Application.routes.draw do
     match '/roadmap' => 'versions#index', via: :get
 
     resources :news, only: %i[index new create]
-
-    namespace :time_entries do
-      resource :report, controller: 'reports', only: [:show]
-    end
-    resources :time_entries, controller: 'timelog', except: [:show]
 
     # Match everything to be the ID of the wiki page except the part that
     # is reserved for the format. This assumes that we have only two formats:
@@ -284,8 +281,7 @@ OpenProject::Application.routes.draw do
 
     resources :members, only: %i[index create update destroy], shallow: true do
       collection do
-        get :paginate_users
-        match :autocomplete_for_member, via: %i[get post]
+        match :autocomplete_for_member, via: %i[get]
       end
     end
 
@@ -343,6 +339,10 @@ OpenProject::Application.routes.draw do
     resource :announcements, only: %i[edit update]
     constraints(Enterprise) do
       resource :enterprise, only: %i[show create destroy]
+      scope controller: 'enterprises' do
+        post 'enterprise/save_trial_key' => 'enterprises#save_trial_key'
+        delete 'enterprise/delete_trial_key' => 'enterprises#delete_trial_key'
+      end
     end
     resources :enumerations
 
@@ -351,6 +351,7 @@ OpenProject::Application.routes.draw do
     delete 'design/touch_icon' => 'custom_styles#touch_icon_delete', as: 'custom_style_touch_icon_delete'
     get 'design/upsale' => 'custom_styles#upsale', as: 'custom_style_upsale'
     post 'design/colors' => 'custom_styles#update_colors', as: 'update_design_colors'
+    post 'design/themes' => 'custom_styles#update_themes', as: 'update_design_themes'
     resource :custom_style, only: %i[update show create], path: 'design'
 
     resources :attribute_help_texts, only: %i(index new create edit update destroy)
@@ -387,11 +388,21 @@ OpenProject::Application.routes.draw do
     end
   end
 
-  # We should fix this crappy routing (split up and rename controller methods)
-  get '/settings' => 'settings#index'
-  scope 'settings', controller: 'settings' do
-    match 'edit', action: 'edit', via: %i[get post]
-    match 'plugin/:id', action: 'plugin', via: %i[get post]
+  namespace :admin do
+    resource :incoming_mails, only: %i[show update]
+    resource :mail_notifications, only: %i[show update]
+  end
+
+  resource :settings, only: %i(update show) do
+    SettingsHelper.system_settings_tabs.each do |tab|
+      get tab[:name], controller: "settings/#{tab[:name]}", action: 'show', as: "#{tab[:name]}"
+      patch tab[:name], controller: "settings/#{tab[:name]}", action: 'update', as: "update_#{tab[:name]}"
+    end
+
+    # We should fix this crappy routing (split up and rename controller methods)
+    collection do
+      match 'plugin/:id', action: 'plugin', via: %i[get post]
+    end
   end
 
   resource :workflows, only: %i[edit update show] do
@@ -416,19 +427,11 @@ OpenProject::Application.routes.draw do
   end
 
   resources :work_packages, only: [:index] do
-    get :column_data, on: :collection # TODO move to API
-
     # move bulk of wps
     get 'move/new' => 'work_packages/moves#new', on: :collection, as: 'new_move'
     post 'move' => 'work_packages/moves#create', on: :collection, as: 'move'
     # move individual wp
     resource :move, controller: 'work_packages/moves', only: %i[new create]
-
-    # this duplicate mapping is required for the timelog_helper
-    namespace :time_entries do
-      resource :report, controller: 'reports'
-    end
-    resources :time_entries, controller: 'timelog'
 
     # states managed by client-side routing on work_package#index
     get 'details/*state' => 'work_packages#index', on: :collection, as: :details
@@ -437,7 +440,8 @@ OpenProject::Application.routes.draw do
     get '/' => 'work_packages#index', on: :collection, as: 'index'
     get '/create_new' => 'work_packages#index', on: :collection, as: 'new_split'
     get '/new' => 'work_packages#index', on: :collection, as: 'new', state: 'new'
-    get '(/*state)' => 'work_packages#show', on: :member, as: ''
+    # We do not want to match the work package export routes
+    get '(/*state)' => 'work_packages#show', on: :member, as: '', constraints: { id: /\d+/ }
     get '/edit' => 'work_packages#show', on: :member, as: 'edit'
   end
 
@@ -446,13 +450,6 @@ OpenProject::Application.routes.draw do
       get :status_by
     end
   end
-
-  namespace :time_entries do
-    resource :report, controller: 'reports',
-                      only: [:show]
-  end
-
-  resources :time_entries, controller: 'timelog'
 
   resources :activity, :activities, only: :index, controller: 'activities'
 
@@ -559,12 +556,6 @@ OpenProject::Application.routes.draw do
       post :move
     end
   end
-
-  # This route should probably be removed, but it's used at least by one cuke and we don't
-  # want to break it.
-  # This route intentionally occurs after the admin/roles/new route, so that one takes
-  # precedence when creating routes (possibly via helpers).
-  get 'roles/new' => 'roles#new', as: 'deprecated_roles_new'
 
   get '/robots' => 'homescreen#robots', defaults: { format: :txt }
 

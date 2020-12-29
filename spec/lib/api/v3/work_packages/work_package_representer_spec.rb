@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -39,21 +39,49 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
   end
   let(:parent) { nil }
   let(:priority) { FactoryBot.build_stubbed(:priority, updated_at: Time.now) }
+  let(:assignee) { nil }
+  let(:responsible) { nil }
+  let(:schedule_manually) { nil }
+  let(:start_date) { Date.today.to_datetime }
+  let(:due_date) { Date.today.to_datetime }
+  let(:type_milestone) { false }
+  let(:estimated_hours) { nil }
+  let(:derived_estimated_hours) { nil }
+  let(:spent_hours) { 0 }
+  let(:derived_start_date) { Date.today - 4.days }
+  let(:derived_due_date) { Date.today - 5.days }
+  let(:budget) { FactoryBot.build_stubbed(:budget, project: project) }
   let(:work_package) do
     FactoryBot.build_stubbed(:stubbed_work_package,
-                             id: 42,
-                             start_date: Date.today.to_datetime,
-                             due_date: Date.today.to_datetime,
+                             schedule_manually: schedule_manually,
+                             start_date: start_date,
+                             due_date: due_date,
                              done_ratio: 50,
-                             estimated_hours: 6.0,
                              parent: parent,
                              type: type,
                              project: project,
                              priority: priority,
+                             assigned_to: assignee,
+                             responsible: responsible,
+                             estimated_hours: estimated_hours,
+                             derived_estimated_hours: derived_estimated_hours,
+                             budget: budget,
                              status: status) do |wp|
       allow(wp)
         .to receive(:available_custom_fields)
         .and_return(available_custom_fields)
+
+      allow(wp)
+        .to receive(:spent_hours)
+        .and_return(spent_hours)
+
+      allow(wp)
+        .to receive(:derived_start_date)
+        .and_return(derived_start_date)
+
+      allow(wp)
+        .to receive(:derived_due_date)
+        .and_return(derived_due_date)
     end
   end
   let(:all_permissions) do
@@ -73,12 +101,18 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
   end
   let(:permissions) { all_permissions }
   let(:project) { FactoryBot.build_stubbed(:project_with_types) }
-  let(:type) { project.types.first }
+  let(:type) do
+    type = project.types.first
+
+    type.is_milestone = type_milestone
+
+    type
+  end
   let(:status) { FactoryBot.build_stubbed(:status, updated_at: Time.now) }
   let(:available_custom_fields) { [] }
 
   before(:each) do
-    allow(User).to receive(:current).and_return current_user
+    login_as current_user
 
     allow(current_user)
       .to receive(:allowed_to?) do |permission, _context|
@@ -99,17 +133,41 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
       it_behaves_like 'API V3 formattable', 'description' do
         let(:format) { 'markdown' }
         let(:raw) { work_package.description }
-        let(:html) { '<p>' + work_package.description + '</p>' }
+        let(:html) { '<p class="op-uc-p">' + work_package.description + '</p>' }
+      end
+
+      describe 'scheduleManually' do
+        context 'no value' do
+          it 'renders as false (default value)' do
+            is_expected.to be_json_eql(false.to_json).at_path('scheduleManually')
+          end
+        end
+
+        context 'false' do
+          let(:schedule_manually) { false }
+
+          it 'renders as false' do
+            is_expected.to be_json_eql(false.to_json).at_path('scheduleManually')
+          end
+        end
+
+        context 'true' do
+          let(:schedule_manually) { true }
+
+          it 'renders as true' do
+            is_expected.to be_json_eql(true.to_json).at_path('scheduleManually')
+          end
+        end
       end
 
       describe 'startDate' do
         it_behaves_like 'has ISO 8601 date only' do
-          let(:date) { work_package.start_date }
+          let(:date) { start_date }
           let(:json_path) { 'startDate' }
         end
 
         context 'no start date' do
-          let(:work_package) { FactoryBot.build(:work_package, id: 42, start_date: nil) }
+          let(:start_date) { nil }
 
           it 'renders as null' do
             is_expected.to be_json_eql(nil.to_json).at_path('startDate')
@@ -117,14 +175,7 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
         end
 
         context 'when the work package has a milestone type' do
-          let(:milestone_type) do
-            FactoryBot.build_stubbed(:type,
-                                     is_milestone: true)
-          end
-
-          before do
-            work_package.type = milestone_type
-          end
+          let(:type_milestone) { true }
 
           it 'has no startDate' do
             is_expected.to_not have_json_path('startDate')
@@ -133,28 +184,23 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
       end
 
       describe 'dueDate' do
-        it_behaves_like 'has ISO 8601 date only' do
-          let(:date) { work_package.due_date }
-          let(:json_path) { 'dueDate' }
-        end
+        context 'with a non milestone type' do
+          it_behaves_like 'has ISO 8601 date only' do
+            let(:date) { work_package.due_date }
+            let(:json_path) { 'dueDate' }
+          end
 
-        context 'no finish date' do
-          let(:work_package) { FactoryBot.build(:work_package, id: 42, due_date: nil) }
+          context 'no finish date' do
+            let(:due_date) { nil }
 
-          it 'renders as null' do
-            is_expected.to be_json_eql(nil.to_json).at_path('dueDate')
+            it 'renders as null' do
+              is_expected.to be_json_eql(nil.to_json).at_path('dueDate')
+            end
           end
         end
 
-        context 'when the work package has a milestone type' do
-          let(:milestone_type) do
-            FactoryBot.build_stubbed(:type,
-                                     is_milestone: true)
-          end
-
-          before do
-            work_package.type = milestone_type
-          end
+        context 'with a milestone type' do
+          let(:type_milestone) { true }
 
           it 'has no startDate' do
             is_expected.to_not have_json_path('dueDate')
@@ -163,42 +209,78 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
       end
 
       describe 'date' do
-        let(:milestone_type) do
-          FactoryBot.build_stubbed(:type,
-                                   is_milestone: true)
-        end
+        context 'with a milestone type' do
+          let(:type_milestone) { true }
 
-        before do
-          work_package.type = milestone_type
-        end
-
-        it_behaves_like 'has ISO 8601 date only' do
-          let(:date) { work_package.due_date } # could just as well be start_date
-          let(:json_path) { 'date' }
-        end
-
-        context 'no finish date' do
-          before do
-            work_package.due_date = nil
+          it_behaves_like 'has ISO 8601 date only' do
+            let(:date) { due_date } # could just as well be start_date
+            let(:json_path) { 'date' }
           end
 
-          it 'renders as null' do
-            is_expected.to be_json_eql(nil.to_json).at_path('date')
+          context 'no finish date' do
+            let(:due_date) { nil }
+
+            it 'renders as null' do
+              is_expected.to be_json_eql(nil.to_json).at_path('date')
+            end
           end
         end
 
-        context 'when the work package has a non milestone type' do
-          let(:none_milestone_type) do
-            FactoryBot.build_stubbed(:type,
-                                     is_milestone: false)
-          end
-
-          before do
-            work_package.type = none_milestone_type
-          end
-
+        context 'with a milestone type' do
           it 'has no date' do
             is_expected.to_not have_json_path('date')
+          end
+        end
+      end
+
+      describe 'derivedStartDate' do
+        it_behaves_like 'has ISO 8601 date only' do
+          let(:date) { derived_start_date }
+          let(:json_path) { 'derivedStartDate' }
+        end
+
+        context 'no derived start date' do
+          let(:derived_start_date) { nil }
+
+          it 'renders as null' do
+            is_expected
+              .to be_json_eql(nil.to_json)
+              .at_path('derivedStartDate')
+          end
+        end
+
+        context 'when the work package has a milestone type' do
+          let(:type_milestone) { true }
+
+          it 'has no derivedStartDate' do
+            is_expected
+              .to_not have_json_path('derivedStartDate')
+          end
+        end
+      end
+
+      describe 'derivedDueDate' do
+        it_behaves_like 'has ISO 8601 date only' do
+          let(:date) { derived_due_date }
+          let(:json_path) { 'derivedDueDate' }
+        end
+
+        context 'no derived due date' do
+          let(:derived_due_date) { nil }
+
+          it 'renders as null' do
+            is_expected
+              .to be_json_eql(nil.to_json)
+                    .at_path('derivedDueDate')
+          end
+        end
+
+        context 'when the work package has a milestone type' do
+          let(:type_milestone) { true }
+
+          it 'has no derivedDueDate' do
+            is_expected
+              .to_not have_json_path('derivedDueDate')
           end
         end
       end
@@ -229,61 +311,20 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
     end
 
     describe 'estimatedTime' do
-      let(:work_package) do
-        FactoryBot.build_stubbed(:work_package,
-                                 id: 42,
-                                 created_at: DateTime.now,
-                                 updated_at: DateTime.now,
-                                 estimated_hours: 6.5)
-      end
+      let(:estimated_hours) { 6.5 }
 
       it { is_expected.to be_json_eql('PT6H30M'.to_json).at_path('estimatedTime') }
     end
 
     describe 'derivedEstimatedTime' do
-      let(:work_package) do
-        FactoryBot.build_stubbed(:work_package,
-                                 id: 42,
-                                 created_at: DateTime.now,
-                                 updated_at: DateTime.now,
-                                 derived_estimated_hours: 3.75)
-      end
+      let(:derived_estimated_hours) { 3.75 }
 
       it { is_expected.to be_json_eql('PT3H45M'.to_json).at_path('derivedEstimatedTime') }
     end
 
     describe 'spentTime' do
-      describe '#content' do
-        context 'no view_time_entries permission' do
-          let(:permissions) { all_permissions - [:view_time_entries] }
-
-          it { is_expected.not_to have_json_path('spentTime') }
-        end
-
-        context 'no time entry' do
-          it { is_expected.to be_json_eql('PT0S'.to_json).at_path('spentTime') }
-        end
-
-        context 'time entry with single hour' do
-          before do
-            allow(work_package)
-              .to receive(:spent_hours)
-              .and_return(1.0)
-          end
-
-          it { is_expected.to be_json_eql('PT1H'.to_json).at_path('spentTime') }
-        end
-
-        context 'time entry with multiple hours' do
-          before do
-            allow(work_package)
-              .to receive(:spent_hours)
-              .and_return(42.5)
-          end
-
-          it { is_expected.to be_json_eql('P1DT18H30M'.to_json).at_path('spentTime') }
-        end
-      end
+      # spentTime is completely overwritten by costs
+      # TODO: move specs from costs to here
     end
 
     describe 'percentageDone' do
@@ -396,9 +437,7 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
 
       describe 'assignee' do
         context 'is user' do
-          let(:work_package) do
-            FactoryBot.build(:work_package, id: 42, assigned_to: FactoryBot.build_stubbed(:user))
-          end
+          let(:assignee) { FactoryBot.build_stubbed(:user) }
 
           it_behaves_like 'has a titled link' do
             let(:link) { 'assignee' }
@@ -408,9 +447,7 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
         end
 
         context 'is group' do
-          let(:work_package) do
-            FactoryBot.build(:work_package, id: 42, assigned_to: FactoryBot.build_stubbed(:group))
-          end
+          let(:assignee) { FactoryBot.build_stubbed(:group) }
 
           it_behaves_like 'has a titled link' do
             let(:link) { 'assignee' }
@@ -428,9 +465,7 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
 
       describe 'responsible' do
         context 'is user' do
-          let(:work_package) do
-            FactoryBot.build(:work_package, id: 42, responsible: FactoryBot.build_stubbed(:user))
-          end
+          let(:responsible) { FactoryBot.build_stubbed(:user) }
 
           it_behaves_like 'has a titled link' do
             let(:link) { 'responsible' }
@@ -440,9 +475,7 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
         end
 
         context 'is group' do
-          let(:work_package) do
-            FactoryBot.build(:work_package, id: 42, responsible: FactoryBot.build_stubbed(:group))
-          end
+          let(:responsible) { FactoryBot.build_stubbed(:group) }
 
           it_behaves_like 'has a titled link' do
             let(:link) { 'responsible' }
@@ -481,7 +514,7 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
           let!(:version) { FactoryBot.create :version, project: project }
 
           before do
-            work_package.fixed_version = version
+            work_package.version = version
           end
 
           it_behaves_like 'has a titled link' do
@@ -554,6 +587,36 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
         it 'has the priority embedded' do
           is_expected.to be_json_eql('Priority'.to_json).at_path('_embedded/priority/_type')
           is_expected.to be_json_eql(priority.name.to_json).at_path('_embedded/priority/name')
+        end
+      end
+
+      describe 'budget' do
+        context 'with the user having the view_budgets permission' do
+          let(:permissions) { [:view_budgets] }
+
+          it_behaves_like 'has a titled link' do
+            let(:link) { 'budget' }
+            let(:href) { "/api/v3/budgets/#{budget.id}" }
+            let(:title) { budget.subject }
+          end
+
+          it 'has the budget embedded' do
+            is_expected
+              .to be_json_eql(budget.subject.to_json)
+              .at_path('_embedded/budget/subject')
+          end
+        end
+
+        context 'with the user lacking the view_budgets permission' do
+          it 'has no link to the budget' do
+            is_expected
+              .not_to have_json_path('_links/budget')
+          end
+
+          it 'has no budget embedded' do
+            is_expected
+              .not_to have_json_path('_embedded/budget')
+          end
         end
       end
 
@@ -686,10 +749,6 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
             let(:link) { 'watchers' }
             let(:href) { api_v3_paths.work_package_watchers work_package.id }
           end
-
-          it 'embeds the watchers as collection' do
-            is_expected.to be_json_eql('Collection'.to_json).at_path('_embedded/watchers/_type')
-          end
         end
 
         context 'when the user is not allowed to see watchers' do
@@ -737,17 +796,23 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
         end
       end
 
-      context 'when the user has the permission to view time entries' do
-        it 'should have a link to add child' do
-          expect(subject).to have_json_path('_links/timeEntries/href')
+      context 'timeEntries' do
+        context 'when the user has the permission to view time entries' do
+          it_behaves_like 'has a titled link' do
+            let(:link) { 'timeEntries' }
+            let(:href) do
+              api_v3_paths.path_for(:time_entries, filters: [{ work_package_id: { operator: "=", values: [work_package.id.to_s] } }])
+            end
+            let(:title) { 'Time entries' }
+          end
         end
-      end
 
-      context 'when the user does not have the permission to view time entries' do
-        let(:permissions) { all_permissions - [:view_time_entries] }
+        context 'when the user does not have the permission to view time entries' do
+          let(:permissions) { all_permissions - [:view_time_entries] }
 
-        it 'should not have a link to timeEntries' do
-          expect(subject).not_to have_json_path('_links/timeEntries/href')
+          it 'should not have a link to timeEntries' do
+            expect(subject).not_to have_json_path('_links/timeEntries/href')
+          end
         end
       end
 
@@ -872,6 +937,7 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
         it_behaves_like 'action link' do
           let(:action) { 'logTime' }
           let(:permission) { :log_time }
+          let(:href) { api_v3_paths.time_entries }
         end
       end
 
@@ -934,7 +1000,7 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
         it_behaves_like 'action link' do
           let(:action) { 'customFields' }
           let(:permission) { :edit_project }
-          let(:href) { settings_project_path(work_package.project.identifier, tab: 'custom_fields') }
+          let(:href) { settings_custom_fields_project_path(work_package.project.identifier) }
         end
       end
 
@@ -1007,7 +1073,7 @@ describe ::API::V3::WorkPackages::WorkPackageRepresenter do
 
         before do
           allow(work_package)
-            .to receive_message_chain(:visible_relations, :non_hierarchy, :includes)
+            .to receive_message_chain(:visible_relations, :direct, :non_hierarchy, :includes)
             .and_return([relation])
         end
 

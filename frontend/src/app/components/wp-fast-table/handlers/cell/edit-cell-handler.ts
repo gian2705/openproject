@@ -1,20 +1,21 @@
 import {Injector} from '@angular/core';
 import {debugLog} from '../../../../helpers/debug_output';
 import {States} from '../../../states.service';
-import {displayClassName, editableClassName, readOnlyClassName} from '../../../wp-edit-form/display-field-renderer';
+import {displayClassName, editableClassName, readOnlyClassName} from 'core-app/modules/fields/display/display-field-renderer';
 
 import {HalResourceEditingService} from "core-app/modules/fields/edit/services/hal-resource-editing.service";
 import {tableRowClassName} from '../../builders/rows/single-row-builder';
 import {WorkPackageTable} from '../../wp-fast-table';
 import {ClickOrEnterHandler} from '../click-or-enter-handler';
-import {TableEventHandler} from '../table-handler-registry';
+import {TableEventComponent, TableEventHandler} from '../table-handler-registry';
 import {ClickPositionMapper} from "core-app/modules/common/set-click-position/set-click-position";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 export class EditCellHandler extends ClickOrEnterHandler implements TableEventHandler {
 
   // Injections
-  public states:States = this.injector.get(States);
-  public halEditing:HalResourceEditingService = this.injector.get(HalResourceEditingService);
+  @InjectField() public states:States;
+  @InjectField() public halEditing:HalResourceEditingService;
 
   // Keep a reference to all
 
@@ -26,11 +27,11 @@ export class EditCellHandler extends ClickOrEnterHandler implements TableEventHa
     return `.${displayClassName}.${editableClassName}`;
   }
 
-  public eventScope(table:WorkPackageTable) {
-    return jQuery(table.tableAndTimelineContainer);
+  public eventScope(view:TableEventComponent) {
+    return jQuery(view.workPackageTable.tableAndTimelineContainer);
   }
 
-  constructor(public readonly injector:Injector, table:WorkPackageTable) {
+  constructor(public readonly injector:Injector) {
     super();
   }
 

@@ -1,6 +1,6 @@
 #-- copyright
-#OpenProject is a project management system.
-#Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License version 3.
 #OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
@@ -28,34 +28,57 @@ ca:
     plugins:
       no_results_title_text: Actualment no hi ha plugins disponibles.
     custom_styles:
+      color_theme: "Color del tema"
+      color_theme_custom: "(Personalitza)"
+      colors:
+        alternative-color: "Alternatiu"
+        content-link-color: "Font enllaçada"
+        primary-color: "Primari"
+        primary-color-dark: "Primari (fosc)"
+        header-bg-color: "Fons de capçalera"
+        header-item-bg-hover-color: "Fons de capçalera en l'aire"
+        header-item-font-color: "Font de capçalera"
+        header-item-font-hover-color: "Font de capçalera en l'aire"
+        header-border-bottom-color: "Vora de capçalera"
+        main-menu-bg-color: "Fons del menú principal"
+        main-menu-bg-selected-background: "Menú principal un cop seleccionat"
+        main-menu-bg-hover-background: "Menú principal en l'aire"
+        main-menu-font-color: "Font del menú principal"
+        main-menu-selected-font-color: "Font del menú principal un cop seleccionat"
+        main-menu-hover-font-color: "Font del menú principal en l'aire"
+        main-menu-border-color: "Vora del menú principal"
       custom_colors: "Colors personalitzats"
       customize: "Adapteu la vostra instal·lació d'OpenProject amb el vostre logo. Nota: aquest logo serà accessible públicament."
       enterprise_notice: "As a special 'Thank you!' for their financial contribution to develop OpenProject, this tiny feature is only available for Enterprise Edition support subscribers."
       manage_colors: "Edita les opcions de selecció de colors"
       instructions:
-        alternative_color: "Strong accent color, typically used for most the important button on a screen."
-        content_link_color: "Color de lletra de la majoria dels enllaços."
-        primary_color: "Color principal."
-        primary_color_dark: "Typically a darker version of the main color used for hover effects."
-        header_bg_color: "Color de fons de la capçalera."
-        header_item_bg_hover_color: "Color de fons dels elements clicables de la capçalera quan el ratolí hi passa per damunt."
-        header_item_font_color: "Color de lletra dels elements clicables de la capçalera."
-        header_item_font_hover_color: "Color de lletra dels elements clicables de la capçalera quan el ratolí hi passa per damunt."
-        header_border_bottom_color: "Thin line under the header. Leave this field empty if you don't want any line."
-        main_menu_bg_color: "Left side menu's background color."
+        alternative-color: "Color d'accent fort, típicament utilitzat per al botó més important de la pantalla."
+        content-link-color: "Color de lletra de la majoria dels enllaços."
+        primary-color: "Color principal."
+        primary-color-dark: "Typically a darker version of the main color used for hover effects."
+        header-item-bg-hover-color: "Color de fons dels elements clicables de la capçalera quan el ratolí hi passa per damunt."
+        header-item-font-color: "Color de lletra dels elements clicables de la capçalera."
+        header-item-font-hover-color: "Color de lletra dels elements clicables de la capçalera quan el ratolí hi passa per damunt."
+        header-border-bottom-color: "Thin line under the header. Leave this field empty if you don't want any line."
+        main-menu-bg-color: "Left side menu's background color."
+      theme_warning: Changing the theme will overwrite you custom style. The design will then be lost. Are you sure you want to continue?
     enterprise:
-      upgrade_to_ee: "Actualitza a l'Enterprise Edition"
+      upgrade_to_ee: "Upgrade to the Enterprise Edition"
       add_token: "Puja un token de suport de l'Enterprise Edition"
       replace_token: "Reemplaça el token de suport actual"
       order: "Encarrega l'Enterprice Edition"
       paste: "Enganxeu el vostre token de suport de l'Enterprise Edition"
       required_for_feature: "Aquesta característica només està disponible amb un token de suport de l'Enterprise Edition."
       enterprise_link: "Per a més informació, cliqueu aquí."
+      start_trial: 'Start free trial'
+      book_now: 'Book now'
+      get_quote: 'Get a quote'
   announcements:
     show_until: Mostra fins
     is_active: actualment mostrant
     is_inactive: actualment no es mostren
   attribute_help_texts:
+    note_public: 'Any text and images you add to this field is publically visible to all logged in users!'
     text_overview: 'In this view, you can create custom help texts for attributes view. When defined, these texts can be shown by clicking the help icon next to its belonging attribute.'
     label_plural: 'Attribute help texts'
     show_preview: 'Preview text'
@@ -65,8 +88,53 @@ ca:
     index:
       no_results_content_title: Actualment no hi ha cap mode d'autenticació.
       no_results_content_text: Crear un nou mode d'autenticació
+  background_jobs:
+    status:
+      error_requeue: "Job experienced an error but is retrying. The error was: %{message}"
+      cancelled_due_to: "Job was cancelled due to error: %{message}"
   ldap_auth_sources:
+    technical_warning_html: |
+      This LDAP form requires technical knowledge of your LDAP / Active Directory setup.
+      <br/>
+      <a href="https://www.openproject.org/help/administration/manage-ldap-authentication/">Please visit our documentation for detailed instructions</a>.
+    attribute_texts:
+      name: Arbitrary name of the LDAP connection
+      host: LDAP host name or IP address
+      login_map: The attribute key in LDAP that is used to identify the unique user login. Usually, this will be `uid` or `samAccountName`.
+      generic_map: The attribute key in LDAP that is mapped to the OpenProject `%{attribute}` attribute
+      admin_map_html: "Optional: The attribute key in LDAP that <strong>if present</strong> marks the OpenProject user an admin. Leave empty when in doubt."
+      system_user_dn_html: |
+        Enter the DN of the system user used for read-only access.
+        <br/>
+        Example: uid=openproject,ou=system,dc=example,dc=com
+      system_user_password: Enter the bind password of the system user
+      base_dn: |
+        Enter the Base DN of the subtree in LDAP you want OpenProject to look for users and groups.
+        OpenProject will filter for provided usernames in this subtree only.
+        Example: ou=users,dc=example,dc=com
+      filter_string: |
+        Add an optional RFC4515 filter to apply to the results returned for users filtered in the LDAP.
+        This can be used to restrict the set of users that are found by OpenProject for authentication and group synchronization.
+      filter_string_concat: |
+        OpenProject will always filter for the login attribute provided by the user to identify the record. If you provide a filter here,
+        it will be concatenated with an AND. By default, a catch-all (objectClass=*) will be used as a filter.
+      onthefly_register: |
+        If you check this box, OpenProject will automatically create new users from their LDAP entries
+        when they first authenticate with OpenProject.
+        Leave this unchecked to only allow existing accounts in OpenProject to authenticate through LDAP!
+      onthefly_group_sync: |
+        If you enable group synchronization for this LDAP connection, users will also be automatically created
+        in OpenProject for synchronized groups. Without it, only existing accounts in OpenProject will be added to groups.
     connection_encryption: 'Connection encryption'
+    system_account: 'System account'
+    system_account_legend: |
+      OpenProject requires read-only access through a system account to lookup users and groups in your LDAP tree.
+      Please specify the bind credentials for that system user in the following section.
+    ldap_details: 'LDAP details'
+    user_settings: 'Attribute mapping'
+    user_settings_legend: |
+      The following fields are related to how users are created in OpenProject from LDAP entries and
+      what LDAP attributes are used to define the attributes of an OpenProject user (attribute mapping).
     tls_mode:
       plain: 'cap'
       simple_tls: 'simple_tls'
@@ -110,8 +178,6 @@ ca:
       no_results_content_text: Crear un camp personalitzat nou
   concatenation:
     single: 'o'
-  deprecations:
-    time_entries: "This time entries view is superseded by the 'Cost reports' module. This view now only supports exporting time entry information to csv. For interactive filtering, please activate the 'Cost reports' module in the project settings."
   global_search:
     overwritten_tabs:
       wiki_pages: "Wiki"
@@ -136,6 +202,9 @@ ca:
       completed: "Deletion of project %{name} completed"
       completed_text: "The request to delete project '%{name}' has been completed."
     index:
+      open_as_gantt: 'Open as Gantt view'
+      open_as_gantt_title: "Use this button to generate a Gantt view that filters work packages for the projects visible on this page."
+      open_as_gantt_title_admin: "You can modify the view settings (such as selected work package types) in the administration under project settings."
       no_results_title_text: Actualment no hi ha projectes
       no_results_content_text: Crear un nou projecte
     settings:
@@ -169,6 +238,9 @@ ca:
       no_results_title_text: Actualment no hi ha cap novetat per a informar.
       no_results_content_text: Afegir una notícia
   users:
+    groups:
+      member_in_these_groups: 'This user is currently a member of the following groups:'
+      no_results_title_text: This user is currently not a member in any group.
     memberships:
       no_results_title_text: Aquest usuari no és actualment membre de cap projecte.
   prioritiies:
@@ -212,6 +284,7 @@ ca:
     overview:
       no_results_title_text: Actualment no hi ha cap paquet de treball assignat a aquesta versió.
   wiki:
+    page_not_editable_index: The requested page does not (yet) exist. You have been redirected to the index of all wiki pages.
     no_results_title_text: Actualment no hi ha cap pàgina wiki.
     index:
       no_results_content_text: Afegiu una nova pàgina wiki
@@ -221,7 +294,7 @@ ca:
   work_packages:
     x_descendants:
       one: 'One descendant work package'
-      other: '%{count} paquets de treball descendents'
+      other: '%{count} work package descendants'
     bulk:
       could_not_be_saved: "Els següents paquets de treball no s'han pogut desar:"
     move:
@@ -291,11 +364,11 @@ ca:
         account: "Compte"
         attr_firstname: "Atribut Nom"
         attr_lastname: "Atribut Cognom"
-        attr_login: "Username attribute"
+        attr_login: "Atribut Nom d'usuari"
         attr_mail: "Atribut de Correu electrònic"
         base_dn: "Base DN"
         host: "Servidor"
-        onthefly: "Creació d'usuaris «al vol»"
+        onthefly: "Automatic user creation"
         port: "Port"
       changeset:
         repository: "Repositori"
@@ -348,7 +421,8 @@ ca:
         types: "Tipus"
         versions: "Versions"
         work_packages: "Paquets de treball"
-      project/status:
+        templated: 'Template project'
+      projects/status:
         code: 'Estat'
         explanation: 'Status description'
         codes:
@@ -413,12 +487,13 @@ ca:
         done_ratio: "Progrés (%)"
         end_insertion: "Final de la inserció"
         end_deletion: "Final de la supressió"
-        fixed_version: "Versió"
+        version: "Versió"
         parent: "Pare"
         parent_issue: "Pare"
         parent_work_package: "Pare"
         priority: "Prioritat"
         progress: "Progrés (%)"
+        schedule_manually: "Manual scheduling"
         spent_hours: "Temps invertit"
         spent_time: "Temps invertit"
         subproject: "Subprojecte"
@@ -444,10 +519,10 @@ ca:
         cant_link_a_work_package_with_a_descendant: "Un paquet de treball no es pot enllaçar a una de les seves subtasques."
         circular_dependency: "Aquesta relació crearia una dependència circular."
         confirmation: "no coincideix amb el %{attribute}."
-        could_not_be_copied: "no pot ser (completament) copiat."
+        could_not_be_copied: "%{dependency} could not be (fully) copied."
         does_not_exist: "no existeix."
         error_unauthorized: "may not be accessed."
-        error_readonly: "is not writable."
+        error_readonly: "was attempted to be written but is not writable."
         empty: "no pot estar buit."
         even: "ha de ser parell."
         exclusion: "està reservat."
@@ -461,6 +536,7 @@ ca:
         invalid_url: 'is not a valid URL.'
         invalid_url_scheme: 'is not a supported protocol (allowed: %{allowed_schemes}).'
         less_than_or_equal_to: "ha de ser menor o igual a %{count}."
+        not_current_user: "is not the current user."
         not_a_date: "is not a valid date."
         not_a_datetime: "is not a valid date time."
         not_a_number: "no és un número."
@@ -488,6 +564,7 @@ ca:
           not_an_integer: "(%{name}) is not an integer."
           smaller_than_or_equal_to: "(%{name}) must be smaller than or equal to %{count}."
           greater_than_or_equal_to: "(%{name}) must be greater than or equal to %{count}."
+          format: "%{message}"
         doorkeeper/application:
           attributes:
             redirect_uri:
@@ -522,11 +599,25 @@ ca:
               error_not_found: "not found"
             public:
               error_unauthorized: "- The user has no permission to create public views."
+            group_by:
+              invalid: "Can't group by: %{value}"
+              format: "%{message}"
+            column_names:
+              invalid: "Invalid query column: %{value}"
+              format: "%{message}"
+            sort_criteria:
+              invalid: "Can't sort by column: %{value}"
+              format: "%{message}"
           group_by_hierarchies_exclusive: "is mutually exclusive with group by '%{group_by}'. You cannot activate both."
           filters:
             custom_fields:
               inexistent: "There is no custom field for the filter."
               invalid: "The custom field is not valid in the given context."
+        queries/filters/base:
+          attributes:
+            values:
+              inclusion: "filter has invalid values."
+              format: "%{message}"
         relation:
           typed_dag:
             circular_dependency: "The relationship creates a circle of relationships."
@@ -544,8 +635,13 @@ ca:
           must_not_be_ssh: "must not be an SSH url."
           no_directory: "no és un directori."
         role:
-          permissions:
-            dependency_missing: "need to also include '%{dependency}' as '%{permission}' is selected."
+          attributes:
+            permissions:
+              dependency_missing: "need to also include '%{dependency}' as '%{permission}' is selected."
+        time_entry:
+          attributes:
+            hours:
+              day_limit: "es massa gran ja que com a màxim 24 hores per dia poden ser registrades."
         work_package:
           is_not_a_valid_target_for_time_entries: "Treball paquet #%{id} no és un objectiu vàlid per a reassignar les entrades de temps."
           attributes:
@@ -605,6 +701,8 @@ ca:
               unassignable: "cannot be assigned to a project."
         version:
           undeletable_work_packages_attached: "The version cannot be deleted as it has work packages attached to it."
+        status:
+          readonly_default_exlusive: "can not be activated for statuses that are marked default."
       template:
         body: "Si us plau, revisi els camps següents:"
         header:
@@ -656,12 +754,14 @@ ca:
     content: "Contingut"
     color: "Color"
     created_at: "Creat el"
-    created_on: "Creat el"
     custom_options: "Valors possibles"
     custom_values: "Camps personalitzats"
     date: "Data"
     default_columns: "Columnes predeterminades"
     description: "Descripció"
+    derived_due_date: "Derived finish date"
+    derived_estimated_time: "Derived estimated time"
+    derived_start_date: "Derived start date"
     display_sums: "Mostra les sumes"
     due_date: "Finish date"
     estimated_hours: "Temps estimat"
@@ -677,7 +777,7 @@ ca:
     #kept for backwards compatibility
     issue: "Paquet de treball"
     lastname: "Cognom"
-    login: "Username"
+    login: "Nom d'usuari"
     mail: "Correu electrònic"
     name: "Nom"
     password: "Contrasenya"
@@ -695,10 +795,12 @@ ca:
     type: "Tipus"
     updated_at: "Actualitzat el"
     updated_on: "Actualitzat el"
+    uploader: "Puja"
     user: "Usuari"
     version: "Versió"
     work_package: "Paquet de treball"
   button_add: "Afegir"
+  button_add_comment: "Afegeix un comentari"
   button_add_member: Afegir un membre
   button_add_watcher: "Afegir observador"
   button_annotate: "Anotar"
@@ -732,7 +834,6 @@ ca:
   button_generate: "Generar"
   button_list: "Llista"
   button_lock: "Bloquejar"
-  button_log_time: "Temps de registre"
   button_login: "Iniciar sessió"
   button_move: "Moure"
   button_move_and_follow: "Moure i continuar"
@@ -810,6 +911,7 @@ ca:
       - "Oct"
       - "Nov"
       - "Des"
+    abbr_week: 'Wk'
     day_names:
       - "Diumenge"
       - "Dilluns"
@@ -927,6 +1029,7 @@ ca:
   default_role_anonymous: "Anònim"
   default_role_developer: "Desenvolupador"
   default_role_project_admin: "Administrador del projecte"
+  default_role_project_creator: "Project creator"
   default_role_non_member: "No membre"
   default_role_reader: "Lector"
   default_role_member: "Membre"
@@ -949,8 +1052,6 @@ ca:
   description_compare_to: "Compare to"
   description_current_position: "You are here: "
   description_date_from: "Introduir data d'inici"
-  description_date_range_interval: "Escollir un rang seleccionat de dates d'inici i fi"
-  description_date_range_list: "Escollir un rang de la llista"
   description_date_to: "Introduir data final"
   description_enter_number: "Introduïu número"
   description_enter_text: "Introduïu text"
@@ -980,9 +1081,8 @@ ca:
         rename_groups: "Rename attributes groups"
       project_filters:
         description_html: "Filtering and sorting on custom fields is an enterprise edition feature."
-  enumeration_activities: "Activitats (seguidor de temps)"
+  enumeration_activities: "Activitats de rastrejament del temps"
   enumeration_work_package_priorities: "Prioritats dels paquets de treball"
-  enumeration_system_activity: "Activitat del sistema"
   enumeration_reported_project_statuses: "Estats de projecte notificats"
   error_auth_source_sso_failed: "Single Sign-On (SSO) for user '%{value}' failed"
   error_can_not_archive_project: "This project cannot be archived: %{errors}"
@@ -1000,12 +1100,10 @@ ca:
   error_cookie_missing: 'La cookie d''OpenProject no s''ha trobat. Assegureu-vos que les cookies estan habilitades, ja que aquesta aplicació no pot funcionar correctament sense.'
   error_custom_option_not_found: "Option does not exist."
   error_enterprise_activation_user_limit: "Your account could not be activated (user limit reached). Please contact your administrator to gain access."
+  error_enterprise_token_invalid_domain: "The Enterprise Edition is not active. Your Enterprise token's domain (%{actual}) does not match the system's host name (%{expected})."
   error_failed_to_delete_entry: 'Failed to delete this entry.'
   error_in_dependent: "Error attempting to alter dependent object: %{dependent_class} #%{related_id} - %{related_subject}: %{error}"
   error_invalid_selected_value: "Invalid selected value."
-  error_invalid_group_by: "Can't group by: %{value}"
-  error_invalid_query_column: "Invalid query column: %{value}"
-  error_invalid_sort_criterion: "Can't sort by column: %{value}"
   error_journal_attribute_not_present: "Journal does not contain attribute %{attribute}."
   error_pdf_export_too_many_columns: "Too many columns selected for the PDF export. Please reduce the number of columns."
   error_pdf_failed_to_export: "The PDF export could not be saved: %{error}"
@@ -1018,6 +1116,7 @@ ca:
   error_no_default_work_package_status: "No hi ha cap estat de paquet de treball definit per defecte. Comproveu la configuració (\"Administració-> Estats dels paquets de treball\")."
   error_no_type_in_project: "Aquest projecte no té cap tipus associat. Comproveu els paràmetres del projecte."
   error_omniauth_registration_timed_out: "S'ha esgotat el temps d'espera per a la inscripció mitjançant un proveïdor d'autenticació externa. Torneu-ho a provar."
+  error_omniauth_invalid_auth: "The authentication information returned from the identity provider was invalid. Please contact your administrator for further help."
   error_scm_command_failed: "S'ha produït un error en intentar accedir al repositori: %{value}"
   error_scm_not_found: "No s'ha trobat l'entrada o la revisió en el repositori."
   error_unable_delete_status: "No es pot suprimir l'estat del paquet de treball ja que és utilitzat per almenys un paquet de treball."
@@ -1045,6 +1144,8 @@ ca:
     work_package_edit: 'Paquet de treball editat'
     work_package_note: 'Afegida nota al paquet de treball'
   export:
+    your_work_packages_export: "Your work packages export"
+    succeeded: "The export has completed successfully."
     format:
       atom: "Atom"
       csv: "CSV"
@@ -1052,6 +1153,8 @@ ca:
       pdf_with_descriptions: "PDF amb descripcions"
       pdf_with_descriptions_and_attachments: "PDF with descriptions and attachments"
       pdf_with_attachments: "PDF with attachments"
+    image:
+      omitted: "Imatge no exportada."
   extraction:
     available:
       pdftotext: "Pdftotext available (optional)"
@@ -1064,7 +1167,7 @@ ca:
   general_csv_encoding: "UTF-8"
   general_csv_separator: ","
   general_first_day_of_week: "7"
-  general_lang_name: "Anglès"
+  general_lang_name: "Català"
   general_pdf_encoding: "ISO-8859-1"
   general_text_no: "no"
   general_text_yes: "sí"
@@ -1082,13 +1185,8 @@ ca:
     blocks:
       community: "Comunitat OpenProject"
       upsale:
-        become_hero: "Become a hero!"
         title: "Actualitza a l'Enterprise Edition"
-        description: "What are the benefits?"
         more_info: "More information"
-        additional_features: "Additional powerful premium features"
-        professional_support: "Professional support from the OpenProject experts"
-        you_contribute: "Developers need to pay their bills, too. With Enterprise Edition you substantially contribute to this Open-Source community effort."
     links:
       upgrade_enterprise_edition: "Actualitza a l'Enterprise Edition"
       postgres_migration: "Migrating your installation to PostgreSQL"
@@ -1099,8 +1197,13 @@ ca:
       blog: "Blog OpenProject"
       forums: "Fòrum de la comunitat"
       newsletter: "Security alerts / Newsletter"
+  image_conversion:
+    imagemagick: 'Imagemagick'
+  journals:
+    changes_retracted: "The changes were retracted."
   links:
     configuration_guide: 'Configuration guide'
+    get_in_touch: "You have questions? Get in touch with us."
   instructions_after_registration: "Vostè podrà entrar tan aviat com hagi activat el seu compte fent clic a %{signin}."
   instructions_after_logout: "Vostè es pot inscriure altre vegada fent clic a %{signin}."
   instructions_after_error: "Pot intentar iniciar sessió fent clic a %{signin}. Si l'error continua, demaneu ajuda al vostre administrador."
@@ -1232,7 +1335,6 @@ ca:
   label_date_and_time: "Date and time"
   label_date_from: "De"
   label_date_from_to: "Des de %{start} a %{end}"
-  label_date_range: "Interval de dates"
   label_date_to: "Fins"
   label_day_plural: "dies"
   label_default: "Per defecte"
@@ -1240,6 +1342,7 @@ ca:
   label_delete_project: "Delete project"
   label_deleted: "suprimit"
   label_deleted_custom_field: "(camp personalitzat suprimit)"
+  label_deleted_custom_option: "(deleted option)"
   label_descending: "Descendent"
   label_details: "Detalls"
   label_development_roadmap: "Full de ruta de desenvolupament"
@@ -1257,6 +1360,7 @@ ca:
   label_duplicate: "duplicate"
   label_duplicates: "duplicats"
   label_edit: "Editar"
+  label_edit_x: "Edit: %{x}"
   label_enable_multi_select: "Activa/desactiva selecció múltiple"
   label_enabled_project_custom_fields: 'Habilita camps personalitzats'
   label_enabled_project_modules: 'Mòduls habilitats'
@@ -1377,7 +1481,6 @@ ca:
   label_modified: "modificat"
   label_module_plural: "Mòduls"
   label_modules: "Mòduls"
-  label_month: "Mes"
   label_months_from: "mesos des de"
   label_more: "Més"
   label_more_than_ago: "fa més dies"
@@ -1390,6 +1493,7 @@ ca:
   label_new: "Nou"
   label_new_features: "New features"
   label_new_statuses_allowed: "Nous estats permesos"
+  label_news_singular: "Notícies"
   label_news_added: "Notícies afegides"
   label_news_comment_added: "S'ha afegit un comentari a la notícia"
   label_news_latest: "Últimes noticies"
@@ -1404,6 +1508,7 @@ ca:
   label_no_parent_page: "No parent page"
   label_nothing_display: "Res a mostrar"
   label_nobody: "ningú"
+  label_not_found: 'not found'
   label_none: "cap"
   label_none_parentheses: "(cap)"
   label_not_contains: "no conté"
@@ -1418,7 +1523,6 @@ ca:
   label_options: "Opcions"
   label_other: "Altres"
   label_overall_activity: "Activitat global"
-  label_overall_spent_time: "Temps total invertit"
   label_overview: "Visió general"
   label_page_title: "Page title"
   label_part_of: "part of"
@@ -1511,7 +1615,7 @@ ca:
   label_search: "Cercar"
   label_send_information: "Envia la informació del compte a l'usuari"
   label_send_test_email: "Enviar correu electrònic de prova"
-  label_settings: "Configuració"
+  label_setting_plural: "Configuració"
   label_system_settings: "Configuració del Sistema"
   label_show_completed_versions: "Mostra les versions acabades"
   label_sort: "Ordena"
@@ -1547,8 +1651,7 @@ ca:
   label_this_week: "aquesta setmana"
   label_this_year: "aquest any"
   label_time_entry_plural: "Temps invertit"
-  label_time_sheet_menu: "Full de temps"
-  label_time_tracking: "Seguiment de temps"
+  label_projects_menu: "Projectes"
   label_today: "avui"
   label_top_menu: "Menú superior"
   label_topic_plural: "Temes"
@@ -1632,44 +1735,27 @@ ca:
   label_workflow_plural: "Fluxos de treball"
   label_workflow_summary: "Resum"
   label_x_closed_work_packages_abbr:
-    one: "1 tancat"
-    other: "%{count} tancats"
+    zero: "0 tancats"
+    one: ""
+    other: ""
   label_x_comments:
-    one: "1 comentari"
-    other: "%{count} comentaris"
+    zero: "sense comentaris"
+    one: ""
+    other: ""
   label_x_open_work_packages_abbr:
-    one: "1 obert"
-    other: "%{count} oberts"
+    zero: "0 oberts"
+    one: ""
+    other: ""
   label_x_projects:
-    one: "1 projecte"
-    other: "%{count} projectes"
-  label_year: "Any"
+    zero: "sense projectes"
+    one: ""
+    other: ""
   label_yesterday: "ahir"
-  label_keyboard_function: "Funció"
-  label_keyboard_shortcut: "Drecera"
-  label_keyboard_accesskey: "Clau d'accés"
-  label_keyboard_shortcut_help_heading: "Dreceres de teclat disponibles"
-  label_keyboard_shortcut_within_project: "Dreceres relacionades amb el projecte:"
-  label_keyboard_shortcut_global_shortcuts: "Dreceres globals:"
-  label_keyboard_shortcut_some_pages_only: "Dreceres especials:"
-  label_keyboard_shortcut_search_global: "Cerca global"
-  label_keyboard_shortcut_search_project: "Trobar un projecte"
-  label_keyboard_shortcut_go_my_page: "Anar a la meva pàgina"
-  label_keyboard_shortcut_show_help: "Mostra aquest missatge d'ajuda"
-  label_keyboard_shortcut_go_overview: "Anar a la visió general del projecte"
-  label_keyboard_shortcut_go_work_package: "Anar a paquets de treball del projecte"
-  label_keyboard_shortcut_go_wiki: "Anar a la wiki del projecte"
-  label_keyboard_shortcut_go_activity: "Anar a les activitats del projecte"
-  label_keyboard_shortcut_go_calendar: "Anar al calendari del projecte"
-  label_keyboard_shortcut_go_news: "Anar a notícies del projecte"
-  label_keyboard_shortcut_go_timelines: "Anar a terminis"
-  label_keyboard_shortcut_new_work_package: "Crear paquet de treball nou"
-  label_keyboard_shortcut_details_package: "Mostra el panell de detalls de paquets de treball"
-  label_keyboard_shortcut_go_edit: "Anar a editar l'element actual (només en pàgines de detall)"
-  label_keyboard_shortcut_open_more_menu: "Obrir el menú addicional (només en pàgines de detall)"
-  label_keyboard_shortcut_go_preview: "Anar a vista prèvia de l'esició actual (només en pàgines d'edició)"
-  label_keyboard_shortcut_focus_previous_item: "Activar l'element anterior de la llista (només en algunes llistes)"
-  label_keyboard_shortcut_focus_next_item: "Activar l'element següent de la llista (només en algunes llistes)"
+  label_role_type: "Tipus"
+  label_member_role: "Project Role"
+  label_global_role: "Global Role"
+  label_not_changeable: "(not changeable)"
+  label_global: "Global"
   auth_source:
     using_abstract_auth_source: "No podeu utilitzar una font d'autenticació abstracte."
     ldap_error: "Error LDAP: %{error_message}"
@@ -1699,7 +1785,16 @@ ca:
   mail_body_account_information: "Informació del vostre compte"
   mail_body_account_information_external: "Podeu utilitzar el compte «%{value}» per entrar."
   mail_body_lost_password: "Per a canviar la contrasenya, feu clic en l'enllaç següent:"
-  mail_body_register: "Per a activar el compte, feu clic en l'enllaç següent:"
+  mail_body_register: "Welcome to OpenProject. Please activate your account by clicking on this link:"
+  mail_body_register_header_title: "Project member invitation email"
+  mail_body_register_user: "Dear %{name}, "
+  mail_body_register_links_html: |
+    Please feel free to browse our youtube channel (%{youtube_link}) where we provide a webinar (%{webinar_link})
+    and “Get started” videos (%{get_started_link}) to make your first steps in OpenProject as easy as possible.
+    <br />
+    If you have any further questions, consult our documentation (%{documentation_link}) or contact us (%{contact_us_link}).
+  mail_body_register_closing: "Your OpenProject team"
+  mail_body_register_ending: "Stay connected! Kind regards,"
   mail_body_reminder: "%{count} paquet(s) de treball que teniu assignats venceran en els propers %{days} dies:"
   mail_body_group_reminder: "%{count} work package(s) that are assigned to group \"%{group}\" are due in the next %{days} days:"
   mail_body_wiki_content_added: "En %{author} ha afegit la pàgina wiki «%{id}»."
@@ -1776,7 +1871,6 @@ ca:
   notice_successful_delete: "Esborrat correctament."
   notice_successful_update: "S'ha modificat correctament."
   notice_to_many_principals_to_display: "Hi ha massa resultats.\nAfini la cerca escrivint el nom del nou membre (o grup)."
-  notice_unable_delete_time_entry: "No s'ha pogut suprimir l'entrada del registre de temps."
   notice_user_missing_authentication_method: L'usuari encara ha de triar una contrassenya o una altra manera d'iniciar la sessió.
   notice_user_invitation_resent: An invitation has been sent to %{email}.
   present_access_key_value: "El seu %{key_name} és: %{value}"
@@ -1855,7 +1949,7 @@ ca:
   permission_manage_project_activities: "Gestionar les activitats del projecte"
   permission_manage_public_queries: "Manage public views"
   permission_manage_repository: "Gestionar el repositori"
-  permission_manage_subtasks: "Gestionar subtasques"
+  permission_manage_subtasks: "Manage work package hierarchies"
   permission_manage_versions: "Gestionar les versions"
   permission_manage_wiki: "Gestionar la wiki"
   permission_manage_wiki_menu: "Gestionar el menú wiki"
@@ -1890,16 +1984,21 @@ ca:
       warning_one: Els membres del projecte hauran de reubicar els repositoris del projecte.
       warning_two: Els vncles existents al projecte ja no funcionaran.
       title: Canviar l'identificador del projecte
+    template:
+      copying: >
+        Your project is being created from the selected template project. You will be notified by mail as soon as the project is available.
+      use_template: 'Use template'
+      make_template: 'Set as template'
+      remove_from_templates: 'Remove from templates'
     archive:
       are_you_sure: "Esteu segur que voleu arxivar el projecte \"%{name}\"?"
+      archived: "Archived"
   project_module_activity: "Activitat"
   project_module_forums: "Fòrums"
   project_module_calendar: "Calendari"
   project_module_work_package_tracking: "Paquet de treball de seguiment"
   project_module_news: "Notícies"
   project_module_repository: "Repositori"
-  project_module_time_tracking: "Seguiment de temps"
-  project_module_timelines: "Terminis"
   project_module_wiki: "Wiki"
   query:
     attribute_and_direction: "%{attribute} (%{direction})"
@@ -1910,7 +2009,8 @@ ca:
     assigned_to_role: "Rol de l'assignat"
     member_of_group: "Grup de l'assignat"
     assignee_or_group: "Assignee or belonging group"
-    subproject_id: "Subprojecte"
+    subproject_id: "Including Subproject"
+    only_subproject_id: "Only subproject"
     name_or_identifier: "Name or identifier"
   repositories:
     at_identifier: 'a %{identifier}'
@@ -2013,7 +2113,14 @@ ca:
     url: "URL del repositori"
     warnings:
       cannot_annotate: "No es poden fer notes d'aquest fitxer."
+  scheduling:
+    activated: 'activated'
+    deactivated: 'deactivated'
   search_input_placeholder: "Search ..."
+  setting_apiv3_cors_enabled: "Enable CORS"
+  setting_apiv3_cors_origins: "API V3 Cross-Origin Resource Sharing (CORS) allowed origins"
+  setting_apiv3_cors_origins_text_html: >
+    If CORS is enabled, these are the origins that are allowed to access OpenProject API. <br/> Please check the <a href="%{origin_link}" target="_blank">Documentation on the Origin header</a> on how to specify the expected values.
   setting_email_delivery_method: "Mètode de lliurament del correu electrònic"
   setting_sendmail_location: "Localització de l'executable de sendmail"
   setting_smtp_enable_starttls_auto: "Utilitza STARTTLS automàticament si està disponible"
@@ -2058,6 +2165,7 @@ ca:
   setting_emails_header: "Encapçalament dels correus"
   setting_email_login: "Use email as login"
   setting_enabled_scm: "Activar SCM"
+  setting_enabled_projects_columns: "Visible in project list"
   setting_feeds_enabled: "Habilita els canals"
   setting_feeds_limit: "Límit de contingut del canals"
   setting_file_max_size_displayed: "Mida màxima dels fitxers de text mostrats en línia"
@@ -2068,7 +2176,6 @@ ca:
   setting_work_package_done_ratio_status: "Utilitzar l'estat de paquet de treball"
   setting_work_package_done_ratio_disabled: "Deshabilitar (amagar el progrés)"
   setting_work_package_list_default_columns: "Mostrar per defecte"
-  setting_work_package_list_summable_columns: "Sumable"
   setting_work_package_properties: "Propietats de paquet de treball"
   setting_work_package_startdate_is_adddate: "Utilitzar la data actual com a data d'inici dels paquets de treball nous"
   setting_work_packages_export_limit: "Límit d'exportació de paquets de treball"
@@ -2089,6 +2196,8 @@ ca:
   setting_per_page_options: "Opcions d'objectes per pàgina"
   setting_plain_text_mail: "Només text pla (no HTML)"
   setting_protocol: "Protocol"
+  setting_project_gantt_query: "Project portfolio Gantt view"
+  setting_project_gantt_query_text: "You can modify the query that is used to display Gantt chart from the project overview page."
   setting_security_badge_displayed: "Display security badge"
   setting_registration_footer: "Registration footer"
   setting_repositories_automatic_managed_vendor: "Tipus de proveïdor de repositori automàtic"
@@ -2118,7 +2227,6 @@ ca:
   setting_welcome_text: "Bloc de text de benvinguda"
   setting_welcome_title: "Títol del bloc de benvinguda"
   setting_welcome_on_homescreen: "Mostrar el bloc de benvinguda a la pàgina d'inici"
-  setting_wiki_compression: "Compressió de l'historial de la wiki"
   setting_work_package_group_assignment: "Permeten l'assignació als grups"
   setting_work_package_list_default_highlighting_mode: "Default highlighting mode"
   setting_work_package_list_default_highlighted_attributes: "Default inline highlighted attributes"
@@ -2128,6 +2236,9 @@ ca:
     passwords: "Contrasenyes"
     session: "Sessió"
     brute_force_prevention: "Bloqueig automàtic d'usuari"
+    projects:
+      section_new_projects: "Settings for new projects"
+      section_project_overview: "Settings for project overview list"
     user:
       default_preferences: "Default preferences"
       deletion: "Deletion"
@@ -2182,7 +2293,7 @@ ca:
   text_destroy_with_associated: "Hi ha objectes addicionals associats amb el(s) paquet(s) de treball que es suprimiran. Aquests objectes són dels tipus següents:"
   text_destroy_what_to_do: "Què voleu fer?"
   text_diff_truncated: "... Aquestes diferències s'han truncat perquè excedeixen la mida màxima que es pot mostrar."
-  text_email_delivery_not_configured: "El lliurament per correu electrònic no està configurat i les notificacions estan inhabilitades.\nConfigureu el servidor SMTP a config/configuration.yml i reinicieu l'aplicació per habilitar-lo."
+  text_email_delivery_not_configured: "L'entrega de correu electrònic no està configurada, i les notificacions estan desactivades.\nConfiguri el seu servidor SMTP per a habilitar-les."
   text_enumeration_category_reassign_to: "Torna a assignar-los a aquest valor:"
   text_enumeration_destroy_question: "objectes %{count} estan assignades a aquest valor."
   text_file_repository_writable: "Es pot escriure en el repositori de fitxers adjunts"
@@ -2195,7 +2306,8 @@ ca:
   text_work_package_category_destroy_question: "Alguns paquets de treball (%{count}) estan assignats a aquesta categoria. Què voleu fer?"
   text_work_package_category_reassign_to: "Tornar a assignar els paquets de treball a aquesta categoria"
   text_work_package_updated: "El paquet de treball %{id} ha estat actualitzat per %{author}."
-  text_work_package_watcher_added: "Vostè ha estat afegit com a observador pel paquet de treball %{id} per %{watcher_setter}."
+  text_work_package_watcher_added: "You have been added as a watcher to Work package %{id} by %{watcher_changer}."
+  text_work_package_watcher_removed: "You have been removed from watchers of Work package %{id} by %{watcher_changer}."
   text_work_packages_destroy_confirmation: "¿Està segur que desitja eliminar el(s) paquet(s) de treball seleccionat(s)?"
   text_work_packages_ref_in_commit_messages: "Referència i arregla els paquets de treball en els missatges dels commits"
   text_journal_added: "S'ha afegit %{label} %{value}"
@@ -2208,6 +2320,7 @@ ca:
   text_journal_deleted_with_diff: "%{label} suprimit (%{link})"
   text_journal_set_to: "%{label} s'ha establert a %{value}"
   text_journal_set_with_diff: "%{label} canviat (%{link})"
+  text_journal_label_value: "%{label} %{value}"
   text_latest_note: "L'últim comentari és: %{note}"
   text_length_between: "Longitud entre %{min} i %{max} caràcters."
   text_line_separated: "Es permeten diversos valors (una línia per cada valor)."
@@ -2457,6 +2570,7 @@ ca:
       mail_self_notified: "Vull ser notificat de canvis que faig jo mateix"
     status_user_and_brute_force: "%{user} i %{brute_force}"
     status_change: "Status change"
+    text_change_disabled_for_provider_login: "The name is set by your login provider and can thus not be changed."
     unlock: "Desbloquejar"
     unlock_and_reset_failed_logins: "Desbloquejar i reiniciar inicis de sessió fallits"
   version_status_closed: "tancat"
@@ -2475,6 +2589,17 @@ ca:
     User limit reached. You cannot activate any more users. Please <a href="%{upgrade_url}">upgrade your plan</a> or block members to allow for additional users.
   warning_user_limit_reached_instructions: >
     You reached your user limit (%{current}/%{max} active users). Please contact sales@openproject.com to upgrade your Enterprise Edition plan and add additional users.
+  0: >
+
+  warning_bar:
+    protocol_mismatch:
+      title: 'Incongruència en els paràmetres del protocol'
+      text_html: >
+        La seva aplicació s'executa amb configuració de protocol establerta a <code>%{set_protocol}</code>, però la sol·licitud es <code>%{actual_protocol}</code>. Això donarà errors! Vagi a <a href="%{setting_path}">System settings</a> i canviï els paràmetres de "Protocol" per a corregir-ho.
+    hostname_mismatch:
+      title: 'Incongruència en els paràmetres del hostname'
+      text_html: >
+        La seva aplicació s'executa amb configuració de nom de host establerta a <code>%{set_hostname}</code>, però la sol·licitud es <code>%{actual_hostname}</code>. Això donarà errors! Vagi a <a href="%{setting_path}">System settings</a> i canviï els paràmetres de "Nom de host" per a corregir-ho.
   menu_item: "Element de menú"
   menu_item_setting: "Visibilitat"
   wiki_menu_item_for: "Element de menú per a la pàgina wiki \"%{title}\""
@@ -2483,6 +2608,7 @@ ca:
     Esteu Suprimint l'únic l'element de menú principal wiki. Ara cal triar una pàgina wiki per a la qual es generarà un nou element principal. Per suprimir la wiki, els administradors del projecte poden desactivar el mòdul wiki.
   wiki_menu_item_delete_not_permitted: No es pot suprimir l'element de menú de wiki de la única pàgina wiki.
   query_menu_item_for: "Element de menú per a la consulta \"%{title}\""
+  #TODO: merge with work_packages top level key
   work_package:
     updated_automatically_by_child_changes: |
       _Actualitzat automàticament canviant els valors dins del fill del paquet de treball %{child}_
@@ -2527,12 +2653,16 @@ ca:
         estimated_hours: "Les hores estimades no es poden definir per paquets de treball del pare."
         invalid_user_assigned_to_work_package: "L'usuari escollit no pot ser \"%{property}\" per a aquest paquet de treball."
         start_date: "La data d'inici no es pot definir per paquets de treball del pare."
-      writing_read_only_attributes: "No s'ha d'escriure en un atribut de només de lectura."
+      eprops:
+        invalid_gzip: "is invalid gzip: %{message}"
+        invalid_json: "is invalid json: %{message}"
     resources:
       schema: 'Esquema'
   doorkeeper:
     pre_authorization:
       status: 'Pre-authorization'
+    auth_url: 'Auth URL'
+    access_token_url: 'Access token URL'
     errors:
       messages:
         #Common error messages
@@ -2575,6 +2705,7 @@ ca:
         redirect_uri_html: >
           The allowed URLs authorized users can be redirected to. One entry per line. <br/> If you're registering a desktop application, use the following URL.
         confidential: "Check if the application will be used where the client secret can be kept confidential. Native mobile apps and Single Page Apps are assumed non-confidential."
+        scopes: "Check the scopes you want the application to grant access to. If no scope is checked, api_v3 is assumed."
         client_credential_user_id: "Optional user ID to impersonate when clients use this application. Leave empty to allow public access only"
         register_intro: "If you are developing an OAuth API client application for OpenProject, you can register it using this form for all users to use."
         default_scopes: ""
@@ -2589,8 +2720,8 @@ ca:
       wants_to_access_html: >
         This application requests access to your OpenProject account. <br/> <strong>It has requested the following permissions:</strong>
     scopes:
-      api_v3: "Full API access"
-      api_v3_text: "Application will receive full read & write access to the OpenProject API to perform actions on your behalf."
+      api_v3: "Full API v3 access"
+      api_v3_text: "Application will receive full read & write access to the OpenProject API v3 to perform actions on your behalf."
     grants:
       created_date: "Approved on"
       scopes: "Permisos"

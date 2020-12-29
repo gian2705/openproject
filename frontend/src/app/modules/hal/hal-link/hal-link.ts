@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,14 +23,15 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {HalResource} from 'core-app/modules/hal/resources/hal-resource';
-import {HalResourceService, HTTPSupportedMethods} from 'core-app/modules/hal/services/hal-resource.service';
+import {HTTPSupportedMethods} from "core-app/modules/hal/http/http.interfaces";
+import {HalResourceService} from "core-app/modules/hal/services/hal-resource.service";
 
 export interface HalLinkInterface {
-  href:string | null;
+  href:string|null;
   method:HTTPSupportedMethods;
   title?:string;
   templated?:boolean;
@@ -51,7 +52,7 @@ export interface CallableHalLink extends HalLinkInterface {
 
 export class HalLink implements HalLinkInterface {
   constructor(public requestMethod:(method:HTTPSupportedMethods, href:string, data:any, headers:any) => Promise<HalResource>,
-              public href:string | null = null,
+              public href:string|null = null,
               public title:string = '',
               public method:HTTPSupportedMethods = 'get',
               public templated:boolean = false,
@@ -65,7 +66,7 @@ export class HalLink implements HalLinkInterface {
    */
   public static fromObject(halResourceService:HalResourceService, link:HalLinkInterface):HalLink {
     return new HalLink(
-  (method:HTTPSupportedMethods, href:string, data:any, headers:any) =>
+      (method:HTTPSupportedMethods, href:string, data:any, headers:any) =>
         halResourceService.request(method, href, data, headers).toPromise(),
       link.href,
       link.title,

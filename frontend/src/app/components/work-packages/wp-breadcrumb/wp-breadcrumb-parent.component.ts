@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,13 +23,12 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Component, Input, EventEmitter, Output} from '@angular/core';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {WorkPackageRelationsHierarchyService} from 'core-app/components/wp-relations/wp-relations-hierarchy/wp-relations-hierarchy.service';
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import {WorkPackageNotificationService} from "core-app/modules/work_packages/notifications/work-package-notification.service";
 

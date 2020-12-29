@@ -3,6 +3,7 @@ lt:
     grid:
       add_widget: 'Pridėti valdiklį'
       remove: 'Išimti valdiklį'
+      configure: 'Valdiklio nustatymai'
       upsale:
         text: "Kai kurie valdikliai, pavyzdžiui darbo paketų grafo valdiklis, galimi tik "
         link: '„Enterprise edition“.'
@@ -30,13 +31,16 @@ lt:
           no_results: 'Projektui nenurodyti savi laukai.'
         project_status:
           title: 'Projekto būsena'
-          on_track: 'On track'
-          off_track: 'Off track'
-          at_risk: 'At risk'
+          on_track: 'Teisingame kelyje'
+          off_track: 'Pasiklydęs'
+          at_risk: 'Rizikingas'
           not_set: 'Nenustatyta'
         subprojects:
           title: 'Sub-projektai'
           no_results: 'Nėra su-projektų.'
+        time_entries_current_user:
+          title: 'Mano sugaištas laikas'
+          displayed_days: 'Valdiklyje rodomos dienos:'
         time_entries_list:
           title: 'Sugaišta laiko (per paskutines 7 dienas)'
           no_results: 'Nėra laiko įrašų per paskutines 7 dienas.'

@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -28,10 +28,11 @@
 
 import {HideSectionService} from "./hide-section.service";
 import {Component, ElementRef, OnInit} from "@angular/core";
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
+
+export const showSectionDropdownSelector = 'show-section-dropdown';
 
 @Component({
-  selector: 'show-section-dropdown',
+  selector: showSectionDropdownSelector,
   template: ''
 })
 export class ShowSectionDropdownComponent implements OnInit {
@@ -60,4 +61,4 @@ export class ShowSectionDropdownComponent implements OnInit {
   }
 }
 
-DynamicBootstrapper.register({ cls: ShowSectionDropdownComponent, selector: 'show-section-dropdown '});
+

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -37,8 +37,18 @@ end
 
 require 'bundler/setup' # Set up gems listed in the Gemfile.
 
-if ENV['RAILS_ENV'] == 'development'
-  $stderr.puts "Starting with bootsnap."
+env = ENV['RAILS_ENV']
+# Disable deprecation warnings early on (before loading gems), which behaves as RUBYOPT="-w0"
+# to disable the Ruby 2.7 warnings in production.
+# Set OPENPROJECT_PROD_DEPRECATIONS=true if you want to see them for debugging purposes
+if env == 'production' && ENV['OPENPROJECT_PROD_DEPRECATIONS'] != 'true'
+  require 'structured_warnings'
+  Warning[:deprecated] = false
+  StructuredWarnings::BuiltInWarning.disable
+  StructuredWarnings::DeprecationWarning.disable
+end
 
+if env == 'development'
+  $stderr.puts "Starting with bootsnap."
   require 'bootsnap/setup' # Speed up boot time by caching expensive operations.
 end

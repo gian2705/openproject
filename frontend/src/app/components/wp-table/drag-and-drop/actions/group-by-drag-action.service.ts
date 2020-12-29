@@ -7,12 +7,17 @@ import {rowGroupClassName} from "core-components/wp-fast-table/builders/modes/gr
 import {locatePredecessorBySelector} from "core-components/wp-fast-table/helpers/wp-table-row-helpers";
 import {groupIdentifier} from "core-components/wp-fast-table/builders/modes/grouped/grouped-rows-helpers";
 import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
+import {HalEventsService} from "core-app/modules/hal/services/hal-events.service";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
+import {SchemaCacheService} from "core-components/schemas/schema-cache.service";
 
 export class GroupByDragActionService extends TableDragActionService {
 
-  private wpTableGroupBy = this.injector.get(WorkPackageViewGroupByService);
-  private halEditing = this.injector.get<HalResourceEditingService>(HalResourceEditingService);
-  private halNotification = this.injector.get(HalResourceNotificationService);
+  @InjectField() wpTableGroupBy:WorkPackageViewGroupByService;
+  @InjectField() halEditing:HalResourceEditingService;
+  @InjectField() halEvents:HalEventsService;
+  @InjectField() halNotification:HalResourceNotificationService;
+  @InjectField() schemaCache:SchemaCacheService;
 
   public get applies() {
     return this.wpTableGroupBy.isEnabled;
@@ -23,7 +28,7 @@ export class GroupByDragActionService extends TableDragActionService {
    */
   public canPickup(workPackage:WorkPackageResource):boolean {
     const attribute = this.groupedAttribute;
-    return attribute !== null && workPackage.isAttributeEditable(attribute);
+    return attribute !== null && this.schemaCache.of(workPackage).isAttributeEditable(attribute);
   }
 
   public handleDrop(workPackage:WorkPackageResource, el:HTMLElement):Promise<unknown> {
@@ -33,6 +38,7 @@ export class GroupByDragActionService extends TableDragActionService {
     changeset.projectedResource[this.groupedAttribute!] = groupedValue;
     return this.halEditing
       .save(changeset)
+      .then((saved) => this.halEvents.push(saved.resource, {eventType: 'updated'}))
       .catch(e => this.halNotification.handleRawError(e, workPackage));
   }
 

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,7 +28,7 @@
 #++
 
 module PasswordHelper
-  include Concerns::PasswordConfirmation
+  include PasswordConfirmation
 
   ##
   # Decorate the form_for helper with the request-for-confirmation directive
@@ -63,7 +63,7 @@ module PasswordHelper
     end
   end
 
-  def render_password_complexity_tooltip
+  def render_password_complexity_hint
     rules = password_rules_description
 
     s = OpenProject::Passwords::Evaluator.min_length_description

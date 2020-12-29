@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,7 +31,7 @@
 module WorkPackage::Parent
   def self.prepended(base)
     base.after_save :update_parent_relation, if: :saved_change_to_parent_id?
-    base.include Concerns::VirtualAttribute
+    base.include VirtualAttribute
 
     base.virtual_attribute 'parent_id', cast_type: :integer
 

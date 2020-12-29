@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,15 +23,16 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++    Ng1FieldControlsWrapper,
 
 import {Component, ElementRef} from "@angular/core";
 import {WorkPackageTableConfigurationObject} from "core-components/wp-table/wp-table-configuration";
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
+
+export const wpEmbeddedTableMacroSelector = 'macro.embedded-table';
 
 @Component({
-  selector: 'macro.embedded-table',
+  selector: wpEmbeddedTableMacroSelector,
   template: `
     <wp-embedded-table-entry [queryProps]="queryProps"
                              [configuration]="configuration">
@@ -55,6 +56,3 @@ export class EmbeddedTablesMacroComponent {
     this.queryProps = JSON.parse(element.dataset.queryProps);
   }
 }
-
-DynamicBootstrapper.register(
-  { selector: 'macro.embedded-table', cls: EmbeddedTablesMacroComponent, embeddable: true });

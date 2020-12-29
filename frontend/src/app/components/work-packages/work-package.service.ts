@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {StateService} from '@uirouter/core';
@@ -56,7 +56,10 @@ export class WorkPackageService {
       'ids[]': ids
     };
     const promise = this.http
-      .delete(this.PathHelper.workPackagesBulkDeletePath(), {params: params})
+      .delete(
+        this.PathHelper.workPackagesBulkDeletePath(),
+        {params: params, withCredentials: true}
+      )
       .toPromise();
 
     if (defaultHandling) {
@@ -68,7 +71,7 @@ export class WorkPackageService {
 
           if (this.$state.includes('**.list.details.**')
             && ids.indexOf(this.$state.params.workPackageId) > -1) {
-            this.$state.go('work-packages.list', this.$state.params);
+            this.$state.go('work-packages.partitioned.list', this.$state.params);
           }
         })
         .catch(() => {

@@ -38,12 +38,6 @@
 
 set -e
 
-if [ "$4" = "bim" ]; then
-  export OPENPROJECT_EDITION="$4";
-else
-  unset OPENPROJECT_EDITION
-fi
-
 # Use the current HEAD as input to the seed
 export CI_SEED=$(git rev-parse HEAD | tr -d 'a-z' | cut -b 1-5 | tr -d '0')
 # Do not assume to have the angular cli running to serve assets. They are provided
@@ -53,9 +47,6 @@ export OPENPROJECT_CLI_PROXY=''
 case "$1" in
         npm)
             cd frontend && npm run test
-            ;;
-        plugins:cucumber)
-            bundle exec rake parallel:$1 -- --group-number $2 --only-group $3
             ;;
         *)
             bundle exec rake parallel:$1 -- --group-number $2 --only-group $3 --seed $CI_SEED

@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -36,8 +36,8 @@ module API
         attr_reader :grid_writable
         element_decorator ::API::V3::Grids::GridRepresenter
 
-        def initialize(models, self_link, grid_scope:, **args)
-          super(models, self_link, **args)
+        def initialize(models, self_link:, grid_scope:, **args)
+          super(models, self_link: self_link, **args)
           @grid_scope = grid_scope
           @grid_writable = ::Grids::Configuration.writable_scope?(grid_scope)
         end

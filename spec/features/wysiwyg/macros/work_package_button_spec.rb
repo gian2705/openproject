@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,7 +30,9 @@ require 'spec_helper'
 
 describe 'Wysiwyg work package button spec',
          type: :feature, js: true do
-  let(:user) { FactoryBot.create :admin }
+  using_shared_fixtures :admin
+  let(:user) { admin }
+
   let!(:type) { FactoryBot.create :type, name: 'MyTaskName' }
   let(:project) do
     FactoryBot.create :valid_project,
@@ -71,7 +73,7 @@ describe 'Wysiwyg work package button spec',
           find('.op-modal--submit-button').click
 
           # Find widget, click to show toolbar
-          modal = find('.macro.-create_work_package_link')
+          modal = find('.button.op-uc-placeholder', text: 'Create work package')
 
           # Edit widget again
           modal.click

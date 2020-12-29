@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module CustomActions::ValidateAllowedValue
@@ -28,8 +28,8 @@ module CustomActions::ValidateAllowedValue
     allowed_ids = allowed_values.map { |v| v[:value] }
     if values.to_set != (allowed_ids & values).to_set
       errors.add attribute,
-                 I18n.t(:'activerecord.errors.models.custom_actions.inclusion', name: human_name),
-                 error_symbol: :inclusion
+                 :inclusion,
+                 name: human_name
     end
   end
 end

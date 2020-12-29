@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,29 +23,31 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {Component, ElementRef, OnInit, OnDestroy, ViewChild, AfterContentInit, HostListener} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {ConfigurationService} from 'core-app/modules/common/config/configuration.service';
 import {PathHelperService} from 'core-app/modules/common/path-helper/path-helper.service';
 import {HalResource} from 'core-app/modules/hal/resources/hal-resource';
 import {HalResourceService} from 'core-app/modules/hal/services/hal-resource.service';
-import {DynamicBootstrapper} from 'core-app/globals/dynamic-bootstrapper';
 import {States} from 'core-components/states.service';
-import {componentDestroyed, untilComponentDestroyed} from 'ng2-rx-componentdestroyed';
-import {takeUntil, filter} from 'rxjs/operators';
+import {filter, takeUntil} from 'rxjs/operators';
 import {NotificationsService} from "core-app/modules/common/notifications/notifications.service";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {ICKEditorContext, ICKEditorInstance} from "core-app/modules/common/ckeditor/ckeditor-setup.service";
 import {OpCkeditorComponent} from "core-app/modules/common/ckeditor/op-ckeditor.component";
+import {componentDestroyed} from "@w11k/ngx-componentdestroyed";
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
 
+
+export const ckeditorAugmentedTextareaSelector = 'ckeditor-augmented-textarea';
 
 @Component({
-  selector: 'ckeditor-augmented-textarea',
+  selector: ckeditorAugmentedTextareaSelector,
   templateUrl: './ckeditor-augmented-textarea.html'
 })
-export class CkeditorAugmentedTextareaComponent implements OnInit, OnDestroy {
+export class CkeditorAugmentedTextareaComponent extends UntilDestroyedMixin implements OnInit {
   public textareaSelector:string;
   public previewContext:string;
 
@@ -78,6 +80,7 @@ export class CkeditorAugmentedTextareaComponent implements OnInit, OnDestroy {
               protected I18n:I18nService,
               protected states:States,
               protected ConfigurationService:ConfigurationService) {
+    super();
   }
 
   ngOnInit() {
@@ -108,6 +111,7 @@ export class CkeditorAugmentedTextareaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    super.ngOnDestroy();
     this.formElement.off('submit.ckeditor');
   }
 
@@ -116,6 +120,10 @@ export class CkeditorAugmentedTextareaComponent implements OnInit, OnDestroy {
   }
 
   public setup(editor:ICKEditorInstance) {
+    // Have a hacky way to access the editor from outside of angular.
+    // This is e.g. employed to set the text from outside to reuse the same editor for different languages.
+    this.$element.data('editor', editor);
+
     if (this.resource && this.resource.attachments) {
       this.setupAttachmentAddedCallback(editor);
       this.setupAttachmentRemovalSignal(editor);
@@ -127,7 +135,7 @@ export class CkeditorAugmentedTextareaComponent implements OnInit, OnDestroy {
         this.wrappedTextArea.val(this.ckEditorInstance.getRawData());
       } catch (e) {
         console.error(`Failed to save CKEditor body to textarea: ${e}.`);
-        this.Notifications.addError(e || this.I18n.t('js.errors.internal'));
+        this.Notifications.addError(e || this.I18n.t('js.error.internal'));
 
         // Avoid submission of the form
         return false;
@@ -159,8 +167,8 @@ export class CkeditorAugmentedTextareaComponent implements OnInit, OnDestroy {
         filter(resource => !!resource)
       ).subscribe(resource => {
       let missingAttachments = _.differenceBy(this.attachments,
-                                              resource!.attachments.elements,
-                                              (attachment:HalResource) => attachment.id);
+        resource!.attachments.elements,
+        (attachment:HalResource) => attachment.id);
 
       let removedUrls = missingAttachments.map(attachment => attachment.downloadLocation.$href);
 
@@ -210,9 +218,3 @@ export class CkeditorAugmentedTextareaComponent implements OnInit, OnDestroy {
     });
   }
 }
-
-DynamicBootstrapper.register({
-  selector: 'ckeditor-augmented-textarea',
-  cls: CkeditorAugmentedTextareaComponent,
-  embeddable: true
-});

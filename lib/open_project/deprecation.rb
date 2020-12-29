@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -36,6 +36,10 @@ module OpenProject::Deprecation
     # Deprecate the given method with a notice regarding future removal
     def deprecate_method(mod, method)
       deprecator.deprecate_methods(mod, method)
+    end
+
+    def replaced(old_method, new_method, called_from)
+      ActiveSupport::Deprecation.warn "#{old_method} is deprecated and will be removed in a future OpenProject version. Please use #{new_method} instead.", called_from
     end
   end
 end

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,15 +29,21 @@
 require 'spec_helper'
 require 'rack/test'
 
-describe 'API v3 Work package form resource', type: :request do
+describe 'API v3 Work package form resource', type: :request, with_mail: false do
   include Rack::Test::Methods
   include Capybara::RSpecMatchers
   include API::V3::Utilities::PathHelper
 
-  shared_let(:all_allowed_permissions) { %i[view_work_packages edit_work_packages assign_versions] }
+  shared_let(:all_allowed_permissions) { %i[view_work_packages edit_work_packages assign_versions view_budgets] }
   shared_let(:assign_permissions) { %i[view_work_packages assign_versions] }
   shared_let(:project) { FactoryBot.create(:project, public: false) }
-  shared_let(:work_package) { FactoryBot.create(:work_package, project: project) }
+  shared_let(:work_package) do
+    # Prevent executing as potentially unsaved AnyonymousUser which would
+    # lead to the creation failing as the journal cannot be written with user_id = nil.
+    User.execute_as authorized_user do
+      FactoryBot.create(:work_package, project: project)
+    end
+  end
   shared_let(:authorized_user) do
     FactoryBot.create(:user, member_in_project: project, member_with_permissions: all_allowed_permissions)
   end
@@ -59,7 +65,7 @@ describe 'API v3 Work package form resource', type: :request do
 
     shared_context 'post request' do
       before(:each) do
-        allow(User).to receive(:current).and_return current_user
+        login_as(current_user)
         post post_path, (params ? params.to_json : nil), 'CONTENT_TYPE' => 'application/json'
       end
     end
@@ -105,7 +111,7 @@ describe 'API v3 Work package form resource', type: :request do
             let(:format) { 'markdown' }
             let(:raw) { defined?(raw_value) ? raw_value : work_package.description.to_s }
             let(:html) do
-              defined?(html_value) ? html_value : ('<p>' + work_package.description.to_s + '</p>')
+              defined?(html_value) ? html_value : ('<p class="op-uc-p">' + work_package.description.to_s + '</p>')
             end
           end
         end
@@ -179,7 +185,7 @@ describe 'API v3 Work package form resource', type: :request do
               end
 
               it_behaves_like 'parse error',
-                              'unexpected comma () at line 1, column 3'
+                              'unexpected comma (after ) at line 1, column 3'
             end
 
             describe 'lock version' do
@@ -251,7 +257,7 @@ describe 'API v3 Work package form resource', type: :request do
               it_behaves_like 'valid payload' do
                 let(:raw_value) { description }
                 let(:html_value) do
-                  '<p><strong>Some text</strong> <em>describing</em> ' \
+                  '<p class="op-uc-p"><strong>Some text</strong> <em>describing</em> ' \
                   '<strong>something</strong>...</p>'
                 end
               end
@@ -511,8 +517,8 @@ describe 'API v3 Work package form resource', type: :request do
 
             describe 'version' do
               let(:path) { '_embedded/payload/_links/version/href' }
-              let(:target_version) { FactoryBot.create(:version, project: project) }
-              let(:other_version) { FactoryBot.create(:version, project: project) }
+              let(:target_version) { FactoryBot.create(:version, project: project, start_date: Date.today - 2.days) }
+              let(:other_version) { FactoryBot.create(:version, project: project, start_date: Date.today - 1.day) }
               let(:version_link) { api_v3_paths.version target_version.id }
               let(:version_parameter) { { _links: { version: { href: version_link } } } }
               let(:params) { valid_params.merge(version_parameter) }
@@ -658,6 +664,55 @@ describe 'API v3 Work package form resource', type: :request do
 
                 it 'should respond with updated work package type' do
                   expect(subject.body).to be_json_eql(type_link.to_json).at_path(path)
+                end
+              end
+            end
+
+            describe 'budget' do
+              let(:path) { '_embedded/payload/_links/budget/href' }
+              let(:links_path) { '_embedded/schema/budget/_links' }
+              let(:target_budget) { FactoryBot.create(:budget, project: project) }
+              let(:other_budget) { FactoryBot.create(:budget, project: project) }
+              let(:budget_link) { api_v3_paths.budget target_budget.id }
+              let(:budget_parameter) { { _links: { budget: { href: budget_link } } } }
+              let(:params) { valid_params.merge(budget_parameter) }
+
+              describe 'allowed values' do
+                before do
+                  other_budget
+                end
+
+                include_context 'post request'
+
+                it 'should list the budgets' do
+                  budgets = project.budgets
+
+                  budgets.each_with_index do |budget, index|
+                    expect(subject.body).to be_json_eql(api_v3_paths.budget(budget.id).to_json)
+                                              .at_path("#{links_path}/allowedValues/#{index}/href")
+                  end
+                end
+              end
+
+              context 'valid budget' do
+                include_context 'post request'
+
+                it_behaves_like 'having no errors'
+
+                it 'should respond with updated work package budget' do
+                  expect(subject.body).to be_json_eql(budget_link.to_json).at_path(path)
+                end
+              end
+
+              context 'invalid budget' do
+                let(:target_budget) { FactoryBot.create(:budget) }
+
+                include_context 'post request'
+
+                it_behaves_like 'having an error', 'budget'
+
+                it 'should respond with updated work package budget' do
+                  expect(subject.body).to be_json_eql(budget_link.to_json).at_path(path)
                 end
               end
             end

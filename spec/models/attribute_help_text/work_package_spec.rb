@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,6 +29,11 @@
 require 'spec_helper'
 
 describe AttributeHelpText::WorkPackage, type: :model do
+  it_behaves_like 'acts_as_attachable included' do
+    let(:model_instance) { FactoryBot.create(:work_package_help_text) }
+    let(:project) { FactoryBot.create(:project) }
+  end
+
   describe '.available_attributes' do
     subject { described_class.available_attributes }
     it 'returns an array of potential attributes' do

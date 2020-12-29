@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {CollectionResource} from 'core-app/modules/hal/resources/collection-resource';
@@ -36,9 +36,10 @@ import {SchemaDependencyResource} from 'core-app/modules/hal/resources/schema-de
 import {QueryOperatorResource} from 'core-app/modules/hal/resources/query-operator-resource';
 import {QueryFilterInstanceResource} from 'core-app/modules/hal/resources/query-filter-instance-resource';
 import {HalResource} from 'core-app/modules/hal/resources/hal-resource';
-import Collection = api.v3.Collection;
+import {HalLink} from "core-app/modules/hal/hal-link/hal-link";
 
 export interface QueryFilterInstanceSchemaResourceLinks {
+  self:HalLink;
   filter:QueryFilterResource;
 }
 
@@ -85,7 +86,7 @@ export class QueryFilterInstanceSchemaResource extends SchemaResource {
         schema: this.$source._links.self,
         operator: operator.$source._links.self
       }
-    }
+    };
 
     if (this.definesAllowedValues()) {
       source._links['values'] = [];
@@ -93,11 +94,7 @@ export class QueryFilterInstanceSchemaResource extends SchemaResource {
       source['values'] = [];
     }
 
-    let newFilter = new QueryFilterInstanceResource(this.injector, source, true, this.halInitializer, 'QueryFilterInstance');
-
-    newFilter.schema = this;
-
-    return newFilter;
+    return new QueryFilterInstanceResource(this.injector, source, true, this.halInitializer, 'QueryFilterInstance');
   }
 
   public isValueRequired():boolean {

@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -27,8 +27,6 @@ See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 
-<%= javascript_include_tag "members_select_boxes.js" %>
-
 <%= labelled_tabular_form_for(:member, url: main_app.project_members_path,
                               method: :post,
                               html: { id: "members_add_form", class: "form -vertical -bordered -medium-compressed" }) do |f| %>
@@ -46,27 +44,25 @@ See docs/COPYRIGHT.rdoc for more details.
             end
           %>
           <%= styled_label_tag :member_user_ids, user_id_title %>
-          <%= select_tag "member[user_ids]", options_for_select([]),
-                         title: user_id_title,
-                         multiple: true,
-                         autofocus: true,
-                         :'data-ajaxURL' => url_for(controller: "/members", action: "autocomplete_for_member"),
-                         :'data-projectId' => project.id,
-                         no_label: true,
-                         placeholder: I18n.t(:button_add_member),
-                         class: "select2-select remote" %>
+
+          <%= hidden_field_tag "member[user_ids][]", nil  %>
+          <members-autocompleter data-update-input="member[user_ids][]"
+                                 data-url="<%= autocomplete_for_member_project_members_path +  '.json' %>"
+                                 data-append-to="body"
+                                 data-multiple="true">
+          </members-autocompleter>
         </div>
       </div>
       <div class="grid-content medium-8 small-12 -flex -with-button">
         <div class="form--field">
-          <%= styled_label_tag :member_role_ids, l(:label_role_search) %>
+          <%= styled_label_tag :member_role_ids, t(:label_role_search) %>
           <div class="form--field-container">
             <div class="form--select-container -auto">
               <% options = roles.collect { |obj| [obj.name, obj.id] } %>
               <%= select_tag 'member[role_ids][]', options_for_select(options),
                              multiple: false,
                              no_label: true,
-                             title:    l(:label_role_search),
+                             title:    t(:label_role_search),
                              tabIndex: 0,
                              class:    'form--select',
                              id:       'member_role_ids' %>
@@ -74,7 +70,7 @@ See docs/COPYRIGHT.rdoc for more details.
           </div>
         </div>
         <div id="member-add-submit-button--container">
-          <%= f.button l(:button_add),
+          <%= f.button t(:button_add),
                        class: 'button -highlight -with-icon icon-checkmark',
                        id: 'add-member--submit-button' %>
         </div>

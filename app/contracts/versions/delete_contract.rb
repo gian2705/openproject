@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,16 +30,12 @@ module Versions
   class DeleteContract < ::DeleteContract
     delete_permission :manage_versions
 
-    def validate
-      validate_no_work_packages_attached
-
-      super
-    end
+    validate :validate_no_work_packages_attached
 
     protected
 
     def validate_no_work_packages_attached
-      return unless model.fixed_issues.exists?
+      return unless model.work_packages.exists?
 
       errors.add(:base, :undeletable_work_packages_attached)
     end

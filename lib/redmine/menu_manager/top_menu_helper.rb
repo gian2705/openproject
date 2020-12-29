@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,8 +25,6 @@
 #
 # See docs/COPYRIGHT.rdoc for more details.
 #++
-
-require 'concerns/omniauth_login'
 
 module Redmine::MenuManager::TopMenuHelper
   include Redmine::MenuManager::TopMenu::HelpMenu
@@ -63,8 +61,8 @@ module Redmine::MenuManager::TopMenuHelper
     url = { controller: '/account', action: 'login' }
     link = link_to url,
                    class: 'login',
-                   title: l(:label_login) do
-      concat('<span class="button--dropdown-text hidden-for-mobile">'.concat(l(:label_login)).concat('</span>').html_safe)
+                   title: I18n.t(:label_login) do
+      concat('<span class="button--dropdown-text hidden-for-mobile">'.concat(I18n.t(:label_login)).concat('</span>').html_safe)
       concat('<i class="button--dropdown-indicator hidden-for-mobile"></i>'.html_safe)
       concat('<i class="icon2 icon-user hidden-for-desktop"></i>'.html_safe)
     end
@@ -77,8 +75,8 @@ module Redmine::MenuManager::TopMenuHelper
   def render_direct_login
     link = link_to signin_path,
                    class: 'login',
-                   title: l(:label_login) do
-      concat('<span class="button--dropdown-text hidden-for-mobile">'.concat(l(:label_login)).concat('</span>').html_safe)
+                   title: I18n.t(:label_login) do
+      concat('<span class="button--dropdown-text hidden-for-mobile">'.concat(I18n.t(:label_login)).concat('</span>').html_safe)
       concat('<i class="icon2 icon-user hidden-for-desktop"></i>'.html_safe)
     end
 

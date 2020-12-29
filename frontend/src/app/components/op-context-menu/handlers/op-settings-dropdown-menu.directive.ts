@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,18 +23,16 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
-import {Directive, ElementRef, Injector, Input, OnDestroy} from '@angular/core';
+import {Directive, ElementRef, Injector, Input} from '@angular/core';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import {AuthorisationService} from 'core-app/modules/common/model-auth/model-auth.service';
 import {OpContextMenuTrigger} from 'core-components/op-context-menu/handlers/op-context-menu-trigger.directive';
 import {OPContextMenuService} from 'core-components/op-context-menu/op-context-menu.service';
 import {States} from 'core-components/states.service';
 import {WorkPackagesListService} from 'core-components/wp-list/wp-list.service';
-import {componentDestroyed} from 'ng2-rx-componentdestroyed';
-import {takeUntil} from 'rxjs/operators';
 import {QueryFormResource} from 'core-app/modules/hal/resources/query-form-resource';
 import {QueryResource} from 'core-app/modules/hal/resources/query-resource';
 import {OpModalService} from "core-components/op-modals/op-modal.service";
@@ -51,7 +49,7 @@ import {
 @Directive({
   selector: '[opSettingsContextMenu]'
 })
-export class OpSettingsMenuDirective extends OpContextMenuTrigger implements OnDestroy {
+export class OpSettingsMenuDirective extends OpContextMenuTrigger {
   @Input('opSettingsContextMenu-query') public query:QueryResource;
   private form:QueryFormResource;
   private loadingPromise:PromiseLike<any>;
@@ -70,16 +68,12 @@ export class OpSettingsMenuDirective extends OpContextMenuTrigger implements OnD
     super(elementRef, opContextMenu);
   }
 
-  ngOnDestroy():void {
-    // Nothing to do
-  }
-
   ngAfterViewInit():void {
     super.ngAfterViewInit();
 
     this.querySpace.query.values$()
       .pipe(
-        takeUntil(componentDestroyed(this))
+        this.untilDestroyed()
       )
       .subscribe(queryUpdate => {
         this.query = queryUpdate;
@@ -89,7 +83,7 @@ export class OpSettingsMenuDirective extends OpContextMenuTrigger implements OnD
 
     this.querySpace.queryForm.values$()
       .pipe(
-        takeUntil(componentDestroyed(this))
+        this.untilDestroyed()
       )
       .subscribe(formUpdate => {
         this.form = formUpdate;
@@ -177,6 +171,7 @@ export class OpSettingsMenuDirective extends OpContextMenuTrigger implements OnD
         // Insert columns
         linkText: this.I18n.t('js.work_packages.query.insert_columns'),
         icon: 'icon-columns',
+        class: 'hidden-for-mobile',
         onClick: () => {
           this.opModalService.show<WpTableConfigurationModalComponent>(
             WpTableConfigurationModalComponent,
@@ -203,6 +198,7 @@ export class OpSettingsMenuDirective extends OpContextMenuTrigger implements OnD
         // Group by
         linkText: this.I18n.t('js.toolbar.settings.group_by'),
         icon: 'icon-group-by',
+        class: 'hidden-for-mobile',
         onClick: () => {
           this.opModalService.show<WpTableConfigurationModalComponent>(
             WpTableConfigurationModalComponent,

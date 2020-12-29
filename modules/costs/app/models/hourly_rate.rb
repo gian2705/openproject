@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,6 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 class HourlyRate < Rate
@@ -36,12 +45,12 @@ class HourlyRate < Rate
   end
 
   def self.history_for_user(usr)
-    projects_with_costs_module = Project.has_module(:costs_module)
+    projects_with_costs = Project.has_module(:costs)
                                         .active
                                         .visible
                                         .order(:name)
 
-    permitted_projects = Project.has_module(:costs_module)
+    permitted_projects = Project.has_module(:costs)
                                 .active
                                 .allowed_to(User.current, :view_hourly_rates)
 
@@ -52,7 +61,7 @@ class HourlyRate < Rate
 
     rates = {}
 
-    projects_with_costs_module.each do |project|
+    projects_with_costs.each do |project|
       rates[project] = rates_by_project.fetch(project, [])
     end
 

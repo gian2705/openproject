@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,10 +31,10 @@ module StandardSeeder
     class PrioritySeeder < ::BasicData::PrioritySeeder
       def data
         color_names = [
-          'lime-0', # low
-          'green-1', # normal
-          'yellow-2', # high
-          'red-3', # immediate
+          'cyan-1', # low
+          'blue-3', # normal
+          'yellow-7', # high
+          'grape-5' # immediate
         ]
 
         # When selecting for an array of values, implicit order is applied

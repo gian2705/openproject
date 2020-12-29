@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,13 +27,13 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Message < ActiveRecord::Base
+class Message < ApplicationRecord
   include OpenProject::Journal::AttachmentHelper
 
   belongs_to :forum
   has_one :project, through: :forum
   belongs_to :author, class_name: 'User', foreign_key: 'author_id'
-  acts_as_tree counter_cache: :replies_count, order: "#{Message.table_name}.created_on ASC"
+  acts_as_tree counter_cache: :replies_count, order: "#{Message.table_name}.created_at ASC"
   acts_as_attachable after_add: :attachments_changed,
                      after_remove: :attachments_changed,
                      add_on_new_permission: :add_messages,
@@ -44,7 +44,6 @@ class Message < ActiveRecord::Base
 
   acts_as_event title: Proc.new { |o| "#{o.forum.name}: #{o.subject}" },
                 description: :content,
-                datetime: :created_on,
                 type: Proc.new { |o| o.parent_id.nil? ? 'message' : 'reply' },
                 url: (Proc.new do |o|
                         msg = o
@@ -59,7 +58,7 @@ class Message < ActiveRecord::Base
                      include: { forum: :project },
                      references: [:forums],
                      project_key: 'project_id',
-                     date_column: "#{table_name}.created_on"
+                     date_column: "#{table_name}.created_at"
 
   acts_as_watchable
 
@@ -97,10 +96,13 @@ class Message < ActiveRecord::Base
                       end
   end
 
+  # TODO: move into create contract
   def update_last_reply_in_parent
     if parent
-      parent.reload.update_attribute(:last_reply_id, id)
+      parent.reload
+      parent.update_attribute(:last_reply_id, id)
     end
+
     forum.reset_counters!
   end
 

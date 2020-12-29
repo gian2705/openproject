@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,6 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
@@ -35,7 +44,7 @@ describe WorkPackage, type: :model do
                                       author: user)
   }
   let!(:cost_entry) { FactoryBot.create(:cost_entry, work_package: work_package, project: project, units: 3, spent_on: Date.today, user: user, comments: 'test entry') }
-  let!(:cost_object) { FactoryBot.create(:cost_object, project: project) }
+  let!(:budget) { FactoryBot.create(:budget, project: project) }
 
   def move_to_project(work_package, project)
     service = WorkPackages::MoveService.new(work_package, user)
@@ -49,13 +58,13 @@ describe WorkPackage, type: :model do
     expect(cost_entry.reload.project_id).to eql project2.id
   end
 
-  it 'should allow to set cost_object to nil' do
-    work_package.cost_object = cost_object
+  it 'should allow to set budget to nil' do
+    work_package.budget = budget
     work_package.save!
-    expect(work_package.cost_object).to eql cost_object
+    expect(work_package.budget).to eql budget
 
     work_package.reload
-    work_package.cost_object = nil
+    work_package.budget = nil
     expect { work_package.save! }.not_to raise_error
   end
 end

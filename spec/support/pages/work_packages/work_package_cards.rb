@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -37,6 +37,18 @@ module Pages
       @project = project
     end
 
+    def expect_work_package_listed(*work_packages)
+      work_packages.each do |wp|
+        expect(page).to have_selector("wp-single-card[data-work-package-id='#{wp.id}']", wait: 10)
+      end
+    end
+
+    def expect_work_package_not_listed(*work_packages)
+      work_packages.each do |wp|
+        expect(page).not_to have_selector("wp-single-card[data-work-package-id='#{wp.id}']")
+      end
+    end
+
     def expect_work_package_order(*ids)
       retry_block do
         rows = page.all 'wp-single-card'
@@ -48,14 +60,56 @@ module Pages
     end
 
     def open_full_screen_by_doubleclick(work_package)
-      loading_indicator_saveguard
-      page.driver.browser.action.double_click(card(work_package).native).perform
+      retry_block do
+        loading_indicator_saveguard
+        page.driver.browser.action.double_click(card(work_package).native).perform
+
+        # Ensure we show the subject field
+        page.find('.work-packages--subject-type-row')
+      end
 
       Pages::FullWorkPackage.new(work_package, project)
     end
 
+    def open_full_screen_by_details(work_package)
+      element = card(work_package)
+      scroll_to_element(element)
+      element.hover
+      element.find('.wp-card--details-button').click
+
+      ::Pages::SplitWorkPackage.new(work_package, project)
+    end
+
     def select_work_package(work_package)
       card(work_package).click
+    end
+
+    def deselect_work_package(work_package)
+      element = find("wp-single-card[data-work-package-id='#{work_package.id}']")
+
+      page.driver.browser.action.key_down(:command)
+        .click(element.native)
+        .key_up(:command)
+        .perform
+    end
+
+    def select_work_package_with_shift(work_package)
+      element = find("wp-single-card[data-work-package-id='#{work_package.id}']")
+
+      page.driver.browser.action.key_down(:shift)
+        .click(element.native)
+        .key_up(:shift)
+        .perform
+    end
+
+    def select_all_work_packages
+      find('body').send_keys [:control, 'a']
+      expect(page).to have_no_selector '#work-package-context-menu'
+    end
+
+    def deselect_all_work_packages
+      find('body').send_keys [:control, 'd']
+      expect(page).to have_no_selector '#work-package-context-menu'
     end
 
     def card(work_package)
@@ -64,6 +118,14 @@ module Pages
 
     def status_button(work_package)
       WorkPackageStatusField.new card(work_package)
+    end
+
+    def expect_work_package_selected(work_package, selected)
+      selector = "wp-single-card[data-work-package-id='#{work_package.id}']"
+      checked_selector = "wp-single-card[data-work-package-id='#{work_package.id}'] .-checked"
+
+      expect(page).to have_selector(selector)
+      expect(page).to (selected ? have_selector(checked_selector) : have_no_selector(checked_selector))
     end
   end
 end

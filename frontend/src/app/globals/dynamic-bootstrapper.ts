@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,10 +23,11 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 
 import {ComponentType} from "@angular/cdk/portal";
 import {ApplicationRef} from "@angular/core";
+import {filter, take} from "rxjs/operators";
 
 /**
  * Optional bootstrap definition to allow selecting all matching
@@ -56,9 +57,6 @@ export class DynamicBootstrapper {
    * Register an optional bootstrap component to be dynamically bootstrapped
    * whenever it occurs in the initially loaded DOM.
    *
-   * These elements MUST also be present in declarations and entryComponents of a module
-   * within our application module.
-   *
    * @param {OptionalBootstrapDefinition} definition
    */
   public static register(...defs:OptionalBootstrapDefinition[]) {
@@ -84,7 +82,11 @@ export class DynamicBootstrapper {
    * @param {OptionalBootstrapDefinition[]|undefined} definitions An optional set of components to bootstrap
    */
   public static bootstrapOptionalEmbeddable(appRef:ApplicationRef, element:HTMLElement, definitions = this.optionalBoostrapComponents) {
-    this.performBootstrap(appRef, element, true, definitions);
+    // Delay the execution to avoid bootstrapping the embedded components while
+    // the app is running the Change Detection. This was throwing "ApplicationRef.tick
+    // is called recursively" error because of bootstrapOptionalEmbeddable and
+    // bootstrapOptionalDocument were called too close (ie: ckEditor macros).
+    Promise.resolve().then(() => this.performBootstrap(appRef, element, true, definitions));
   }
 
   /**

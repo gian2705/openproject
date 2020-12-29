@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,7 +25,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 
 require 'spec_helper'
 require 'rack/test'
@@ -74,7 +74,7 @@ describe ::API::V3::Memberships::CreateFormAPI, content_type: :json do
 
     context 'with empty parameters' do
       it 'has 4 validation errors' do
-        # There are 4 validation errors instead of 3 with two duplicating each other
+        # There are 4 validation errors instead of 2 with two duplicating each other
         expect(subject.body).to have_json_size(4).at_path('_embedded/validationErrors')
       end
 
@@ -82,12 +82,12 @@ describe ::API::V3::Memberships::CreateFormAPI, content_type: :json do
         expect(subject.body).to have_json_path('_embedded/validationErrors/principal')
       end
 
-      it 'has a validation error on project' do
-        expect(subject.body).to have_json_path('_embedded/validationErrors/project')
-      end
-
       it 'has a validation error on roles' do
         expect(subject.body).to have_json_path('_embedded/validationErrors/roles')
+      end
+
+      it 'has a validation error on project' do
+        expect(subject.body).to have_json_path('_embedded/validationErrors/project')
       end
 
       it 'has no commit link' do

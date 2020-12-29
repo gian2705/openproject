@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -53,7 +53,7 @@ module BasicData
       colors = colors.map { |c| { c.name =>  c.id } }.reduce({}, :merge)
 
       type_table.map do |_name, values|
-        color_id = Color.find_by(id: values[2]) ? values[2] : colors[I18n.t(values[2])]
+        color_id = colors[values[2]] || values[2]
 
         {
           name:                 I18n.t(values[5]),

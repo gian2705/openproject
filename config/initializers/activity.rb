@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,36 +28,31 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-Redmine::Activity.map do |activity|
-  activity.register :work_packages, class_name: 'Activity::WorkPackageActivityProvider'
-  activity.register :changesets, class_name: 'Activity::ChangesetActivityProvider'
-  activity.register :news, class_name: 'Activity::NewsActivityProvider',
+OpenProject::Activity.map do |activity|
+  activity.register :work_packages, class_name: '::Activities::WorkPackageActivityProvider'
+  activity.register :changesets, class_name: 'Activities::ChangesetActivityProvider'
+  activity.register :news, class_name: 'Activities::NewsActivityProvider',
                            default: false
-  activity.register :wiki_edits, class_name: 'Activity::WikiContentActivityProvider',
+  activity.register :wiki_edits, class_name: 'Activities::WikiContentActivityProvider',
                                  default: false
-  activity.register :messages, class_name: 'Activity::MessageActivityProvider',
+  activity.register :messages, class_name: 'Activities::MessageActivityProvider',
                                default: false
-  activity.register :time_entries, class_name: 'Activity::TimeEntryActivityProvider',
-                                   default: false
 end
 
-Project.register_latest_project_activity on: WorkPackage,
+Project.register_latest_project_activity on: 'WorkPackage',
                                          attribute: :updated_at
 
-Project.register_latest_project_activity on: News,
-                                         attribute: :created_on
+Project.register_latest_project_activity on: 'News',
+                                         attribute: :updated_at
 
-Project.register_latest_project_activity on: Changeset,
-                                         chain: Repository,
+Project.register_latest_project_activity on: 'Changeset',
+                                         chain: 'Repository',
                                          attribute: :committed_on
 
-Project.register_latest_project_activity on: WikiContent,
-                                         chain: [Wiki, WikiPage],
-                                         attribute: :updated_on
+Project.register_latest_project_activity on: 'WikiContent',
+                                         chain: %w(Wiki WikiPage),
+                                         attribute: :updated_at
 
-Project.register_latest_project_activity on: Message,
-                                         chain: Forum,
-                                         attribute: :updated_on
-
-Project.register_latest_project_activity on: TimeEntry,
-                                         attribute: :updated_on
+Project.register_latest_project_activity on: 'Message',
+                                         chain: 'Forum',
+                                         attribute: :updated_at

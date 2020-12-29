@@ -20,7 +20,7 @@ As containers, they also control behaviour of the elements within them. One of t
 | :----------: | -------------                        | ----       | ----------- | -------------------- |-----------------------------------------              |
 | self         | This project                         | Project    | not null    | READ                 |                                                       |
 | categories   | Categories available in this project | Collection | not null    | READ                 |                                                       |
-| types        | Types available in this project      | Collection | not null    | READ                 | **Permission**: view work pacakges or manage types    |
+| types        | Types available in this project      | Collection | not null    | READ                 | **Permission**: view work packages or manage types    |
 | versions     | Versions available in this project   | Collection | not null    | READ                 | **Permission**: view work packages or manage versions |
 | memberships  | Memberships in the  project          | Collection | not null    | READ                 | **Permission**: view members                          |
 | workPackages | Work Packages of this project        | Collection | not null    | READ                 |                                                       |
@@ -80,7 +80,7 @@ Depending on custom fields defined for projects, additional properties might exi
                     "memberships": {
                         "href": "/api/v3/memberships?filters=[{"project":{"operator":"=","values":["1"]}}]
                     },
-                    "customField456: {
+                    "customField456": {
                         "href": "/api/v3/users/315",
                         "method": "A user"
                     },
@@ -406,7 +406,7 @@ Returns a collection of projects. The collection can be filtered via query param
     Currently supported filters are:
       + active: based on the active property of the project
       + ancestor: filters projects by their ancestor. A project is not considered to be it's own ancestor.
-      + created_on: based on the time the project was created
+      + created_at: based on the time the project was created
       + latest_activity_at: based on the time the last activity was registered on a project.
       + name_and_identifier: based on both the name and the identifier.
       + parent_id: filters projects by their parent.
@@ -418,7 +418,7 @@ Returns a collection of projects. The collection can be filtered via query param
     Currently supported orders are:
       + id
       + name
-      + created_on
+      + created_at
       + public
       + latest_activity_at
       + required_disk_space
@@ -434,6 +434,8 @@ Returns a collection of projects. The collection can be filtered via query param
 Creates a new project, applying the attributes provided in the body.
 
 You can use the form and schema to be retrieve the valid attribute values and by that be guided towards successful creation.
+
++ Parameters
 
 + Request Create project
 
@@ -654,7 +656,7 @@ You can use the form and schema to be retrieve the valid attribute values and by
 
     [Projects schema][]
 
-## Project create form [/api/v3/project/form]
+## Project create form [/api/v3/projects/form]
 
 This endpoint returns a form allowing a guided creation of new projects.
 

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,16 +27,17 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Journal < ActiveRecord::Base
+class Journal < ApplicationRecord
   self.table_name = 'journals'
 
   include ::JournalChanges
   include ::JournalFormatter
-  include ::Redmine::Acts::Journalized::FormatHooks
+  include ::Acts::Journalized::FormatHooks
 
   register_journal_formatter :diff, OpenProject::JournalFormatter::Diff
   register_journal_formatter :attachment, OpenProject::JournalFormatter::Attachment
   register_journal_formatter :custom_field, OpenProject::JournalFormatter::CustomField
+  register_journal_formatter :schedule_manually, OpenProject::JournalFormatter::ScheduleManually
 
   # Make sure each journaled model instance only has unique version ids
   validates_uniqueness_of :version, scope: [:journable_id, :journable_type]
@@ -47,21 +48,11 @@ class Journal < ActiveRecord::Base
   has_many :attachable_journals, class_name: 'Journal::AttachableJournal', dependent: :destroy
   has_many :customizable_journals, class_name: 'Journal::CustomizableJournal', dependent: :destroy
 
-  after_create :save_data, if: :data
-  after_save :save_data, :touch_journable
+  before_destroy :destroy_data
 
   # Scopes to all journals excluding the initial journal - useful for change
   # logs like the history on issue#show
   scope :changing, -> { where(['version > 1']) }
-
-  def changed_data=(changed_attributes)
-    attributes = changed_attributes
-
-    if attributes.is_a? Hash and attributes.values.first.is_a? Array
-      attributes.each { |k, v| attributes[k] = v[1] }
-    end
-    data.update attributes
-  end
 
   # In conjunction with the included Comparable module, allows comparison of journal records
   # based on their corresponding version numbers, creation timestamps and IDs.
@@ -91,15 +82,12 @@ class Journal < ActiveRecord::Base
   end
 
   def editable_by?(user)
-    (journable.journal_editable_by?(user) && self.user == user) || user.admin?
+    journable.journal_editable_by?(self, user)
   end
 
   def details
     get_changes
   end
-
-  # TODO Evaluate whether this can be removed without disturbing any migrations
-  alias_method :changed_data, :details
 
   def new_value_for(prop)
     details[prop].last if details.keys.include? prop
@@ -113,31 +101,18 @@ class Journal < ActiveRecord::Base
     @data ||= "Journal::#{journable_type}Journal".constantize.find_by(journal_id: id)
   end
 
-  def data=(data)
-    @data = data
-  end
-
   def previous
     predecessor
   end
 
-  private
-
-  def save_data
-    data.journal_id = id if data.new_record?
-    data.save!
+  def noop?
+    (!notes || notes&.empty?) && get_changes.empty?
   end
 
-  def touch_journable
-    if journable && !journable.changed?
-      # Not using touch here on purpose,
-      # as to avoid changing lock versions on the journables for this change
-      time = journable.send(:current_time_from_proper_timezone)
-      attributes = journable.send(:timestamp_attributes_for_update_in_model)
+  private
 
-      timestamps = Hash[attributes.map { |column| [column, time] }]
-      journable.update_columns(timestamps) if timestamps.any?
-    end
+  def destroy_data
+    data&.destroy
   end
 
   def predecessor
@@ -146,9 +121,5 @@ class Journal < ActiveRecord::Base
                      .where("#{self.class.table_name}.version < ?", version)
                      .order("#{self.class.table_name}.version DESC")
                      .first
-  end
-
-  def journalized_object_type
-    "#{journaled_type.gsub('Journal', '')}".constantize
   end
 end

@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,21 +23,33 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {DisplayField} from "core-app/modules/fields/display/display-field.module";
 import {ExpressionService} from "../../../../../../common/expression.service";
 import {ApplicationRef} from "@angular/core";
 import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 export class FormattableDisplayField extends DisplayField {
 
-  private readonly appRef = this.$injector.get(ApplicationRef);
+  @InjectField() readonly appRef:ApplicationRef;
 
-  public render(element:HTMLElement, displayText:string):void {
+  public render(element:HTMLElement, displayText:string, options:any = {}):void {
     let div = document.createElement('div');
-    div.classList.add('read-value--html', 'wiki', 'highlight', '-multiline');
+
+    div.classList.add(
+      'read-value--html',
+      'highlight',
+      'op-uc-container',
+      'op-uc-container_reduced-headings',
+      '-multiline',
+    );
+    if (options.rtl) {
+      div.classList.add('-rtl');
+    }
+
     div.innerHTML = displayText;
 
     element.innerHTML = '';

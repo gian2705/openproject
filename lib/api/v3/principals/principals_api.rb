@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -43,7 +43,7 @@ module API
                            .includes(:preference)
 
               ::API::V3::Users::PaginatedUserCollectionRepresenter.new(principals,
-                                                                       api_v3_paths.principals,
+                                                                       self_link: api_v3_paths.principals,
                                                                        page: to_i_or_nil(params[:offset]),
                                                                        per_page: resolve_page_size(params[:pageSize]),
                                                                        current_user: current_user)

@@ -8,7 +8,7 @@ module OpenProject::OpenIDConnect
     extend OpenProject::Plugins::AuthPlugin
 
     register 'openproject-openid_connect',
-             author_url: 'http://finn.de',
+             author_url: 'https://www.openproject.com',
              bundled: true,
              settings: { 'default' => { 'providers' => {} } } do
       menu :admin_menu,
@@ -23,6 +23,8 @@ module OpenProject::OpenIDConnect
       openid_connect/auth_provider-google.png
       openid_connect/auth_provider-heroku.png
     )
+
+    class_inflection_override('openid_connect' => 'OpenIDConnect')
 
     register_auth_providers do
       # Use OpenSSL default certificate store instead of HTTPClient's.
@@ -65,7 +67,8 @@ module OpenProject::OpenIDConnect
           access_token = auth_hash.fetch(:credentials, {})[:token]
           # put it into a cookie
           if context && access_token
-            context.send(:cookies)[:_open_project_session_access_token] = {
+            controller = context.controller
+            controller.send(:cookies)[:_open_project_session_access_token] = {
               value: access_token,
               secure: secure_cookie
             }

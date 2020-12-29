@@ -1,15 +1,12 @@
 #-- copyright
-# OpenProject Documents Plugin
-#
-# Former OpenProject Core functionality extracted into a plugin.
-#
-# Copyright (C) 2009-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
 # OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
@@ -26,30 +23,26 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 require File.dirname(__FILE__) + '/../spec_helper'
 
-
 describe Document do
-
   let(:documentation_category) { FactoryBot.create :document_category, name: 'User documentation'}
   let(:project)                { FactoryBot.create :project}
   let(:user)                   { FactoryBot.create(:user)}
   let(:admin)                  { FactoryBot.create(:admin)}
 
-  let(:mail)      do
+  let(:mail) do
     mock = Object.new
     allow(mock).to receive(:deliver_now)
     mock
   end
 
   context "validation" do
-
     it { is_expected.to validate_presence_of :project}
     it { is_expected.to validate_presence_of :title}
     it { is_expected.to validate_presence_of :category}
-
   end
 
   describe "create with a valid document" do
@@ -85,32 +78,37 @@ describe Document do
       expect(document.category).to eql default_category
       expect{
         document.save
-      }.to change{Document.count}.by 1
+      }.to change { Document.count }.by 1
     end
 
-    it "with attachments should change the updated_on-date on the document to the attachment's date" do
-      3.times do
-        FactoryBot.create(:attachment, container: valid_document)
-      end
+    it "with attachments should change the updated_at-date on the document to the attachment's date" do
+      valid_document.save
 
-      valid_document.reload
-      expect(valid_document.attachments.size).to eql 3
-      expect(valid_document.attachments.map(&:created_at).max).to eql valid_document.updated_on
+      expect {
+        Attachments::CreateService
+          .new(valid_document, author: admin)
+          .call(uploaded_file: FactoryBot.attributes_for(:attachment)[:file], description: '')
+
+        expect(valid_document.attachments.size).to eql 1
+      }.to(change {
+        valid_document.reload
+        valid_document.updated_at
+      })
     end
 
     it "without attachments, the updated-on-date is taken from the document's date" do
       document = FactoryBot.create(:document, project: project)
       expect(document.attachments).to be_empty
-      expect(document.created_on).to eql document.updated_on
+      expect(document.created_at).to eql document.updated_at
     end
   end
 
   describe "acts as event" do
     let(:now) { Time.zone.now }
-    let(:document) {
+    let(:document) do
       FactoryBot.build(:document,
-                                       created_on: now)
-    }
+                       created_at: now)
+    end
 
     it { expect(document.event_datetime.to_i).to eq(now.to_i) }
   end

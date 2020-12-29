@@ -1,17 +1,15 @@
-import {Component, Injector, ChangeDetectionStrategy} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Injector} from '@angular/core';
 import {AbstractWidgetComponent} from "core-app/modules/grids/widgets/abstract-widget.component";
 import {QueryFormResource} from "core-app/modules/hal/resources/query-form-resource";
 import {QueryResource} from "core-app/modules/hal/resources/query-resource";
 import {WorkPackageTableConfiguration} from "core-components/wp-table/wp-table-configuration";
 import {Observable} from 'rxjs';
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
-import {QueryFormDmService} from "core-app/modules/hal/dm-services/query-form-dm.service";
 import {UrlParamsHelperService} from "core-components/wp-query/url-params-helper";
-import {QueryDmService} from "core-app/modules/hal/dm-services/query-dm.service";
 import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
 import {StateService} from '@uirouter/core';
-import {skip} from 'rxjs/operators';
-import {untilComponentDestroyed} from 'ng2-rx-componentdestroyed';
+import {finalize, publish, skip} from 'rxjs/operators';
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   selector: 'widget-wp-table',
@@ -36,9 +34,8 @@ export class WidgetWpTableComponent extends AbstractWidgetComponent {
               protected readonly injector:Injector,
               protected urlParamsHelper:UrlParamsHelperService,
               protected readonly state:StateService,
-              protected readonly queryDm:QueryDmService,
               protected readonly querySpace:IsolatedQuerySpace,
-              protected readonly queryFormDm:QueryFormDmService) {
+              protected readonly apiV3Service:APIV3Service) {
     super(i18n, injector);
   }
 
@@ -65,7 +62,7 @@ export class WidgetWpTableComponent extends AbstractWidgetComponent {
       .pipe(
         // 2 because ... well it is a magic number and works
         skip(2),
-        untilComponentDestroyed(this)
+        this.untilDestroyed()
       ).subscribe((query) => {
       this.ensureFormAndSaveQuery(query);
     });
@@ -79,55 +76,63 @@ export class WidgetWpTableComponent extends AbstractWidgetComponent {
     return 'work_packages_table';
   }
 
-  ngOnDestroy() {
-    // nothing to do
-  }
-
   private ensureFormAndSaveQuery(query:QueryResource) {
     if (this.queryForm) {
-      this.saveQuery(query);
+      this.saveQuery(query, this.queryForm);
     } else {
-      this.queryFormDm.load(query).then((form) => {
-        this.queryForm = form;
-        this.saveQuery(query);
-      });
+      this
+        .apiV3Service
+        .queries
+        .form
+        .load(query)
+        .subscribe(([form, _]) => {
+          this.queryForm = form;
+          this.saveQuery(query, form);
+        });
     }
   }
 
-  private saveQuery(query:QueryResource) {
+  private saveQuery(query:QueryResource, form:QueryFormResource) {
     this.inFlight = true;
 
     this
-      .queryDm
-      .update(query, this.queryForm)
-      .toPromise()
-      .then((query) => {
-        this.inFlight = false;
-        return query;
-      })
-      .catch(() => this.inFlight = false);
+      .apiV3Service
+      .queries
+      .id(query)
+      .patch(query, this.queryForm)
+      .subscribe(
+        () => this.inFlight = false,
+        () => this.inFlight = false,
+      );
   }
 
   private createInitial():Promise<QueryResource> {
     const projectIdentifier = this.state.params['projectPath'];
     let initializationProps = this.resource.options.queryProps;
-    let queryProps = Object.assign({pageSize: 0}, initializationProps);
+    let queryProps = Object.assign({ pageSize: 0 }, initializationProps);
 
-    return this.queryFormDm
+    return this
+      .apiV3Service
+      .queries
+      .form
       .loadWithParams(
         queryProps,
         undefined,
         projectIdentifier,
         this.queryCreationParams()
       )
-      .then(form => {
-        const query = this.queryFormDm.buildQueryResource(form);
+      .toPromise()
+      .then(([form, query]) => {
+        return this
+          .apiV3Service
+          .queries
+          .post(query, form)
+          .toPromise()
+          .then((query) => {
+            delete this.resource.options.queryProps;
 
-        return this.queryDm.create(query, form).then((query) => {
-          delete this.resource.options.queryProps;
-
-          return query;
-        });
+            return query;
+          });
       });
   }
 

@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,6 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.dirname(__FILE__) + '/../spec_helper'
@@ -60,15 +69,15 @@ describe User, '#destroy', type: :model do
       end
     end
     it { expect(associated_instance.journals.first.user).to eq(user2) }
-    it 'should update first journal changed_data' do
+    it 'should update first journal details' do
       associations.each do |association|
-        expect(associated_instance.journals.first.changed_data["#{association}_id".to_sym].last).to eq(user2.id)
+        expect(associated_instance.journals.first.details["#{association}_id".to_sym].last).to eq(user2.id)
       end
     end
     it { expect(associated_instance.journals.last.user).to eq(substitute_user) }
-    it 'should update second journal changed_data' do
+    it 'should update second journal details' do
       associations.each do |association|
-        expect(associated_instance.journals.last.changed_data["#{association}_id".to_sym].last).to eq(substitute_user.id)
+        expect(associated_instance.journals.last.details["#{association}_id".to_sym].last).to eq(substitute_user.id)
       end
     end
   end
@@ -101,30 +110,30 @@ describe User, '#destroy', type: :model do
     it { expect(associated_instance.journals.first.user).to eq(substitute_user) }
     it 'should update the first journal' do
       associations.each do |association|
-        expect(associated_instance.journals.first.changed_data["#{association}_id".to_sym].last).to eq(substitute_user.id)
+        expect(associated_instance.journals.first.details["#{association}_id".to_sym].last).to eq(substitute_user.id)
       end
     end
     it { expect(associated_instance.journals.last.user).to eq(user2) }
     it 'should update the last journal' do
       associations.each do |association|
-        expect(associated_instance.journals.last.changed_data["#{association}_id".to_sym].first).to eq(substitute_user.id)
-        expect(associated_instance.journals.last.changed_data["#{association}_id".to_sym].last).to eq(user2.id)
+        expect(associated_instance.journals.last.details["#{association}_id".to_sym].first).to eq(substitute_user.id)
+        expect(associated_instance.journals.last.details["#{association}_id".to_sym].last).to eq(user2.id)
       end
     end
   end
 
   describe 'WHEN the user updated a cost object' do
     let(:associations) { [:author] }
-    let(:associated_instance) { FactoryBot.build(:variable_cost_object) }
-    let(:associated_class) { CostObject }
+    let(:associated_instance) { FactoryBot.build(:budget) }
+    let(:associated_class) { Budget }
 
     it_should_behave_like 'costs updated journalized associated object'
   end
 
   describe 'WHEN the user created a cost object' do
     let(:associations) { [:author] }
-    let(:associated_instance) { FactoryBot.build(:variable_cost_object) }
-    let(:associated_class) { CostObject }
+    let(:associated_instance) { FactoryBot.build(:budget) }
+    let(:associated_class) { Budget }
 
     it_should_behave_like 'costs created journalized associated object'
   end
@@ -145,7 +154,7 @@ describe User, '#destroy', type: :model do
   describe 'WHEN the user has a cost entry' do
     let(:work_package) { FactoryBot.create(:work_package) }
     let(:entry) {
-      FactoryBot.build(:cost_entry, user: user,
+      FactoryBot.create(:cost_entry, user: user,
                                      project: work_package.project,
                                      units: 100.0,
                                      spent_on: Date.today,
@@ -157,7 +166,7 @@ describe User, '#destroy', type: :model do
       FactoryBot.create(:member, project: work_package.project,
                                   user: user,
                                   roles: [FactoryBot.build(:role)])
-      entry.save!
+      entry
 
       user.destroy
 

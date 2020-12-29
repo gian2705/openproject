@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,11 +25,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 module DemoData
   class WorkPackageSeeder < Seeder
     attr_accessor :project, :user, :statuses, :repository,
-                  :time_entry_activities, :types, :key
+                  :types, :key
 
     include ::DemoData::References
 
@@ -38,17 +39,14 @@ module DemoData
       self.user = User.admin.first
       self.statuses = Status.all
       self.repository = Repository.first
-      self.time_entry_activities = TimeEntryActivity.all
       self.types = project.types.all.reject(&:is_milestone?)
     end
 
     def seed_data!
-      print '    ↳ Creating work_packages'
-
-      seed_demo_work_packages
-      set_workpackage_relations
-
-      puts
+      print_status '    ↳ Creating work_packages' do
+        seed_demo_work_packages
+        set_workpackage_relations
+      end
     end
 
     private
@@ -57,7 +55,7 @@ module DemoData
       work_packages_data = project_data_for(key, 'work_packages')
 
       work_packages_data.each do |attributes|
-        print '.'
+        print_status '.'
         create_or_update_work_package(attributes)
       end
     end
@@ -94,7 +92,7 @@ module DemoData
 
     def create_children!(work_package, attributes)
       Array(attributes[:children]).each do |child_attributes|
-        print '.'
+        print_status '.'
         child = create_work_package child_attributes
 
         child.parent = work_package
@@ -118,7 +116,7 @@ module DemoData
 
     def find_principal(name)
       if name
-        group_assignee =  Group.find_by(lastname: name)
+        group_assignee = Group.find_by(lastname: name)
         return group_assignee unless group_assignee.nil?
       end
 
@@ -139,7 +137,7 @@ module DemoData
 
     def set_version!(wp_attr, attributes)
       if attributes[:version]
-        wp_attr[:fixed_version] = Version.find_by!(name: attributes[:version])
+        wp_attr[:version] = Version.find_by!(name: attributes[:version])
       end
     end
 
@@ -176,7 +174,7 @@ module DemoData
     end
 
     def set_workpackage_relations
-      work_packages_data =  project_data_for(key, 'work_packages')
+      work_packages_data = project_data_for(key, 'work_packages')
 
       work_packages_data.each do |attributes|
         create_relations attributes

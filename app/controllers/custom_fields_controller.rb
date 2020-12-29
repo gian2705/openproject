@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,6 +31,8 @@
 class CustomFieldsController < ApplicationController
   layout 'admin'
 
+  helper_method :gon
+
   before_action :require_admin
   before_action :find_custom_field, only: %i(edit update destroy move delete_option)
   before_action :prepare_custom_option_position, only: %i(update create)
@@ -45,17 +47,25 @@ class CustomFieldsController < ApplicationController
   end
 
   def new
-    @custom_field = careful_new_custom_field permitted_params.custom_field_type
+    @custom_field = new_custom_field
+
+    if @custom_field.nil?
+      flash[:error] = 'Invalid CF type'
+      redirect_to action: :index
+    end
   end
 
   def create
-    @custom_field = careful_new_custom_field permitted_params.custom_field_type, get_custom_field_params
+    call = ::CustomFields::CreateService
+      .new(user: current_user)
+      .call(get_custom_field_params.merge(type: permitted_params.custom_field_type))
 
-    if @custom_field.save
-      flash[:notice] = l(:notice_successful_create)
-      call_hook(:controller_custom_fields_new_after_save, custom_field: @custom_field)
-      redirect_to custom_fields_path(tab: @custom_field.class.name)
+    if call.success?
+      flash[:notice] = t(:notice_successful_create)
+      call_hook(:controller_custom_fields_new_after_save, custom_field: call.result)
+      redirect_to custom_fields_path(tab: call.result.class.name)
     else
+      @custom_field = call.result || new_custom_field
       render action: 'new'
     end
   end
@@ -63,9 +73,11 @@ class CustomFieldsController < ApplicationController
   def edit; end
 
   def update
-    @custom_field.attributes = get_custom_field_params
+    call = ::CustomFields::UpdateService
+      .new(user: current_user, model: @custom_field)
+      .call(get_custom_field_params)
 
-    if @custom_field.save
+    if call.success?
       flash[:notice] = t(:notice_successful_update)
       call_hook(:controller_custom_fields_edit_after_save, custom_field: @custom_field)
       redirect_back_or_default edit_custom_field_path(id: @custom_field.id)
@@ -78,7 +90,7 @@ class CustomFieldsController < ApplicationController
     begin
       @custom_field.destroy
     rescue
-      flash[:error] = l(:error_can_not_delete_custom_field)
+      flash[:error] = I18n.t(:error_can_not_delete_custom_field)
     end
     redirect_to custom_fields_path(tab: @custom_field.class.name)
   end
@@ -98,6 +110,10 @@ class CustomFieldsController < ApplicationController
   end
 
   private
+
+  def new_custom_field
+    ::CustomFields::CreateService.careful_new_custom_field(permitted_params.custom_field_type)
+  end
 
   def get_custom_field_params
     custom_field_params = permitted_params.custom_field
@@ -129,20 +145,6 @@ class CustomFieldsController < ApplicationController
     params[:custom_field][:custom_options_attributes].each do |_id, attributes|
       attributes[:position] = (index = index + 1)
     end
-  end
-
-  def careful_new_custom_field(type, params = {})
-    cf = begin
-      if type.to_s =~ /.+CustomField\z/
-        klass = type.to_s.constantize
-        klass.new(params) if klass.ancestors.include? CustomField
-      end
-    rescue NameError => e
-      Rails.logger.error "#{e.message}:\n#{e.backtrace.join("\n")}"
-      nil
-    end
-    redirect_to custom_fields_path unless cf
-    cf
   end
 
   def find_custom_field

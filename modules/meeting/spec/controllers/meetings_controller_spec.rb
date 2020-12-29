@@ -1,10 +1,18 @@
 #-- copyright
-# OpenProject Meeting Plugin
-#
-# Copyright (C) 2011-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.md for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.dirname(__FILE__) + '/../spec_helper'
@@ -33,7 +41,9 @@ describe MeetingsController, type: :controller do
   describe 'GET' do
     describe 'index' do
       before(:each) do
-        @ms = [mock_model(Meeting), mock_model(Meeting), mock_model(Meeting)]
+        @ms = [FactoryBot.build_stubbed(:meeting),
+               FactoryBot.build_stubbed(:meeting),
+               FactoryBot.build_stubbed(:meeting)]
         allow(@ms).to receive(:from_tomorrow).and_return(@ms)
 
         allow(project).to receive(:meetings).and_return(@ms)
@@ -54,10 +64,8 @@ describe MeetingsController, type: :controller do
 
     describe 'show' do
       before(:each) do
-        @m = mock_model(Meeting)
+        @m = FactoryBot.build_stubbed(:meeting, project: project, agenda: nil)
         allow(Meeting).to receive_message_chain(:includes, :find).and_return(@m)
-        allow(@m).to receive(:project).and_return(project)
-        allow(allow(@m).to receive(:agenda)).to receive(:present?).and_return(false)
       end
       describe 'html' do
         before(:each) do
@@ -70,9 +78,7 @@ describe MeetingsController, type: :controller do
     describe 'new' do
       before(:each) do
         allow(Project).to receive(:find).and_return(project)
-        @m = mock_model(Meeting)
-        allow(@m).to receive(:project=)
-        allow(@m).to receive(:author=)
+        @m = FactoryBot.build_stubbed(:meeting)
         allow(Meeting).to receive(:new).and_return(@m)
       end
       describe 'html' do
@@ -86,9 +92,8 @@ describe MeetingsController, type: :controller do
 
     describe 'edit' do
       before(:each) do
-        @m = mock_model(Meeting)
+        @m = FactoryBot.build_stubbed(:meeting, project: project)
         allow(Meeting).to receive_message_chain(:includes, :find).and_return(@m)
-        allow(@m).to receive(:project).and_return(project)
       end
       describe 'html' do
         before(:each) do

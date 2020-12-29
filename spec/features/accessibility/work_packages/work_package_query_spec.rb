@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -115,7 +115,7 @@ describe 'Work package index accessibility', type: :feature, selenium: true do
 
     describe 'id column' do
       let(:link_caption) { 'ID' }
-      let(:column_header_selector) { '.work-package-table--container th:nth-of-type(3)' }
+      let(:column_header_selector) { '.work-package-table--container th:nth-of-type(2)' }
       let(:column_header_link_selector) { column_header_selector + ' a' }
 
       it_behaves_like 'sortable column'
@@ -123,7 +123,7 @@ describe 'Work package index accessibility', type: :feature, selenium: true do
 
     describe 'subject column' do
       let(:link_caption) { 'Subject' }
-      let(:column_header_selector) { '.work-package-table--container th:nth-of-type(4)' }
+      let(:column_header_selector) { '.work-package-table--container th:nth-of-type(3)' }
       let(:column_header_link_selector) { column_header_selector + ' #subject' }
 
       it_behaves_like 'sortable column'
@@ -131,7 +131,7 @@ describe 'Work package index accessibility', type: :feature, selenium: true do
 
     describe 'type column' do
       let(:link_caption) { 'Type' }
-      let(:column_header_selector) { '.work-package-table--container th:nth-of-type(2)' }
+      let(:column_header_selector) { '.work-package-table--container th:nth-of-type(4)' }
       let(:column_header_link_selector) { column_header_selector + ' a' }
 
       it_behaves_like 'sortable column'
@@ -165,10 +165,10 @@ describe 'Work package index accessibility', type: :feature, selenium: true do
 
     context 'focus' do
       let(:first_link_selector) do
-        ".wp-row-#{work_package.id} .inline-edit--display-field.type"
+        ".wp-row-#{work_package.id} .inline-edit--display-field.id a"
       end
       let(:second_link_selector) do
-        ".wp-row-#{another_work_package.id} .inline-edit--display-field.type"
+        ".wp-row-#{another_work_package.id} .inline-edit--display-field.id a"
       end
 
       it 'navigates with J and K' do
@@ -193,7 +193,7 @@ describe 'Work package index accessibility', type: :feature, selenium: true do
 
         new_window = window_opened_by { find('body').native.send_keys('?') }
         within_window new_window do
-          expect(page).to have_selector('h1', text: 'Available Keyboard Shortcuts')
+          expect(page.current_url).to include 'https://docs.openproject.org/'
         end
 
         new_window.close

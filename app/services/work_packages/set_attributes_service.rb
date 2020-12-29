@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -59,18 +59,48 @@ class WorkPackages::SetAttributesService < ::BaseServices::SetAttributes
     work_package.attributes = assignable_attributes
   end
 
-  def set_default_attributes(*)
+  def set_default_attributes(attributes)
     return unless work_package.new_record?
 
-    work_package.priority ||= IssuePriority.active.default
-    work_package.author ||= user
-    work_package.status ||= Status.default
-
-    work_package.start_date ||= Date.today if Setting.work_package_startdate_is_adddate?
+    set_default_priority
+    set_default_author
+    set_default_status
+    set_default_start_date(attributes)
+    set_default_due_date(attributes)
   end
 
   def non_or_default_description?
     work_package.description.blank? || false
+  end
+
+  def set_default_author
+    work_package.author ||= user
+  end
+
+  def set_default_status
+    work_package.status ||= Status.default
+  end
+
+  def set_default_priority
+    work_package.priority ||= IssuePriority.active.default
+  end
+
+  def set_default_start_date(attributes)
+    work_package.start_date ||= if attributes.has_key?(:start_date)
+                                  nil
+                                elsif parent_start_earlier_than_due?
+                                  work_package.parent.start_date
+                                elsif Setting.work_package_startdate_is_adddate?
+                                  Date.today
+                                end
+  end
+
+  def set_default_due_date(attributes)
+    work_package.due_date ||= if attributes.has_key?(:due_date)
+                                nil
+                              elsif parent_due_later_than_start?
+                                work_package.parent.due_date
+                              end
   end
 
   def set_templated_description
@@ -131,7 +161,7 @@ class WorkPackages::SetAttributesService < ::BaseServices::SetAttributes
     return unless work_package.project_id_changed? && work_package.project_id
 
     change_by_system do
-      set_fixed_version_to_nil
+      set_version_to_nil
       reassign_category
 
       reassign_type unless work_package.type_id_changed?
@@ -143,16 +173,16 @@ class WorkPackages::SetAttributesService < ::BaseServices::SetAttributes
 
     min_start = new_start_date
 
-    if min_start
-      work_package.due_date = min_start + work_package.duration - 1
-      work_package.start_date = min_start
-    end
+    return unless min_start
+
+    work_package.due_date = new_due_date(min_start)
+    work_package.start_date = min_start
   end
 
-  def set_fixed_version_to_nil
-    unless work_package.fixed_version &&
-           work_package.project.shared_versions.include?(work_package.fixed_version)
-      work_package.fixed_version = nil
+  def set_version_to_nil
+    if work_package.version &&
+       !work_package.project&.shared_versions.include?(work_package.version)
+      work_package.version = nil
     end
   end
 
@@ -173,11 +203,11 @@ class WorkPackages::SetAttributesService < ::BaseServices::SetAttributes
 
     work_package.type = available_types.detect(&:is_default) || available_types.first
 
-    reassign_status work_package.new_statuses_allowed_to(user, true)
+    reassign_status assignable_statuses
   end
 
   def reassign_status(available_statuses)
-    return if available_statuses.include? work_package.status
+    return if available_statuses.include?(work_package.status) || work_package.status.is_a?(Status::InexistentStatus)
 
     new_status = available_statuses.detect(&:is_default) || available_statuses.first
     work_package.status = new_status if new_status.present?
@@ -200,18 +230,67 @@ class WorkPackages::SetAttributesService < ::BaseServices::SetAttributes
   def new_start_date
     current_start_date = work_package.start_date || work_package.due_date
 
-    return unless work_package.parent_id_changed? &&
-                  work_package.parent_id &&
-                  current_start_date
+    return unless current_start_date && work_package.schedule_automatically?
 
-    min_start = work_package.parent.soonest_start
+    min_start = new_start_date_from_parent || new_start_date_from_self
 
-    if min_start && (min_start > current_start_date)
+    if min_start && (min_start > current_start_date || work_package.schedule_manually_changed?)
       min_start
     end
   end
 
+  def new_start_date_from_parent
+    return unless work_package.parent_id_changed? &&
+                  work_package.parent_id
+
+    work_package.parent.soonest_start
+  end
+
+  def new_start_date_from_self
+    return unless work_package.schedule_manually_changed?
+
+    [min_child_date, work_package.soonest_start].compact.max
+  end
+
+  def new_due_date(min_start)
+    min_start + (children_duration || work_package.duration) - 1
+  end
+
   def work_package
     model
+  end
+
+  def assignable_statuses
+    instantiate_contract(work_package, user).assignable_statuses(true)
+  end
+
+  def min_child_date
+    (work_package.children.map(&:start_date) + work_package.children.map(&:due_date)).compact.min
+  end
+
+  def children_duration
+    max = max_child_date
+
+    return unless max
+
+    max - min_child_date + 1
+  end
+
+  def max_child_date
+    (work_package.children.map(&:start_date) + work_package.children.map(&:due_date)).compact.max
+  end
+
+  def parent_start_earlier_than_due?
+    start = work_package.parent&.start_date
+    due = work_package.due_date || work_package.parent&.due_date
+
+    (start && !due) || ((due && start) && (start < due))
+  end
+
+  def parent_due_later_than_start?
+    due = work_package.parent&.due_date
+    start = work_package.start_date || work_package.parent&.start_date
+
+    (due && !start) || ((due && start) && (due > start))
   end
 end

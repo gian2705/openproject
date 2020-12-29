@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -51,9 +51,12 @@ npm-debug.log*
 /backup
 /.project
 /.loadpath
-/app/assets/javascripts/bundles/*.*
+
+# Generated files
 /app/assets/javascripts/editor/*
 /app/assets/javascripts/locales/*.*
+/frontend/src/locales/*.js
+/modules/*/frontend/module/module
 /config/additional_environment.rb
 /config/configuration.yml
 /config/database.yml
@@ -81,21 +84,27 @@ npm-debug.log*
 /Gemfile.local*
 /Gemfile.plugins*
 /.rvmrc*
-/.ruby-version
 /.ruby-gemset
 /.foreman
-/.env*
+.DS_Store
 .rspec
+
 # coverage in plugins
 /lib/plugins/*/coverage
+
 # asset cache
 /.sass-cache/
+
 # Frontend debug log
 /frontend/npm-debug.log*
 /frontend/dist/
 /frontend/tests/*.gif
 node_modules/
+
 # Ignore global package-lock.json that generates
 /package-lock.json
 plaintext.yml
 structure.sql
+
+# Local development docker 
+/.env

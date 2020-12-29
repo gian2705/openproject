@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,16 +24,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 
 require 'spec_helper'
 
-describe Scm::CreateManagedRepositoryService do
+describe SCM::CreateManagedRepositoryService do
   let(:user) { FactoryBot.build(:user) }
   let(:project) { FactoryBot.build(:project) }
 
   let(:repository) { FactoryBot.build(:repository_subversion) }
-  subject(:service) { Scm::CreateManagedRepositoryService.new(repository) }
+  subject(:service) { SCM::CreateManagedRepositoryService.new(repository) }
 
   let(:config) { {} }
 
@@ -90,9 +90,9 @@ describe Scm::CreateManagedRepositoryService do
     }
 
     before do
-      allow_any_instance_of(Scm::CreateLocalRepositoryJob)
+      allow_any_instance_of(SCM::CreateLocalRepositoryJob)
         .to receive(:repository).and_return(repository)
-      allow_any_instance_of(Scm::CreateRemoteRepositoryJob)
+      allow_any_instance_of(SCM::CreateRemoteRepositoryJob)
         .to receive(:repository).and_return(repository)
     end
 
@@ -116,7 +116,7 @@ describe Scm::CreateManagedRepositoryService do
 
     context 'with a permission error occurring in the Job' do
       before do
-        allow(Scm::CreateLocalRepositoryJob)
+        allow(SCM::CreateLocalRepositoryJob)
           .to receive(:new).and_raise(Errno::EACCES)
       end
 
@@ -130,7 +130,7 @@ describe Scm::CreateManagedRepositoryService do
 
     context 'with an OS error occurring in the Job' do
       before do
-        allow(Scm::CreateLocalRepositoryJob)
+        allow(SCM::CreateLocalRepositoryJob)
           .to receive(:new).and_raise(Errno::ENOENT)
       end
 
@@ -181,7 +181,7 @@ describe Scm::CreateManagedRepositoryService do
         end
 
         it do
-          expect(Scm::CreateRemoteRepositoryJob)
+          expect(SCM::CreateRemoteRepositoryJob)
             .to receive(:new).and_call_original
 
           expect(service.call).to be true
@@ -206,7 +206,7 @@ describe Scm::CreateManagedRepositoryService do
           }
         }
 
-        let(:instance) { Scm::CreateRemoteRepositoryJob.new }
+        let(:instance) { SCM::CreateRemoteRepositoryJob.new }
         let(:job_call) { instance.perform(repository) }
 
         context 'with insecure option' do
@@ -237,7 +237,7 @@ describe Scm::CreateManagedRepositoryService do
       end
 
       it 'calls the callback' do
-        expect(Scm::CreateRemoteRepositoryJob)
+        expect(SCM::CreateRemoteRepositoryJob)
           .to receive(:new).and_call_original
 
         expect(service.call).to be false

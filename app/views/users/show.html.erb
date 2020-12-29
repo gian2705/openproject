@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -30,13 +30,13 @@ See docs/COPYRIGHT.rdoc for more details.
 <% content_for :header_tags do %>
   <%= call_hook :users_show_head %>
 <% end %>
-<% html_title l(:label_administration), l(:label_user_plural) -%>
+<% html_title t(:label_administration), t(:label_user_plural) -%>
 <%= toolbar title: "#{avatar @user} #{h(@user.name)}".html_safe do %>
   <% if User.current.admin? %>
     <li class="toolbar-item">
       <%= link_to edit_user_path(@user), class: 'button', accesskey: accesskey(:edit) do %>
         <%= op_icon('button--icon icon-edit') %>
-        <span class="button--text"><%= l(:button_edit) %></span>
+        <span class="button--text"><%= t(:button_edit) %></span>
       <% end %>
     </li>
   <% end %>
@@ -59,12 +59,12 @@ See docs/COPYRIGHT.rdoc for more details.
     <%= call_hook :view_account_left_middle, user: @user %>
 
     <% unless @memberships.empty? %>
-      <h3><%=l(:label_project_plural)%></h3>
+      <h3><%=t(:label_project_plural)%></h3>
       <ul>
         <% for membership in @memberships %>
           <li>
             <%= link_to_project(membership.project) %>
-            (<%=h membership.roles.sort.collect(&:to_s).join(', ') %>, <%= format_date(membership.created_on) %>)
+            (<%=h membership.roles.sort.collect(&:to_s).join(', ') %>, <%= format_date(membership.created_at) %>)
           </li>
         <% end %>
       </ul>
@@ -75,10 +75,10 @@ See docs/COPYRIGHT.rdoc for more details.
   <div class="grid-content">
     <% unless @events_by_day.empty? %>
       <h3>
-        <%= link_to l(:label_activity), controller: '/activities', action: 'index', id: nil, user_id: @user, from: @events_by_day.keys.first %>
+        <%= link_to t(:label_activity), controller: '/activities', action: 'index', id: nil, user_id: @user, from: @events_by_day.keys.first %>
       </h3>
       <p>
-        <%=l(:label_reported_work_packages)%>: <%= @user.reported_work_package_count %>
+        <%=t(:label_reported_work_packages)%>: <%= @user.reported_work_package_count %>
       </p>
       <div id="activity">
         <% @events_by_day.keys.sort.reverse.each do |day| %>
@@ -88,7 +88,7 @@ See docs/COPYRIGHT.rdoc for more details.
               <li class="<%= e.event_type %>">
                 <div class="title">
                   <% event_type = e.event_type == 'meeting' ? 'meetings' : e.event_type %>
-                  <% event_type = e.event_type == 'cost_object' ? 'budget' : event_type %>
+                  <% event_type = e.event_type == 'budget' ? 'budget' : event_type %>
                   <%= icon_wrapper("icon-context icon-#{event_type}", e.event_name) %>
                   <span class="time"><%= format_time(e.event_datetime, false) %></span>
                   <%= content_tag('span', h(e.project), class: 'project') %>

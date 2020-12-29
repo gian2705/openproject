@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -30,8 +30,8 @@ See docs/COPYRIGHT.rdoc for more details.
   managable = User.current.allowed_to?(:manage_news, @project)
  %>
 
-<% html_title(l(:label_news_plural)) -%>
-<%= toolbar title: l(:label_news_plural) do %>
+<% html_title(t(:label_news_plural)) -%>
+<%= toolbar title: t(:label_news_plural) do %>
   <% if managable %>
     <li class="toolbar-item">
       <%= link_to new_project_news_path(@project),
@@ -40,7 +40,7 @@ See docs/COPYRIGHT.rdoc for more details.
             aria: {label: t(:label_news_new)},
             title: t(:label_news_new)} do %>
         <%= op_icon('button--icon icon-add') %>
-        <span class="button--text"><%= t('activerecord.models.news') %></span>
+        <span class="button--text"><%= t(:label_news_singular) %></span>
       <% end %>
     </li>
   <% end %>
@@ -51,9 +51,9 @@ See docs/COPYRIGHT.rdoc for more details.
    <div class="news">
     <h3 class="news--header"><%= avatar(news.author) %><%= link_to_project(news.project) + ': ' unless news.project == @project %>
       <%= link_to h(news.title), news_path(news) %>
-      <%= "(#{l(:label_x_comments, count: news.comments_count)})" if news.comments_count > 0 %></h3>
-    <p class="author additional-information"><%= authoring news.created_on, news.author %></p>
-    <div class="wiki">
+      <%= "(#{t(:label_x_comments, count: news.comments_count)})" if news.comments_count > 0 %></h3>
+    <p class="author additional-information"><%= authoring news.created_at, news.author %></p>
+    <div class="wiki op-uc-container">
       <%= format_text(news.summary.present? ? news.summary : truncate(news.description, length: 150, escape: false), object: news) %>
     </div>
    </div>

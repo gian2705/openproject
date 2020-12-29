@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,17 +23,16 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {OpContextMenuItem} from 'core-components/op-context-menu/op-context-menu.types';
 import {StateService} from '@uirouter/core';
 import {OPContextMenuService} from "core-components/op-context-menu/op-context-menu.service";
-import {Directive, ElementRef, Input, Inject} from "@angular/core";
+import {Directive, ElementRef, Input, OnInit} from "@angular/core";
 import {LinkHandling} from "core-app/modules/common/link-handling/link-handling";
 import {OpContextMenuTrigger} from "core-components/op-context-menu/handlers/op-context-menu-trigger.directive";
 import {TypeResource} from 'core-app/modules/hal/resources/type-resource';
-import {TypeDmService} from "core-app/modules/hal/dm-services/type-dm.service";
 import {Highlighting} from 'core-app/components/wp-fast-table/builders/highlighting/highlighting.functions';
 import {BrowserDetector} from "core-app/modules/common/browser/browser-detector.service";
 import {WorkPackageCreateService} from 'core-components/wp-new/wp-create.service';
@@ -45,8 +44,6 @@ export class OpTypesContextMenuDirective extends OpContextMenuTrigger {
   @Input('projectIdentifier') public projectIdentifier:string|null|undefined;
   @Input('stateName') public stateName:string;
   @Input('dropdownActive') active:boolean;
-
-  private loadingPromise:Promise<any>;
 
   constructor(readonly elementRef:ElementRef,
               readonly opContextMenu:OPContextMenuService,
@@ -67,19 +64,16 @@ export class OpTypesContextMenuDirective extends OpContextMenuTrigger {
     if (this.browserDetector.isMobile) {
       this.stateName = 'work-packages.new';
     }
-
-    this.loadingPromise = this
-      .wpCreate
-      .getEmptyForm(this.projectIdentifier)
-      .then(form => {
-        return this.buildItems(form.schema.type.allowedValues);
-      });
   }
 
   protected open(evt:JQuery.TriggeredEvent) {
-    this.loadingPromise.then(() => {
-      this.opContextMenu.show(this, evt);
-    });
+    this
+      .wpCreate
+      .getEmptyForm(this.projectIdentifier)
+      .then(form => {
+        this.buildItems(form.schema.type.allowedValues);
+        this.opContextMenu.show(this, evt);
+      });
   }
 
   public get locals():{ showAnchorRight?:boolean, contextMenuId?:string, items:OpContextMenuItem[] } {

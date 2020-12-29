@@ -1,11 +1,17 @@
 <div class="wp-card"
-     [ngClass]="cardClasses(workPackage)">
+     [ngClass]="cardClasses()">
 
   <div class="wp-card--highlighting"
        [ngClass]="cardHighlightingClass(workPackage)">
   </div>
 
-  <div class="wp-card--inline-buttons">
+  <div class="wp-card--inline-buttons hidden-for-mobile">
+    <a class="wp-card--details-button -no-decoration"
+       *ngIf="!workPackage.isNew && showInfoButton"
+       [title]="text.detailsView"
+       (accessibleClick)="emitStateLinkClicked(workPackage, true)">
+      <op-icon icon-classes="icon icon-info2"></op-icon>
+    </a>
     <a class="wp-card--inline-cancel-button -no-decoration"
        *ngIf="workPackage.isNew || showRemoveButton"
        [ngClass]="{ '-show': workPackage.isNew }"
@@ -13,16 +19,8 @@
        (accessibleClick)="onRemoved(workPackage)">
       <op-icon icon-classes="icon icon-close"></op-icon>
     </a>
-
-    <a class="-no-decoration"
-       *ngIf="!workPackage.isNew && showInfoButton"
-       [title]="text.detailsView"
-       (accessibleClick)="openSplitScreen(workPackage)">
-      <op-icon icon-classes="icon icon-info2"></op-icon>
-    </a>
   </div>
-
-  <edit-form [resource]="workPackage"
+  <edit-form [resource]="workPackage" 
              [inEditMode]="workPackage.isNew"
              *ngIf="workPackage.isNew">
     <div class="wp-card--content -new">
@@ -38,21 +36,26 @@
     </div>
   </edit-form>
 
-  <img *ngIf="this.bcfSnapshotPath(workPackage)" [src]="this.bcfSnapshotPath(workPackage)" class="wp-card--cover-image">
-
   <div *ngIf="!workPackage.isNew"
        class="wp-card--content">
-      <span [textContent]="wpTypeAttribute(workPackage)"
-            class="wp-card--type"
-            [ngClass]="typeHighlightingClass(workPackage)"></span>
-    <a uiSref="work-packages.show"
-       [uiParams]="{workPackageId: workPackage.id}"
-       class="wp-card--id"
-       [ngClass]="uiStateLinkClass">
+    <span [textContent]="wpProjectName(workPackage)"
+          class="wp-card--project-name">
+    </span>
+    <span [textContent]="wpTypeAttribute(workPackage)" 
+          class="wp-card--type"
+          [ngClass]="typeHighlightingClass(workPackage)">
+    </span>
+    <a class="wp-card--id"
+       [ngClass]="uiStateLinkClass"
+       (accessibleClick)="emitStateLinkClicked(workPackage)">
       #{{workPackage.id}}
     </a>
-    <span [textContent]="wpSubject(workPackage)"
-          class="wp-card--subject"></span>
+    <span [textContent]="wpSubject(workPackage)" 
+          class="wp-card--subject">
+    </span>
+    <img *ngIf="this.cardCoverImageShown(workPackage)" 
+         [src]="this.bcfSnapshotPath(workPackage)"
+         class="wp-card--cover-image">
     <wp-status-button *ngIf="showStatusButton"
                       [workPackage]="workPackage"
                       class="wp-card--status">

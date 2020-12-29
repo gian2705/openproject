@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,42 +23,35 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {Injectable, Injector} from '@angular/core';
-import {HttpClient, HttpErrorResponse, HttpHeaders, HttpParams} from '@angular/common/http';
-import {throwError} from 'rxjs/internal/observable/throwError';
-import {catchError, map, tap} from 'rxjs/operators';
-import {Observable} from 'rxjs';
+import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
+import {catchError, map} from 'rxjs/operators';
+import {Observable, throwError} from 'rxjs';
 import {HalResource, HalResourceClass} from 'core-app/modules/hal/resources/hal-resource';
 import {CollectionResource} from 'core-app/modules/hal/resources/collection-resource';
 import {HalLink, HalLinkInterface} from 'core-app/modules/hal/hal-link/hal-link';
-import {initializeHalProperties} from 'core-app/modules/hal/helpers/hal-resource-builder';
 import {URLParamsEncoder} from 'core-app/modules/hal/services/url-params-encoder';
+import {ErrorResource} from "core-app/modules/hal/resources/error-resource";
+import * as Pako from 'pako';
+import {
+  HTTPClientHeaders,
+  HTTPClientOptions,
+  HTTPClientParamMap,
+  HTTPSupportedMethods
+} from "core-app/modules/hal/http/http.interfaces";
+import {whenDebugging} from "core-app/helpers/debug_output";
+import {initializeHalProperties} from "../helpers/hal-resource-builder";
 
 export interface HalResourceFactoryConfigInterface {
   cls?:any;
   attrTypes?:{ [attrName:string]:string };
 }
 
-export type HTTPSupportedMethods = 'get'|'post'|'put'|'patch'|'delete';
 
-export interface HTTPClientOptions {
-  body?:any;
-  headers?:HttpHeaders|{
-    [header:string]:string|string[];
-  };
-  observe?:any;
-  params?:HttpParams|{
-    [param:string]:string|string[];
-  };
-  reportProgress?:boolean;
-  withCredentials?:boolean;
-  responseType:any;
-}
-
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class HalResourceService {
 
   /**
@@ -73,7 +66,7 @@ export class HalResourceService {
   /**
    * Perform a HTTP request and return a HalResource promise.
    */
-  public request<T extends HalResource>(method:HTTPSupportedMethods, href:string, data?:any, headers:any = {}):Observable<T> {
+  public request<T extends HalResource>(method:HTTPSupportedMethods, href:string, data?:any, headers:HTTPClientHeaders = {}):Observable<T> {
 
     // HttpClient requires us to create HttpParams instead of passing data for get
     // so forward to that method instead.
@@ -96,8 +89,10 @@ export class HalResourceService {
       .pipe(
         map((response:any) => this.createHalResource(response)),
         catchError((error:HttpErrorResponse) => {
-          console.error(`Failed to ${method} ${href}: ${error.name}`);
-          return throwError(this.createHalResource(error.error));
+          whenDebugging(() => console.error(`Failed to ${method} ${href}: ${error.name}`));
+          const resource = this.createHalResource<ErrorResource>(error.error);
+          resource.httpError = error;
+          return throwError(resource);
         })
       ) as any;
   }
@@ -110,7 +105,7 @@ export class HalResourceService {
    * @param headers
    * @returns {Promise<HalResource>}
    */
-  public get<T extends HalResource>(href:string, params?:any, headers?:any):Observable<T> {
+  public get<T extends HalResource>(href:string, params?:HTTPClientParamMap, headers?:HTTPClientHeaders):Observable<T> {
     const config:HTTPClientOptions = {
       headers: headers,
       params: new HttpParams({ encoder: new URLParamsEncoder(), fromObject: params }),
@@ -131,20 +126,20 @@ export class HalResourceService {
    * @param headers
    * @return {Promise<CollectionResource[]>}
    */
-  public async getAllPaginated<T extends HalResource[]>(href:string, expected:number, params:any = {}, headers:any = {}) {
+  public async getAllPaginated<T extends HalResource[]>(href:string, expected:number, params:any = {}, headers:HTTPClientHeaders = {}) {
     // Total number retrieved
     let retrieved = 0;
     // Current offset page
     let page = 1;
     // Accumulated results
-    const allResults:CollectionResource[] = [];
+    const allResults:T = [] as any;
     // If possible, request all at once.
     params.pageSize = expected;
 
     while (retrieved < expected) {
       params.offset = page;
 
-      const promise = this.request<CollectionResource>('get', href, params, headers).toPromise();
+      const promise = this.request('get', href, this.toEprops(params), headers).toPromise();
       const results = await promise;
 
       if (results.count === 0) {
@@ -167,7 +162,7 @@ export class HalResourceService {
    * @param headers
    * @returns {Promise<HalResource>}
    */
-  public put<T extends HalResource>(href:string, data?:any, headers?:any):Observable<T> {
+  public put<T extends HalResource>(href:string, data?:any, headers?:HTTPClientHeaders):Observable<T> {
     return this.request('put', href, data, headers);
   }
 
@@ -179,7 +174,7 @@ export class HalResourceService {
    * @param headers
    * @returns {Promise<HalResource>}
    */
-  public post<T extends HalResource>(href:string, data?:any, headers?:any):Observable<T> {
+  public post<T extends HalResource>(href:string, data?:any, headers?:HTTPClientHeaders):Observable<T> {
     return this.request('post', href, data, headers);
   }
 
@@ -191,7 +186,7 @@ export class HalResourceService {
    * @param headers
    * @returns {Promise<HalResource>}
    */
-  public patch<T extends HalResource>(href:string, data?:any, headers?:any):Observable<T> {
+  public patch<T extends HalResource>(href:string, data?:any, headers?:HTTPClientHeaders):Observable<T> {
     return this.request('patch', href, data, headers);
   }
 
@@ -203,7 +198,7 @@ export class HalResourceService {
    * @param headers
    * @returns {Promise<HalResource>}
    */
-  public delete<T extends HalResource>(href:string, data?:any, headers?:any):Observable<T> {
+  public delete<T extends HalResource>(href:string, data?:any, headers?:HTTPClientHeaders):Observable<T> {
     return this.request('delete', href, data, headers);
   }
 
@@ -282,7 +277,7 @@ export class HalResourceService {
    * @param href Self link of the HAL resource
    */
   public fromSelfLink(href:string|null) {
-    const source = { _links: { self: { href: href }}};
+    const source = { _links: { self: { href: href } } };
     return this.createHalResource(source);
   }
 
@@ -311,7 +306,7 @@ export class HalResourceService {
   }
 
   /**
-   * Get the hal type for an attribute.
+   * Get the hal type for an attribute
    *
    * @param type
    * @param attribute
@@ -321,5 +316,12 @@ export class HalResourceService {
     const typeConfig = this.config[type];
     const types = (typeConfig && typeConfig.attrTypes) || {};
     return types[attribute];
+  }
+
+  protected toEprops(params:{}):{} {
+    let deflated = Pako.deflate(JSON.stringify(params), { to: 'string' });
+    let compressed = btoa(deflated);
+
+    return { eprops: compressed };
   }
 }

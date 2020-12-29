@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -58,8 +58,7 @@ module OpenProject
       end
 
       def self.host
-        host = Setting.host_name
-        host.gsub(/\/.*$/, '') if host # remove path in case it got into the host
+        Setting.host_name&.gsub(/\/.*$/, '') # remove path in case it got into the host
       end
     end
 
@@ -82,7 +81,7 @@ module OpenProject
       return nil unless path.present?
 
       # Remove relative URL root
-      if relative_url = OpenProject::Configuration.rails_relative_url_root
+      if (relative_url = OpenProject::Configuration.rails_relative_url_root)
         path = path.gsub relative_url, ''
       end
 

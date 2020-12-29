@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -58,9 +58,11 @@ class Queries::WorkPackages::Filter::ProjectFilter < Queries::WorkPackages::Filt
   end
 
   def value_objects
-    value_ints = values.map(&:to_i)
+    available_projects = visible_projects.index_by(&:id)
 
-    visible_projects.select { |p| value_ints.include?(p.id) }
+    values
+      .map { |project_id| available_projects[project_id.to_i] }
+      .compact
   end
 
   private

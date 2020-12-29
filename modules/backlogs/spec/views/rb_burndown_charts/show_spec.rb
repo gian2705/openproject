@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.dirname(__FILE__) + '/../../spec_helper'
@@ -64,7 +57,7 @@ describe 'rb_burndown_charts/show', type: :view do
     FactoryBot.create(:story, status: statuses[0],
                                project: project,
                                type: type_feature,
-                               fixed_version: sprint,
+                               version: sprint,
                                priority: issue_priority
                       )
   }
@@ -72,7 +65,7 @@ describe 'rb_burndown_charts/show', type: :view do
     FactoryBot.create(:story, status: statuses[1],
                                project: project,
                                type: type_feature,
-                               fixed_version: sprint,
+                               version: sprint,
                                priority: issue_priority
                       )
   }
@@ -80,14 +73,14 @@ describe 'rb_burndown_charts/show', type: :view do
     FactoryBot.create(:story, status: statuses[2],
                                project: project,
                                type: type_feature,
-                               fixed_version: sprint,
+                               version: sprint,
                                priority: issue_priority
                       )
   }
   let(:stories) { [story_a, story_b, story_c] }
   let(:sprint)   { FactoryBot.create(:sprint, project: project, start_date: Date.today - 1.week, effective_date: Date.today + 1.week) }
   let(:task) do
-    task = FactoryBot.create(:task, project: project, status: statuses[0], fixed_version: sprint, type: type_task)
+    task = FactoryBot.create(:task, project: project, status: statuses[0], version: sprint, type: type_task)
     # This is necessary as for some unknown reason passing the parent directly
     # leads to the task searching for the parent with 'root_id' is NULL, which
     # is not the case as the story has its own id as root_id

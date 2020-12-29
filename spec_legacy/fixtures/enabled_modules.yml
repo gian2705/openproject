@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,7 +32,7 @@ enabled_modules_001:
   project_id: 1
   id: 1
 enabled_modules_002:
-  name: time_tracking
+  name: costs
   project_id: 1
   id: 2
 enabled_modules_003:
@@ -64,7 +64,7 @@ enabled_modules_011:
   project_id: 2
   id: 11
 enabled_modules_012:
-  name: time_tracking
+  name: costs
   project_id: 3
   id: 12
 enabled_modules_013:

@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,12 +23,13 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {OpenProjectPluginContext} from 'core-app/modules/plugins/plugin-context';
 import {input, InputState} from 'reactivestates';
 import {take} from 'rxjs/operators';
+import {GlobalHelpers} from "core-app/globals/global-helpers";
 
 /**
  * OpenProject instance methods
@@ -37,11 +38,19 @@ export class OpenProject {
 
   public pluginContext:InputState<OpenProjectPluginContext> = input<OpenProjectPluginContext>();
 
+  public helpers = new GlobalHelpers();
+
   /** Globally setable variable whether the page was edited */
   public pageWasEdited:boolean = false;
   /** Globally setable variable whether the page form is submitted.
    * Necessary to avoid a data loss warning on beforeunload */
   public pageIsSubmitted:boolean = false;
+  /** Globally setable variable whether any of the EditFormComponent
+   * contain changes.
+   * Necessary to show a data loss warning on beforeunload when clicking
+   * on a link out of the Angular app (ie: main side menu)
+   * */
+  public editFormsContainModelChanges:boolean;
 
   public getPluginContext():Promise<OpenProjectPluginContext> {
     return this.pluginContext
@@ -56,6 +65,18 @@ export class OpenProject {
 
   public get environment():string {
     return jQuery('meta[name=openproject_initializer]').data('environment');
+  }
+
+  public get edition():string {
+    return jQuery('meta[name=openproject_initializer]').data('edition');
+  }
+
+  public get isStandardEdition():boolean {
+    return this.edition === "standard";
+  }
+
+  public get isBimEdition():boolean {
+    return this.edition === "bim";
   }
 
   /**
@@ -83,4 +104,3 @@ export class OpenProject {
 }
 
 window.OpenProject = new OpenProject();
-

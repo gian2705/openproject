@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -49,7 +49,7 @@ class AuthSourcesController < ApplicationController
   def create
     @auth_source = auth_source_class.new permitted_params.auth_source
     if @auth_source.save
-      flash[:notice] = l(:notice_successful_create)
+      flash[:notice] = I18n.t(:notice_successful_create)
       redirect_to action: 'index'
     else
       render 'auth_sources/new'
@@ -67,7 +67,7 @@ class AuthSourcesController < ApplicationController
     updated.delete :account_password if updated[:account_password].blank?
 
     if @auth_source.update updated
-      flash[:notice] = l(:notice_successful_update)
+      flash[:notice] = I18n.t(:notice_successful_update)
       redirect_to action: 'index'
     else
       render 'auth_sources/edit'
@@ -78,9 +78,9 @@ class AuthSourcesController < ApplicationController
     @auth_method = AuthSource.find(params[:id])
     begin
       @auth_method.test_connection
-      flash[:notice] = l(:notice_successful_connection)
+      flash[:notice] = I18n.t(:notice_successful_connection)
     rescue => text
-      flash[:error] = l(:error_unable_to_connect, text.message)
+      flash[:error] = I18n.t(:error_unable_to_connect, value: text.message)
     end
     redirect_to action: 'index'
   end

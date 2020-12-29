@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,11 +29,11 @@
 require 'spec_helper'
 
 describe 'wiki/new', type: :view do
-  let(:project) { stub_model(Project) }
-  let(:wiki)    { stub_model(Wiki) }
-  let(:page)    { stub_model(WikiPage, title: 'foo') }
-  let(:content) { stub_model(WikiContent) }
-  let(:user)    { stub_model(User) }
+  let(:project) { FactoryBot.build_stubbed(:project) }
+  let(:wiki)    { FactoryBot.build_stubbed(:wiki, project: project) }
+  let(:page)    { FactoryBot.build_stubbed(:wiki_page_with_content, wiki: wiki, title: 'foo') }
+  let(:content) { page.content }
+  let(:user)    { FactoryBot.build_stubbed(:user) }
 
   before do
     assign(:project, project)

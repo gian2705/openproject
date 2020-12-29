@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -80,7 +80,7 @@ module WorkPackagesHelper
 
     parts[:link] << "##{h(package.id)}" if options[:id]
 
-    parts[:link] << "#{h(package.status)}" if options[:id] && options[:status] && package.status
+    parts[:link] << "#{h(package.status)}" if options[:id] && options[:status] && package.status_id
 
     # Hidden link part
 
@@ -129,26 +129,26 @@ module WorkPackagesHelper
         work_package_url(package)
       end
 
-    text = if options[:all_link]
-             link_text = [prefix, link].reject(&:empty?).join(' - ')
-             link_text = [link_text, suffix].reject(&:empty?).join(': ')
-             link_text = [hidden_link, link_text].reject(&:empty?).join('')
+    if options[:all_link]
+      link_text = [prefix, link].reject(&:empty?).join(' - ')
+      link_text = [link_text, suffix].reject(&:empty?).join(': ')
+      link_text = [hidden_link, link_text].reject(&:empty?).join('')
 
-             link_to(link_text.html_safe,
-                     work_package_link,
-                     title: title,
-                     class: css_class)
-           else
-             link_text = [hidden_link, link].reject(&:empty?).join('')
+      link_to(link_text.html_safe,
+              work_package_link,
+              title: title,
+              class: css_class)
+    else
+      link_text = [hidden_link, link].reject(&:empty?).join('')
 
-             html_link = link_to(link_text.html_safe,
-                                 work_package_link,
-                                 title: title,
-                                 class: css_class)
+      html_link = link_to(link_text.html_safe,
+                          work_package_link,
+                          title: title,
+                          class: css_class)
 
-             [[prefix, html_link].reject(&:empty?).join(' - '),
-              suffix].reject(&:empty?).join(': ')
-            end.html_safe
+      [[prefix, html_link].reject(&:empty?).join(' - '),
+       suffix].reject(&:empty?).join(': ')
+     end.html_safe
   end
 
   def work_package_list(work_packages, &_block)
@@ -172,7 +172,7 @@ module WorkPackagesHelper
                                checked,
                                class: 'form--check-box')
         boxes
-      end) + l(:label_notify_member_plural)
+      end) + I18n.t(:label_notify_member_plural)
     end
   end
 
@@ -194,7 +194,7 @@ module WorkPackagesHelper
   def work_package_associations_to_address(associated)
     ret = ''.html_safe
 
-    ret += content_tag(:p, l(:text_destroy_with_associated), class: 'bold')
+    ret += content_tag(:p, I18n.t(:text_destroy_with_associated), class: 'bold')
 
     ret += content_tag(:ul) {
       associated.inject(''.html_safe) do |list, associated_class|
@@ -205,6 +205,11 @@ module WorkPackagesHelper
     }
 
     ret
+  end
+
+  def back_url_is_wp_show?
+    route = Rails.application.routes.recognize_path(params[:back_url] || request.env['HTTP_REFERER'])
+    route[:controller] == 'work_packages' && route[:action] == 'index' && route[:state]&.match?(/^\d+/)
   end
 
   private

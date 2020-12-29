@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,7 +30,7 @@ module OpenProject
   module Hooks
     ##
     # Hook called in the login forms which displays the different auth providers
-    class ViewAccountLoginAuthProviderHook < Redmine::Hook::ViewListener
+    class ViewAccountLoginAuthProvider < Redmine::Hook::ViewListener
       render_on :view_account_login_auth_provider,
                 partial: 'hooks/login/auth_provider'
     end

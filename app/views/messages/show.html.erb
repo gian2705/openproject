@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -27,16 +27,20 @@ See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 
+<% content_for :header_tags do %>
+  <meta name="required_script" content="forums" />
+<% end %>
+
 <% breadcrumb_paths(
   link_to(t(:label_forum_plural), project_forums_path(@project)),
   link_to(h(@forum.name), project_forum_path(@project, @forum)))
 %>
 <% title avatar(@topic.author) + h(@topic.subject) %>
 <%= toolbar title: title do %>
-    <li class="toolbar-item">
+    <li class="toolbar-item hidden-for-mobile">
       <%= watcher_link(@topic, User.current) %>
     </li>
-    <li class="toolbar-item">
+    <li class="toolbar-item hidden-for-mobile">
       <% if !@topic.locked? && authorize_for('messages', 'reply') %>
           <%= link_to({ action: 'quote', id: @topic }, class: 'boards--quote-button button') do %>
               <%= op_icon('button--icon icon-quote') %>
@@ -63,8 +67,8 @@ See docs/COPYRIGHT.rdoc for more details.
 <% end %>
 
 <div class="forum-message">
-  <p class="author additional-information"><%= authoring @topic.created_on, @topic.author %></p>
-  <div class="wiki">
+  <p class="author additional-information"><%= authoring @topic.created_at, @topic.author %></p>
+  <div class="wiki op-uc-container">
     <%= format_text(@topic.content, object: @topic, attachments: @topic.attachments) %>
   </div>
 
@@ -104,9 +108,9 @@ See docs/COPYRIGHT.rdoc for more details.
                                                    r: message,
                                                    anchor: "message-#{message.id}") %>
           -
-          <%= authoring message.created_on, message.author %>
+          <%= authoring message.created_at, message.author %>
         </h4>
-        <div class="wiki">
+        <div class="wiki op-uc-container">
           <%= format_text message, :content, attachments: message.attachments %>
         </div>
         <% resource = message_attachment_representer(message) %>
@@ -117,11 +121,7 @@ See docs/COPYRIGHT.rdoc for more details.
   <% end %>
 
   <% if !@topic.locked? && authorize_for('messages', 'reply') %>
-    <div class="form--space">
-      <%= toggle_link t(:button_reply), "reply", {focus: 'reply_content'}, {class: 'button -highlight'} %>
-    </div>
-
-    <div id="reply" style="display:none;">
+    <div id="reply">
 
       <hr class="form--separator" />
 
@@ -136,7 +136,6 @@ See docs/COPYRIGHT.rdoc for more details.
         <hr class="form--separator" />
 
         <%= f.button t(:button_submit), class: 'button -highlight -highlight -with-icon icon-checkmark' %>
-        <%= toggle_link t(:button_cancel), "reply", {}, { class: 'button' } %>
       <% end %>
       <div id="preview"></div>
     </div>

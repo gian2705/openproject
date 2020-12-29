@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -63,13 +63,12 @@ describe 'Select work package row', type: :feature, js: true do
       work_packages_page.visit_index
     end
 
-    include_context 'ui-select helpers'
     include_context 'work package table helpers'
 
     context 'sorting by version' do
       before do
-        work_package_1.update_attribute(:fixed_version_id, version_2.id)
-        work_package_2.update_attribute(:fixed_version_id, version_1.id)
+        work_package_1.update_attribute(:version_id, version_2.id)
+        work_package_2.update_attribute(:version_id, version_1.id)
       end
 
       it 'sorts by version although version is not selected as a column' do

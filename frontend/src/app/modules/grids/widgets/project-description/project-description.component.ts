@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,18 +23,17 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Injector} from '@angular/core';
 import {AbstractWidgetComponent} from "app/modules/grids/widgets/abstract-widget.component";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {CurrentProjectService} from "core-components/projects/current-project.service";
-import {ProjectCacheService} from "core-components/projects/project-cache.service";
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import {Observable} from "rxjs";
 import {ProjectResource} from "core-app/modules/hal/resources/project-resource";
 import {HalResourceEditingService} from "core-app/modules/fields/edit/services/hal-resource-editing.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   templateUrl: './project-description.component.html',
@@ -48,14 +47,19 @@ export class WidgetProjectDescriptionComponent extends AbstractWidgetComponent i
 
   constructor(protected readonly i18n:I18nService,
               protected readonly injector:Injector,
-              protected readonly projectCache:ProjectCacheService,
+              protected readonly apiV3Service:APIV3Service,
               protected readonly currentProject:CurrentProjectService,
               protected readonly cdRef:ChangeDetectorRef) {
     super(i18n, injector);
   }
 
   ngOnInit() {
-    this.project$ = this.projectCache.requireAndStream(this.currentProject.id!);
+    this.project$ = this
+      .apiV3Service
+      .projects
+      .id(this.currentProject.id!)
+      .get();
+
     this.cdRef.detectChanges();
   }
 

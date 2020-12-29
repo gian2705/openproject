@@ -452,7 +452,7 @@ ij_json_spaces_within_braces = false
 ij_json_spaces_within_brackets = false
 ij_json_wrap_long_lines = false
 
-[{rcov,spec,rake,cucumber,rails,spork,capfile,gemfile,rakefile,guardfile,isolate,vagrantfile,Puppetfile,*.jbuilder,*.rbw,*.gemspec,*.thor,*.ru,*.rb,*.rake}]
+[{rcov,spec,rake,rails,spork,capfile,gemfile,rakefile,guardfile,isolate,vagrantfile,Puppetfile,*.jbuilder,*.rbw,*.gemspec,*.thor,*.ru,*.rb,*.rake}]
 indent_size = 2
 tab_width = 2
 ij_continuation_indent_size = 2
@@ -474,7 +474,7 @@ ij_ruby_spaces_around_other_operators = true
 ij_ruby_spaces_around_range_operators = false
 ij_ruby_spaces_around_relational_operators = true
 ij_ruby_spaces_within_array_initializer_braces = true
-ij_ruby_spaces_within_braces = false
+ij_ruby_spaces_within_braces = true
 
 [{version-autocompleter.component.ts,*.ats,*.ts}]
 ij_continuation_indent_size = 2
@@ -619,7 +619,7 @@ ij_typescript_spaces_within_imports = false
 ij_typescript_spaces_within_interpolation_expressions = false
 ij_typescript_spaces_within_method_call_parentheses = false
 ij_typescript_spaces_within_method_parentheses = false
-ij_typescript_spaces_within_object_literal_braces = false
+ij_typescript_spaces_within_object_literal_braces = true
 ij_typescript_spaces_within_object_type_braces = true
 ij_typescript_spaces_within_parentheses = false
 ij_typescript_spaces_within_switch_parentheses = false

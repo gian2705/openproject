@@ -1,7 +1,7 @@
 import {Component, Input, SimpleChanges} from '@angular/core';
 import {WorkPackageTableConfiguration} from 'core-components/wp-table/wp-table-configuration';
 import {GroupObject} from 'core-app/modules/hal/resources/wp-collection-resource';
-import {Chart, ChartOptions, ChartType} from 'chart.js';
+import {ChartOptions, ChartType} from 'chart.js';
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 
 export interface WorkPackageEmbeddedGraphDataset {
@@ -96,32 +96,17 @@ export class WorkPackageEmbeddedGraphComponent {
       legend: {
         // Only display legends if more than one dataset is provided.
         display: this.datasets.length > 1
+      },
+      plugins: {
+        datalabels: {
+          align: this.chartType === 'bar' ? 'top' : 'center',
+        }
       }
     };
 
-    let chartTypeDefaults:ChartOptions = {};
-
-    if (this.chartType === 'horizontalBar') {
-      chartTypeDefaults = {
-        scales: {
-          xAxes: [{
-            stacked: true,
-            ticks: {
-              callback: (value:number) => {
-                if (Math.floor(value) === value) {
-                  return value;
-                } else {
-                  return 0;
-                }
-              }
-            }
-          }],
-            yAxes:
-          [{
-            stacked: true
-          }]
-        }
-      };
+    let chartTypeDefaults:ChartOptions = {scales:{}};
+    if (this.chartType === 'horizontalBar' || this.chartType === 'bar' ) {
+     this.setChartAxesValues(chartTypeDefaults);
     }
 
     this.chartOptions = Object.assign({}, defaults, chartTypeDefaults, this.inputChartOptions);
@@ -152,6 +137,37 @@ export class WorkPackageEmbeddedGraphComponent {
       this.chartHeight = `${height}px`;
     } else {
       this.chartHeight = '100%';
+    }
+  }
+
+  // function to set ticks of axis
+  private setChartAxesValues(chartOptions:ChartOptions) {
+
+    let changeableValuesAxis = [{
+      stacked: true,
+      ticks: {
+        callback: (value:number) => {
+          if (Math.floor(value) === value) {
+            return value;
+          } else {
+            return null;
+          }
+        }
+      }
+    }];
+
+    let constantValuesAxis = [{
+      stacked: true
+    }];
+
+    if (chartOptions.scales) {
+      if (this.chartType === 'bar') {
+        chartOptions.scales.yAxes = changeableValuesAxis;
+        chartOptions.scales.xAxes = constantValuesAxis;
+       } else if (this.chartType === 'horizontalBar') {
+        chartOptions.scales.xAxes = changeableValuesAxis;
+        chartOptions.scales.yAxes = constantValuesAxis;
+      }
     }
   }
 }

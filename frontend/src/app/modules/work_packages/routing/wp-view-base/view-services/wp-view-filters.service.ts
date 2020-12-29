@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {WorkPackageQueryStateService} from './wp-view-base.service';
@@ -32,7 +32,7 @@ import {QueryResource} from 'core-app/modules/hal/resources/query-resource';
 import {QuerySchemaResource} from 'core-app/modules/hal/resources/query-schema-resource';
 import {QueryFilterInstanceResource} from 'core-app/modules/hal/resources/query-filter-instance-resource';
 import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
-import {combine, InputState} from 'reactivestates';
+import {combine, input, InputState} from 'reactivestates';
 import {cloneHalResourceCollection} from 'core-app/modules/hal/helpers/hal-resource-builder';
 import {QueryFilterResource} from "core-app/modules/hal/resources/query-filter-resource";
 import {QueryFilterInstanceSchemaResource} from "core-app/modules/hal/resources/query-filter-instance-schema-resource";
@@ -61,6 +61,8 @@ export class WorkPackageViewFiltersService extends WorkPackageQueryStateService<
     'subjectOrId'
   ];
 
+  /** Flag state to determine whether the filters are incomplete */
+  private incomplete = input<boolean>(false);
 
   constructor(protected readonly states:States,
               readonly querySpace:IsolatedQuerySpace) {
@@ -75,14 +77,12 @@ export class WorkPackageViewFiltersService extends WorkPackageQueryStateService<
   public initializeFilters(query:QueryResource, schema:QuerySchemaResource) {
     let filters = cloneHalResourceCollection<QueryFilterInstanceResource>(query.filters);
 
-    this.loadCurrentFiltersSchemas(filters).then(() => {
-      this.availableState.putValue(schema.filtersSchemas.elements);
-      this.pristineState.putValue(filters);
-    });
+    this.availableState.putValue(schema.filtersSchemas.elements);
+    this.pristineState.putValue(filters);
   }
 
   /**
-   * Return whether rth
+   * Return whether the filters are empty
    */
   public get isEmpty() {
     const value = this.lastUpdatedState.value;
@@ -92,6 +92,12 @@ export class WorkPackageViewFiltersService extends WorkPackageQueryStateService<
   public get availableState():InputState<QueryFilterInstanceSchemaResource[]> {
     return this.states.queries.filters;
   }
+
+  /** Return whether the filters the user is working on are incomplete */
+  public get incomplete$() {
+    return this.incomplete.values$();
+  }
+
 
   /**
    * Add a filter instantiation from the set of available filter schemas
@@ -216,6 +222,11 @@ export class WorkPackageViewFiltersService extends WorkPackageQueryStateService<
     return undefined;
   }
 
+  update(value:QueryFilterInstanceResource[]) {
+    super.update(value);
+    this.incomplete.putValue(false);
+  }
+
   /**
    * Returns the live filter instance for the given ID, or undefined
    * if it does not exist.
@@ -283,9 +294,8 @@ export class WorkPackageViewFiltersService extends WorkPackageQueryStateService<
   public replaceIfComplete(newState:QueryFilterInstanceResource[]) {
     if (this.isComplete(newState)) {
       this.update(newState);
-      return true;
     } else {
-      return false;
+      this.incomplete.putValue(true);
     }
   }
 
@@ -316,21 +326,7 @@ export class WorkPackageViewFiltersService extends WorkPackageQueryStateService<
     return this.rawFilters.map((filter:QueryFilterInstanceResource) => filter.filter);
   }
 
-  /**
-   * Ensure all filter schemas are loaded.
-   * @param filters
-   */
-  private loadCurrentFiltersSchemas(filters:QueryFilterInstanceResource[]):Promise<unknown> {
-    return Promise.all(filters.map((filter:QueryFilterInstanceResource) => {
-      const href = `/api/v3/queries/filter_instance_schemas/${filter.id}`;
-      if (filter.schema) {
-        return filter.schema.$load();
-      } else {
-        return this.states.schemas
-          .get(href)
-          .valuesPromise()
-          .then(schema => filter.schema = schema as QueryFilterInstanceSchemaResource);
-      }
-    }));
+  isAvailable(el:QueryFilterInstanceResource):boolean {
+    return !!this.availableFilters.find(available => available.id === el.id);
   }
 }

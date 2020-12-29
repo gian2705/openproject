@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,23 +24,22 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 module RandomData
   class WorkPackageSeeder
-    attr_accessor :project, :user, :statuses, :repository, :time_entry_activities, :types
+    attr_accessor :project, :user, :statuses, :repository, :types
 
     def initialize(project)
       self.project = project
       self.user = User.admin.first
       self.statuses = Status.all
       self.repository = Repository.first
-      self.time_entry_activities = TimeEntryActivity.all
       self.types = project.types.all.reject(&:is_milestone?)
     end
 
     def seed!(random: true)
       puts ''
-      print ' ↳ Creating work_packages'
+      print_status ' ↳ Creating work_packages'
 
       seed_random_work_packages
     end
@@ -49,7 +48,7 @@ module RandomData
 
     def seed_random_work_packages
       rand(50).times do
-        print '.'
+        print_status '.'
         work_package = WorkPackage.create!(
           project:      project,
           author:       user,
@@ -78,7 +77,7 @@ module RandomData
 
     def add_changeset(work_package)
       2.times do |changeset_count|
-        print '.'
+        print_status '.'
         changeset = Changeset.create(
           repository:     repository,
           user:           user,
@@ -91,7 +90,7 @@ module RandomData
         )
 
         5.times do
-          print '.'
+          print_status '.'
           change = Change.create(
             action: Faker::Lorem.characters(1),
             path: Faker::Internet.url
@@ -105,7 +104,7 @@ module RandomData
         changeset.save!
 
         rand(5).times do
-          print '.'
+          print_status'.'
           changeset.reload
 
           changeset.committer = Faker::Name.name if rand(99).even?
@@ -158,7 +157,7 @@ module RandomData
 
     def make_changes(work_package)
       20.times do
-        print '.'
+        print_status '.'
         work_package.reload
 
         work_package.status = statuses.sample if rand(99).even?

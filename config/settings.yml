@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -259,9 +259,9 @@ mail_suffix_separators:
 work_package_list_default_columns:
   serialized: true
   default:
-  - type
   - id
   - subject
+  - type
   - status
   - assigned_to
   - priority
@@ -270,10 +270,6 @@ work_package_list_default_highlighting_mode:
 work_package_list_default_highlighted_attributes:
   serialized: true
   default: []
-work_package_list_summable_columns:
-  serialized: true
-  default:
-  - estimated_hours
 display_subprojects_work_packages:
   default: 1
 work_package_done_ratio:
@@ -287,8 +283,18 @@ default_projects_modules:
   - board_view
   - work_package_tracking
   - news
-  - time_tracking
+  - costs
   - wiki
+enabled_projects_columns:
+  serialized: true
+  default:
+    - project_status
+    - public
+    - created_at
+    - latest_activity_at
+    - required_disk_space
+project_gantt_query:
+  default: ''
 # Role given to a non-admin user who creates a project
 new_project_user_role_id:
   format: int
@@ -369,3 +375,9 @@ installation_uuid:
 oauth_allow_remapping_of_existing_users:
   default: false
   format: boolean
+apiv3_cors_enabled:
+  default: false
+  format: boolean
+apiv3_cors_origins:
+  serialized: true
+  default: []

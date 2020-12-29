@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -120,6 +120,9 @@ MESSAGE
 
       Role.non_member
       Role.anonymous
+
+      User.system.save!
+
       admin.save!
       anonymous_user.save!
       user_with_permission.save!
@@ -227,6 +230,8 @@ MESSAGE
       # to mess with our expected users
       model_instance
       User.destroy_all
+
+      User.system.save!
 
       Role.non_member
       Role.anonymous

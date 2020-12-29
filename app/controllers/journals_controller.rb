@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,8 +28,6 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-require 'diff'
-
 class JournalsController < ApplicationController
   before_action :find_journal, except: [:index]
   before_action :find_optional_project, only: [:index]
@@ -49,13 +48,11 @@ class JournalsController < ApplicationController
                                                limit: 25)
     end
 
-    title = (@project ? @project.name : Setting.app_title) + ': ' + (@query.new_record? ? l(:label_changes_details) : @query.name)
-
     respond_to do |format|
       format.atom do
         render layout: false,
                content_type: 'application/atom+xml',
-               locals: { title: title,
+               locals: { title: journals_index_title,
                          journals: @journals }
       end
     end
@@ -103,7 +100,11 @@ class JournalsController < ApplicationController
   end
 
   def valid_diff?
-    return false unless valid_field?(params[:field])
-    @journal.journable.class == WorkPackage
+    valid_field?(params[:field]) &&
+      @journal.journable.class == WorkPackage
+  end
+
+  def journals_index_title
+    (@project ? @project.name : Setting.app_title) + ': ' + (@query.new_record? ? I18n.t(:label_changes_details) : @query.name)
   end
 end

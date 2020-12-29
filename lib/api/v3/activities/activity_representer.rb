@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -68,7 +68,18 @@ module API
                  render_nil: true
 
         formattable_property :notes,
-                             as: :comment
+                             as: :comment,
+                             getter: ->(*) {
+                               text = if represented.noop?
+                                        "_#{I18n.t(:'journals.changes_retracted')}_"
+                                      else
+                                        represented.notes
+                                      end
+
+                               ::API::Decorators::Formattable.new(text,
+                                                                  object: represented,
+                                                                  plain: false)
+                             }
 
         property :details,
                  exec_context: :decorator,
@@ -80,26 +91,23 @@ module API
                    formattables.map { |d| { format: 'custom', raw: d[0], html: d[1] } }
                  },
                  render_nil: true
+
         property :version, render_nil: true
 
         date_time_property :created_at
 
         def _type
-          if represented.notes.blank?
-            'Activity'
-          else
+          if represented.noop? || represented.notes.present?
             'Activity::Comment'
+          else
+            'Activity'
           end
         end
 
         private
 
         def current_user_allowed_to_edit?
-          (current_user_allowed_to(:edit_own_work_package_notes,
-                                   context: represented.journable.project) &&
-            represented.editable_by?(current_user)) ||
-            current_user_allowed_to(:edit_work_package_notes,
-                                    context: represented.journable.project)
+          represented.editable_by?(current_user)
         end
 
         def render_details(journal, no_html: false)

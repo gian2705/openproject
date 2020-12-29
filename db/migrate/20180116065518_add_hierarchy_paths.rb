@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -36,14 +36,6 @@ class AddHierarchyPaths < ActiveRecord::Migration[5.1]
       t.string :path, null: false, limit: 255
 
       t.index :path
-    end
-
-    reversible do |dir|
-      dir.up do
-        Relation.rebuild_hierarchy_paths!
-      rescue StandardError => e
-        warn "Failed to rebuild hierarchy paths. Call `Relation.rebuild_hierarchy_paths!` manually to correct this: #{e}"
-      end
     end
   end
 end

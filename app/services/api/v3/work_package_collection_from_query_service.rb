@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,9 +32,10 @@ module API
       include Utilities::PathHelper
       include ::API::Utilities::PageSizeHelper
 
-      def initialize(query, user)
+      def initialize(query, user, scope: nil)
         self.query = query
         self.current_user = user
+        self.scope = scope
       end
 
       def call(params = {}, valid_subset: false)
@@ -54,7 +55,13 @@ module API
       private
 
       def results_to_representer(params)
-        collection_representer(query.results.sorted_work_packages,
+        results_scope = query.results.work_packages
+
+        if scope
+          results_scope = results_scope.where(id: scope.select(:id))
+        end
+
+        collection_representer(results_scope,
                                params: params,
                                project: query.project,
                                groups: generate_groups,
@@ -62,7 +69,8 @@ module API
       end
 
       attr_accessor :query,
-                    :current_user
+                    :current_user,
+                    :scope
 
       def representer
         ::API::V3::WorkPackages::WorkPackageCollectionRepresenter
@@ -71,6 +79,7 @@ module API
       def calculate_resulting_params(provided_params)
         calculate_default_params.merge(provided_params.slice('offset', 'pageSize').symbolize_keys).tap do |params|
           if query.manually_sorted?
+            params[:query_id] = query.id
             params[:offset] = 1
             params[:pageSize] = Setting.forced_single_page_size
           else
@@ -90,13 +99,10 @@ module API
         return unless query.grouped?
 
         results = query.results
+        sums = generate_group_sums
 
         results.work_package_count_by_group.map do |group, count|
-          sums = if query.display_sums?
-                   format_query_sums results.all_sums_for_group(group)
-                 end
-
-          ::API::Decorators::AggregationGroup.new(group, count, query: results.query, sums: sums, current_user: current_user)
+          ::API::Decorators::AggregationGroup.new(group, count, query: query, sums: sums[group], current_user: current_user)
         end
       end
 
@@ -104,6 +110,14 @@ module API
         return unless query.display_sums?
 
         format_query_sums query.results.all_total_sums
+      end
+
+      def generate_group_sums
+        return {} unless query.display_sums?
+
+        query.results.all_group_sums.transform_values do |v|
+          format_query_sums(v)
+        end
       end
 
       def format_query_sums(sums)
@@ -131,7 +145,7 @@ module API
 
         ::API::V3::WorkPackages::WorkPackageCollectionRepresenter.new(
           work_packages,
-          self_link(project),
+          self_link: self_link(project),
           project: project,
           query: resulting_params,
           page: resulting_params[:offset],

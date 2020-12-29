@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -45,7 +45,7 @@ describe ::API::V3::WorkPackageCollectionFromQueryService,
     results = double('results')
 
     allow(results)
-      .to receive(:sorted_work_packages)
+      .to receive(:work_packages)
       .and_return([work_package])
 
     allow(results)
@@ -57,14 +57,9 @@ describe ::API::V3::WorkPackageCollectionFromQueryService,
       .and_return(1 => 5, 2 => 10)
 
     allow(results)
-      .to receive(:all_sums_for_group)
-      .with(1)
-      .and_return(OpenStruct.new(name: :status_id) => 50)
-
-    allow(results)
-      .to receive(:all_sums_for_group)
-      .with(2)
-      .and_return(OpenStruct.new(name: :status_id) => 100)
+      .to receive(:all_group_sums)
+      .and_return(1 => { OpenStruct.new(name: :status_id) => 50 },
+                  2 => { OpenStruct.new(name: :status_id) => 100 })
 
     allow(results)
       .to receive(:query)
@@ -88,7 +83,7 @@ describe ::API::V3::WorkPackageCollectionFromQueryService,
                :current_user) do
 
       def initialize(work_packages,
-                     self_link,
+                     self_link:,
                      query:,
                      project:,
                      groups:,

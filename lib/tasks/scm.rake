@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -108,7 +108,7 @@ To resolve these cases, you can either:
     args.extras.each do |tuple|
       vendor, base_url = tuple.split('=')
 
-      unless OpenProject::Scm::Manager.enabled?(vendor.to_sym)
+      unless OpenProject::SCM::Manager.enabled?(vendor.to_sym)
         puts "Vendor #{vendor} is not enabled, skipping."
         next
       end

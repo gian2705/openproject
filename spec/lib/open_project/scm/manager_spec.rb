@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,27 +29,27 @@
 
 require 'spec_helper'
 
-describe OpenProject::Scm::Manager do
+describe OpenProject::SCM::Manager do
   let(:vendor) { 'TestScm' }
   let(:scm_class) { Class.new }
 
   before do
     Repository.const_set(vendor, scm_class)
-    OpenProject::Scm::Manager.add :test_scm
+    OpenProject::SCM::Manager.add :test_scm
   end
 
   after do
     Repository.send(:remove_const, vendor)
-    OpenProject::Scm::Manager.delete :test_scm
+    OpenProject::SCM::Manager.delete :test_scm
   end
 
   it 'is a valid const' do
-    expect(OpenProject::Scm::Manager.registered[:test_scm]).to eq(Repository::TestScm)
+    expect(OpenProject::SCM::Manager.registered[:test_scm]).to eq(Repository::TestScm)
   end
 
   context 'scm is not known' do
     it 'is not included' do
-      expect(OpenProject::Scm::Manager.registered).to_not have_key(:some_scm)
+      expect(OpenProject::SCM::Manager.registered).to_not have_key(:some_scm)
     end
   end
 end

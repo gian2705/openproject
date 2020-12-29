@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module OpenProject::Backlogs::List
@@ -52,8 +45,8 @@ module OpenProject::Backlogs::List
     # Also sanitize_sql seems to be unavailable in a sensible way. Therefore
     # we're using send to circumvent visibility work_packages.
     def scope_condition
-      self.class.send(:sanitize_sql, ['project_id = ? AND fixed_version_id = ? AND type_id IN (?)',
-                                      project_id, fixed_version_id, types])
+      self.class.send(:sanitize_sql, ['project_id = ? AND version_id = ? AND type_id IN (?)',
+                                      project_id, version_id, types])
     end
 
     include InstanceMethods
@@ -93,17 +86,17 @@ module OpenProject::Backlogs::List
     end
 
     def fix_other_work_package_positions
-      if changes.slice('project_id', 'type_id', 'fixed_version_id').present?
-        if changes.slice('project_id', 'fixed_version_id').blank? and
+      if changes.slice('project_id', 'type_id', 'version_id').present?
+        if changes.slice('project_id', 'version_id').blank? and
            Story.types.include?(type_id.to_i) and
            Story.types.include?(type_id_was.to_i)
           return
         end
 
-        if fixed_version_id_changed?
+        if version_id_changed?
           restore_version_id = true
-          new_version_id = fixed_version_id
-          self.fixed_version_id = fixed_version_id_was
+          new_version_id = version_id
+          self.version_id = version_id_was
         end
 
         if type_id_changed?
@@ -131,20 +124,20 @@ module OpenProject::Backlogs::List
         end
 
         if restore_version_id
-          self.fixed_version_id = new_version_id
+          self.version_id = new_version_id
         end
       end
     end
 
     def fix_own_work_package_position
-      if changes.slice('project_id', 'type_id', 'fixed_version_id').present?
-        if changes.slice('project_id', 'fixed_version_id').blank? and
+      if changes.slice('project_id', 'type_id', 'version_id').present?
+        if changes.slice('project_id', 'version_id').blank? and
            Story.types.include?(type_id.to_i) and
            Story.types.include?(type_id_was.to_i)
           return
         end
 
-        if is_story? and fixed_version.present?
+        if is_story? and version.present?
           assume_bottom_position
         else
           remove_from_list
@@ -153,7 +146,7 @@ module OpenProject::Backlogs::List
     end
 
     def set_default_prev_positions_silently(prev)
-      prev.fixed_version.rebuild_positions(prev.project)
+      prev.version.rebuild_positions(prev.project)
       prev.reload.position
     end
   end

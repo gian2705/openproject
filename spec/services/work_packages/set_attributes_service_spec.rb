@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -48,20 +48,22 @@ describe WorkPackages::SetAttributesService, type: :model do
   let(:new_work_package) do
     WorkPackage.new
   end
+  let(:statuses) { [] }
   let(:contract_class) { WorkPackages::UpdateContract }
   let(:mock_contract) do
     double(contract_class,
            new: mock_contract_instance)
   end
   let(:mock_contract_instance) do
-    mock = mock_model(contract_class)
-    allow(mock)
-      .to receive(:validate)
-      .and_return contract_valid
-
-    mock
+    double(contract_class,
+           assignable_statuses: statuses,
+           errors: contract_errors,
+           validate: contract_valid)
   end
   let(:contract_valid) { true }
+  let(:contract_errors) do
+    double('contract_errors')
+  end
   let(:instance) do
     described_class.new(user: user,
                         model: work_package,
@@ -140,10 +142,6 @@ describe WorkPackages::SetAttributesService, type: :model do
       let(:new_statuses) { [other_status, default_status] }
 
       before do
-        allow(work_package)
-          .to receive(:new_statuses_allowed_to)
-          .with(user, true)
-          .and_return(new_statuses)
         allow(Status)
           .to receive(:default)
           .and_return(default_status)
@@ -296,6 +294,275 @@ describe WorkPackages::SetAttributesService, type: :model do
       end
     end
 
+    context 'start_date & due_date' do
+      let(:parent) do
+        FactoryBot.build_stubbed(:stubbed_work_package,
+                                 start_date: parent_start_date,
+                                 due_date: parent_due_date)
+      end
+      let(:parent_start_date) { Date.today - 5.days }
+      let(:parent_due_date) { Date.today + 10.days }
+
+      context 'with a parent' do
+        let(:attributes) { {} }
+        let(:work_package) { new_work_package }
+
+        context 'with the parent having dates and not providing own dates' do
+          let(:call_attributes) { { parent: parent } }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to the parent`s start_date" do
+              subject
+
+              expect(work_package.start_date)
+                .to eql parent_start_date
+            end
+
+            it "sets the due_date to the parent`s due_date" do
+              subject
+
+              expect(work_package.due_date)
+                .to eql parent_due_date
+            end
+          end
+        end
+
+        context 'with the parent having start date (no due) and not providing own dates' do
+          let(:call_attributes) { { parent: parent } }
+          let(:parent_due_date) { nil }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to the parent`s start_date" do
+              subject
+
+              expect(work_package.start_date)
+                .to eql parent_start_date
+            end
+
+            it "sets the due_date to nil" do
+              subject
+
+              expect(work_package.due_date)
+                .to be_nil
+            end
+          end
+        end
+
+        context 'with the parent having due date (no start) and not providing own dates' do
+          let(:call_attributes) { { parent: parent } }
+          let(:parent_start_date) { nil }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to nil" do
+              subject
+
+              expect(work_package.start_date)
+                .to be_nil
+            end
+
+            it "sets the due_date to the parent`s due_date" do
+              subject
+
+              expect(work_package.due_date)
+                .to eql parent_due_date
+            end
+          end
+        end
+
+        context 'with the parent having dates but providing own dates' do
+          let(:call_attributes) { { parent: parent, start_date: Date.today, due_date: Date.today + 1.day } }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to the provided date" do
+              subject
+
+              expect(work_package.start_date)
+                .to eql Date.today
+            end
+
+            it "sets the due_date to the provided date" do
+              subject
+
+              expect(work_package.due_date)
+                .to eql Date.today + 1.day
+            end
+          end
+        end
+
+        context 'with the parent having dates but providing own start_date' do
+          let(:call_attributes) { { parent: parent, start_date: Date.today } }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to the provided date" do
+              subject
+
+              expect(work_package.start_date)
+                .to eql Date.today
+            end
+
+            it "sets the due_date to the parent's due_date" do
+              subject
+
+              expect(work_package.due_date)
+                .to eql parent_due_date
+            end
+          end
+        end
+
+        context 'with the parent having dates but providing own due_date' do
+          let(:call_attributes) { { parent: parent, due_date: Date.today + 4.days } }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to the parent's start date" do
+              subject
+
+              expect(work_package.start_date)
+                .to eql parent_start_date
+            end
+
+            it "sets the due_date to the provided date" do
+              subject
+
+              expect(work_package.due_date)
+                .to eql Date.today + 4.days
+            end
+          end
+        end
+
+        context 'with the parent having dates but providing own empty start_date' do
+          let(:call_attributes) { { parent: parent, start_date: nil } }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to nil" do
+              subject
+
+              expect(work_package.start_date)
+                .to be_nil
+            end
+
+            it "sets the due_date to the parent's due_date" do
+              subject
+
+              expect(work_package.due_date)
+                .to eql parent_due_date
+            end
+          end
+        end
+
+        context 'with the parent having dates but providing own empty due_date' do
+          let(:call_attributes) { { parent: parent, due_date: nil } }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to the parent's start date" do
+              subject
+
+              expect(work_package.start_date)
+                .to eql parent_start_date
+            end
+
+            it "sets the due_date to nil" do
+              subject
+
+              expect(work_package.due_date)
+                .to be_nil
+            end
+          end
+        end
+
+        context 'with the parent having dates but providing a start date that is before parent`s due date`' do
+          let(:call_attributes) { { parent: parent, start_date: parent_due_date - 4.days } }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to the provided date" do
+              subject
+
+              expect(work_package.start_date)
+                .to eql parent_due_date - 4.days
+            end
+
+            it "sets the due_date to the parent's due_date" do
+              subject
+
+              expect(work_package.due_date)
+                .to eql parent_due_date
+            end
+          end
+        end
+
+        context 'with the parent having dates but providing a start date that is after the parent`s due date`' do
+          let(:call_attributes) { { parent: parent, start_date: parent_due_date + 1.day } }
+
+          it_behaves_like 'service call' do
+            it "sets the start_date to the provided date" do
+              subject
+
+              expect(work_package.start_date)
+                .to eql parent_due_date + 1.day
+            end
+
+            it "leaves the due date empty" do
+              subject
+
+              expect(work_package.due_date)
+                .to be_nil
+            end
+          end
+        end
+
+        context 'with the parent having dates but providing a due date that is before the parent`s start date`' do
+          let(:call_attributes) { { parent: parent, due_date: parent_start_date - 3.day } }
+
+          it_behaves_like 'service call' do
+            it "leaves the start date empty" do
+              subject
+
+              expect(work_package.start_date)
+                .to be_nil
+            end
+
+            it "set the due date to the provided date" do
+              subject
+
+              expect(work_package.due_date)
+                .to eql parent_start_date - 3.day
+            end
+          end
+        end
+      end
+
+      context 'with default setting', with_settings: { work_package_startdate_is_adddate: true } do
+        context 'no value set before for a new work package' do
+          let(:call_attributes) { {} }
+          let(:attributes) { {} }
+          let(:work_package) { new_work_package }
+
+          it_behaves_like 'service call' do
+            it "sets the default priority" do
+              subject
+
+              expect(work_package.start_date)
+                .to eql Date.today
+            end
+          end
+        end
+
+        context 'value set on new work package' do
+          let(:call_attributes) { { start_date: Date.today + 1.day } }
+          let(:attributes) { {} }
+          let(:work_package) { new_work_package }
+
+          it_behaves_like 'service call' do
+            it 'stays that value' do
+              subject
+
+              expect(work_package.start_date)
+                .to eq(Date.today + 1.day)
+            end
+          end
+        end
+      end
+    end
+
     context 'priority' do
       let(:default_priority) { FactoryBot.build_stubbed(:priority) }
       let(:other_priority) { FactoryBot.build_stubbed(:priority) }
@@ -321,42 +588,6 @@ describe WorkPackages::SetAttributesService, type: :model do
 
             expect(work_package.priority)
               .to eql default_priority
-          end
-        end
-      end
-
-      context 'start_date with default setting', with_settings: { work_package_startdate_is_adddate: true } do
-        context 'no value set before for a new work package' do
-          let(:call_attributes) { {} }
-          let(:attributes) { {} }
-          let(:work_package) { new_work_package }
-
-          before do
-            work_package.priority = nil
-          end
-
-          it_behaves_like 'service call' do
-            it "sets the default priority" do
-              subject
-
-              expect(work_package.priority)
-                .to eql default_priority
-            end
-          end
-        end
-
-        context 'value set on new work package' do
-          let(:call_attributes) { { start_date: Date.today + 1.day } }
-          let(:attributes) { {} }
-          let(:work_package) { new_work_package }
-
-          it_behaves_like 'service call' do
-            it 'stays that value' do
-              subject
-
-              expect(work_package.start_date)
-                .to eq(Date.today + 1.day)
-            end
           end
         end
       end
@@ -450,10 +681,6 @@ describe WorkPackages::SetAttributesService, type: :model do
       end
 
       before do
-        allow(work_package)
-          .to receive(:new_statuses_allowed_to)
-          .with(user, true)
-          .and_return(new_statuses)
         allow(new_project)
           .to receive(:shared_versions)
           .and_return(new_versions)
@@ -471,16 +698,16 @@ describe WorkPackages::SetAttributesService, type: :model do
       end
 
       shared_examples_for 'updating the project' do
-        context 'fixed_version' do
+        context 'version' do
           before do
-            work_package.fixed_version = version
+            work_package.version = version
           end
 
           context 'not shared in new project' do
             it 'sets to nil' do
               subject
 
-              expect(work_package.fixed_version)
+              expect(work_package.version)
                 .to be_nil
             end
           end
@@ -491,7 +718,7 @@ describe WorkPackages::SetAttributesService, type: :model do
             it 'keeps the version' do
               subject
 
-              expect(work_package.fixed_version)
+              expect(work_package.version)
                 .to eql version
             end
           end
@@ -636,6 +863,106 @@ describe WorkPackages::SetAttributesService, type: :model do
 
         it 'is successful' do
           expect(subject).to be_success
+        end
+      end
+    end
+
+    context 'when switching back to automatic scheduling' do
+      let(:work_package) do
+        wp = FactoryBot.build_stubbed(:work_package,
+                                      project: project,
+                                      schedule_manually: true,
+                                      start_date: Date.today,
+                                      due_date: Date.today + 5.days)
+        wp.type = FactoryBot.build_stubbed(:type)
+        wp.send(:clear_changes_information)
+
+        allow(wp)
+          .to receive(:soonest_start)
+          .and_return(soonest_start)
+
+        wp
+      end
+      let(:call_attributes) { { schedule_manually: false } }
+      let(:attributes) { {} }
+      let(:soonest_start) { Date.today + 1.day }
+
+      context 'when the soonest start date is later than the current start date' do
+        let(:soonest_start) { Date.today + 3.days }
+
+        it_behaves_like 'service call' do
+          it 'sets the start date to the soonest possible start date' do
+            subject
+
+            expect(work_package.start_date).to eql(Date.today + 3.days)
+            expect(work_package.due_date).to eql(Date.today + 8.days)
+          end
+        end
+      end
+
+      context 'when the soonest start date is before the current start date' do
+        let(:soonest_start) { Date.today - 3.days }
+
+        it_behaves_like 'service call' do
+          it 'sets the start date to the soonest possible start date' do
+            subject
+
+            expect(work_package.start_date).to eql(soonest_start)
+            expect(work_package.due_date).to eql(Date.today + 2.days)
+          end
+        end
+      end
+
+      context 'when the soonest start date is nil' do
+        let(:soonest_start) { nil }
+
+        it_behaves_like 'service call' do
+          it 'sets the start date to the soonest possible start date' do
+            subject
+
+            expect(work_package.start_date).to eql(Date.today)
+            expect(work_package.due_date).to eql(Date.today + 5.days)
+          end
+        end
+      end
+
+      context 'when the work package also has a child' do
+        let(:child) do
+          FactoryBot.build_stubbed(:stubbed_work_package,
+                                   start_date: child_start_date,
+                                   due_date: child_due_date)
+        end
+        let(:child_start_date) { Date.today + 2.days }
+        let(:child_due_date) { Date.today + 10.days }
+
+        before do
+          allow(work_package)
+            .to receive(:children)
+            .and_return([child])
+        end
+
+        context 'when the child`s start date is after soonest_start' do
+          it_behaves_like 'service call' do
+            it 'sets the dates to the child dates' do
+              subject
+
+              expect(work_package.start_date).to eql(Date.today + 2.days)
+              expect(work_package.due_date).to eql(Date.today + 10.days)
+            end
+          end
+        end
+
+        context 'when the child`s start date is before soonest_start' do
+          let(:soonest_start) { Date.today + 3.days }
+
+          it_behaves_like 'service call' do
+            it 'sets the dates to soonest date and to the duration of the child' do
+              subject
+
+              expect(work_package.start_date).to eql(Date.today + 3.days)
+              expect(work_package.due_date).to eql(Date.today + 11.days)
+            end
+          end
         end
       end
     end

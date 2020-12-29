@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -53,6 +53,7 @@ module Queries::WorkPackages
   register.filter Query, filters_module::StatusFilter
   register.filter Query, filters_module::SubjectFilter
   register.filter Query, filters_module::SubprojectFilter
+  register.filter Query, filters_module::OnlySubprojectFilter
   register.filter Query, filters_module::TypeFilter
   register.filter Query, filters_module::UpdatedAtFilter
   register.filter Query, filters_module::VersionFilter
@@ -76,6 +77,7 @@ module Queries::WorkPackages
   register.filter Query, filters_module::SubjectOrIdFilter
   register.filter Query, filters_module::ManualSortFilter
   register.filter Query, filters_module::RelatableFilter
+  register.filter Query, filters_module::MilestoneFilter
 
   columns_module = Queries::WorkPackages::Columns
 

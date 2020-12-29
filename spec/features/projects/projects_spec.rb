@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -48,6 +48,8 @@ describe 'Projects', type: :feature do
       fill_in 'project[name]', with: 'Foo bar'
       click_on 'Advanced settings'
       fill_in 'project[identifier]', with: 'foo'
+      sleep 1
+
       click_on 'Create'
 
       expect(page).to have_content 'Successful creation.'
@@ -63,6 +65,7 @@ describe 'Projects', type: :feature do
         fill_in 'project[name]', with: 'Foo bar'
         click_on 'Advanced settings'
         fill_in 'project[identifier]', with: 'foo'
+        sleep 1
         click_on 'Create'
 
         expect(page).to have_content 'Successful creation.'
@@ -159,7 +162,7 @@ describe 'Projects', type: :feature do
       click_on 'Update'
 
       expect(page).to have_content 'Successful update.'
-      expect(current_path).to eq '/projects/foo-bar/settings'
+      expect(current_path).to eq '/projects/foo-bar/settings/generic'
       expect(Project.first.identifier).to eq 'foo-bar'
     end
 
@@ -205,10 +208,33 @@ describe 'Projects', type: :feature do
       project.custom_field_values.last.value = 'FOO'
       project.save!
 
-      visit settings_project_path(id: project.id, tab: 'info')
+      visit settings_generic_project_path(project.id)
 
       expect(page).to have_content 'Required Foo'
       expect(page).to have_content 'Optional Foo'
+    end
+
+    context 'with a restricted custom field' do
+      let(:project) { FactoryBot.create(:project, name: 'Foo project', identifier: 'foo-project') }
+      let!(:required_custom_field) do
+        FactoryBot.create(:string_project_custom_field,
+                          name: 'Foo',
+                          type: ProjectCustomField,
+                          min_length: 1,
+                          max_length: 2,
+                          is_for_all: true)
+      end
+
+      it 'shows the errors of that field when saving (Regression #33766)' do
+        visit settings_generic_project_path(project.id)
+
+        expect(page).to have_content 'Foo'
+        # Enter something too long
+        fill_in 'Foo', with: '1234'
+
+        click_on 'Save'
+        expect(page).to have_selector('#errorExplanation', text: 'Foo is too long (maximum is 2 characters)')
+      end
     end
   end
 end

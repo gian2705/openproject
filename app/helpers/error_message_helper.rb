@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,7 +25,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module ErrorMessageHelper
@@ -45,13 +45,9 @@ module ErrorMessageHelper
 
     error_messages = errors.full_messages
 
-    errors.details.each do |attribute, details|
-      details.map { |d| d[:error] }.flatten.each do |message|
-        object.errors.add(attribute, message)
-      end
-    end
+    object.errors.merge!(errors)
 
-    render_error_messages_partial(error_messages, { object: object })
+    render_error_messages_partial(error_messages, object: object)
   end
 
   def extract_objects_from_params(params)
@@ -73,7 +69,7 @@ module ErrorMessageHelper
       render partial: 'common/validation_error',
              locals: { error_messages: messages,
                        classes: options[:classes],
-                       object_name:  options[:object].class.model_name.human }
+                       object_name: options[:object].class.model_name.human }
     end
   end
 end

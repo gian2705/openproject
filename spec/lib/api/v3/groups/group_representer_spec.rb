@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -76,12 +76,12 @@ describe ::API::V3::Groups::GroupRepresenter do
       end
 
       it_behaves_like 'has UTC ISO 8601 date and time' do
-        let(:date) { group.created_on }
+        let(:date) { group.created_at }
         let(:json_path) { 'createdAt' }
       end
 
       it_behaves_like 'has UTC ISO 8601 date and time' do
-        let(:date) { group.updated_on }
+        let(:date) { group.updated_at }
         let(:json_path) { 'updatedAt' }
       end
     end
@@ -128,7 +128,7 @@ describe ::API::V3::Groups::GroupRepresenter do
           end
 
           it 'changes when the group is updated' do
-            group.updated_on = Time.now + 20.seconds
+            group.updated_at = Time.now + 20.seconds
 
             expect(representer.json_cache_key)
               .not_to eql former_cache_key

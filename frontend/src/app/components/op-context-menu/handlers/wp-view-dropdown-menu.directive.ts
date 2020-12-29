@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {OPContextMenuService} from "core-components/op-context-menu/op-context-menu.service";
@@ -64,7 +64,7 @@ export class WorkPackageViewDropdownMenuDirective extends OpContextMenuTrigger {
 
   private buildItems() {
     this.items = [];
-    
+
     if (this.wpDisplayRepresentationService.current !== wpDisplayCardRepresentation) {
       this.items.push(
         {
@@ -104,7 +104,7 @@ export class WorkPackageViewDropdownMenuDirective extends OpContextMenuTrigger {
           // List View with enabled Gantt
           linkText: this.I18n.t('js.views.timeline'),
           icon: 'icon-view-timeline',
-          onClick: (evt: any) => {
+          onClick: (evt:any) => {
             if (!this.wpTableTimeline.isVisible) {
               this.wpTableTimeline.toggle();
             }

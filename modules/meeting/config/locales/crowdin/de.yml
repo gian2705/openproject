@@ -1,8 +1,15 @@
 #-- copyright
-#OpenProject Meeting Plugin
-#Copyright (C) 2011-2014 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License version 3.
+#OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+#Copyright (C) 2006-2017 Jean-Philippe Lang
+#Copyright (C) 2010-2013 the ChiliProject Team
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
 #This program is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -10,7 +17,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#See doc/COPYRIGHT.md for more details.
+#See docs/COPYRIGHT.rdoc for more details.
 #++
 #English strings go here for Rails i18n
 de:
@@ -52,7 +59,7 @@ de:
   label_meeting_date_time: "Datum/Uhrzeit"
   label_meeting_diff: "Differenz"
   label_notify: "Zur Einsicht verschicken"
-  label_icalendar: "ICalendar senden"
+  label_icalendar: "iCalendar senden"
   label_version: "Version"
   label_time_zone: "Zeitzone"
   label_start_date: "Anfangstermin"
@@ -67,13 +74,15 @@ de:
   permission_send_meeting_agendas_notification: "Benachrichtigungen für Agenden verschicken"
   permission_create_meeting_minutes: "Protokolle anlegen/bearbeiten"
   permission_send_meeting_minutes_notification: "Benachrichtigungen für Protokolle verschicken"
+  permission_meetings_send_invite: "Benutzer zu Besprechungen einladen"
+  permission_send_meeting_agendas_icalendar: "Besprechungsagenda als Kalendereintrag senden"
   project_module_meetings: "Besprechungen"
   text_duration_in_hours: "Dauer in Stunden"
   text_in_hours: "in Stunden"
   text_meeting_agenda_for_meeting: 'Agenda für die Besprechung "%{meeting}"'
   text_meeting_closing_are_you_sure: "Möchten Sie dieses Meeting wirklich schließen?"
-  text_meeting_agenda_open_are_you_sure: "Nicht-gespeicherte Inhalte des Protokolls werden durch diese Aktion verworfen! Weitermachen?"
+  text_meeting_agenda_open_are_you_sure: "Es werden alle Änderungen im Protokoll überschrieben! Wollen Sie fortfahren?"
   text_meeting_minutes_for_meeting: 'Protokoll für die Besprechung "%{meeting}"'
-  text_review_meeting_agenda: "%{author} hat das %{link} zur Einsicht freigegeben."
-  text_review_meeting_minutes: "%{author} hat das %{link} zur Einsicht freigegeben."
+  text_review_meeting_agenda: "%{author} hat die %{link} zur Einsicht freigegeben."
+  text_review_meeting_minutes: "%{author} hat die %{link} zur Einsicht freigegeben."
   text_notificiation_invited: "Diese Email enthält einen ics Eintrag für die untenstehende Besprechung:"

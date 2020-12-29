@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
@@ -40,7 +33,7 @@ describe Version, type: :model do
 
   describe 'rebuild positions' do
     def build_work_package(options = {})
-      FactoryBot.build(:work_package, options.reverse_merge(fixed_version_id: version.id,
+      FactoryBot.build(:work_package, options.reverse_merge(version_id: version.id,
                                                              priority_id:      priority.id,
                                                              project_id:       project.id,
                                                              status_id:        status.id))
@@ -61,7 +54,7 @@ describe Version, type: :model do
 
     let(:version) { FactoryBot.create(:version, project_id: project.id, name: 'Version') }
 
-    let(:admin) { FactoryBot.create(:admin) }
+    using_shared_fixtures :admin
 
     def move_to_project(work_package, project)
       service = WorkPackages::MoveService.new(work_package, admin)
@@ -103,7 +96,7 @@ describe Version, type: :model do
       work_package3 = FactoryBot.create(:work_package, parent_id: work_package2.id, type_id: task_type.id, status_id: status.id, project_id: project.id)
 
       work_package1.reload
-      work_package1.fixed_version_id = version.id
+      work_package1.version_id = version.id
       work_package1.save!
 
       work_package1.reload
@@ -126,9 +119,9 @@ describe Version, type: :model do
       expect(work_package2.project).to eq(project2)
       expect(work_package1.project).to eq(project)
 
-      expect(work_package3.fixed_version_id).to be_nil
-      expect(work_package2.fixed_version_id).to be_nil
-      expect(work_package1.fixed_version_id).to eq(version.id)
+      expect(work_package3.version_id).to be_nil
+      expect(work_package2.version_id).to be_nil
+      expect(work_package1.version_id).to eq(version.id)
     end
 
     it 'rebuilds postions' do
@@ -152,7 +145,7 @@ describe Version, type: :model do
       version.rebuild_positions(project)
 
       work_packages = version
-                      .fixed_issues
+                      .work_packages
                       .where(project_id: project)
                       .order(Arel.sql('COALESCE(position, 0) ASC, id ASC'))
 

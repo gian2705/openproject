@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,36 +23,34 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
-import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import {PathHelperService} from 'core-app/modules/common/path-helper/path-helper.service';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {UrlParamsHelperService} from 'core-components/wp-query/url-params-helper';
 import {WorkPackageRelationsHierarchyService} from 'core-components/wp-relations/wp-relations-hierarchy/wp-relations-hierarchy.service';
-import {WorkPackageEmbeddedTableComponent} from 'core-components/wp-table/embedded/wp-embedded-table.component';
 import {OpUnlinkTableAction} from 'core-components/wp-table/table-actions/actions/unlink-table-action';
 import {OpTableActionFactory} from 'core-components/wp-table/table-actions/table-action';
 import {WorkPackageInlineCreateService} from "core-components/wp-inline-create/wp-inline-create.service";
-import {untilComponentDestroyed} from "ng2-rx-componentdestroyed";
 import {WorkPackageRelationQueryBase} from "core-components/wp-relations/embedded/wp-relation-query.base";
 import {WpChildrenInlineCreateService} from "core-components/wp-relations/embedded/children/wp-children-inline-create.service";
-import {WorkPackageCacheService} from "core-components/work-packages/work-package-cache.service";
 import {filter} from "rxjs/operators";
 import {QueryResource} from "core-app/modules/hal/resources/query-resource";
 import {GroupDescriptor} from "core-components/work-packages/wp-single-view/wp-single-view.component";
 import {HalEventsService} from "core-app/modules/hal/services/hal-events.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   selector: 'wp-children-query',
   templateUrl: '../wp-relation-query.html',
   providers: [
-    { provide: WorkPackageInlineCreateService, useClass: WpChildrenInlineCreateService }
+    { provide: WorkPackageInlineCreateService, useClass: WpChildrenInlineCreateService },
   ]
 })
-export class WorkPackageChildrenQueryComponent extends WorkPackageRelationQueryBase implements OnInit, OnDestroy {
+export class WorkPackageChildrenQueryComponent extends WorkPackageRelationQueryBase implements OnInit {
   @Input() public workPackage:WorkPackageResource;
   @Input() public query:QueryResource;
 
@@ -75,7 +73,7 @@ export class WorkPackageChildrenQueryComponent extends WorkPackageRelationQueryB
               protected PathHelper:PathHelperService,
               protected wpInlineCreate:WorkPackageInlineCreateService,
               protected halEvents:HalEventsService,
-              protected wpCacheService:WorkPackageCacheService,
+              protected apiV3Service:APIV3Service,
               protected queryUrlParamsHelper:UrlParamsHelperService,
               readonly I18n:I18nService) {
     super(queryUrlParamsHelper);
@@ -90,7 +88,9 @@ export class WorkPackageChildrenQueryComponent extends WorkPackageRelationQueryB
 
     // Fire event that children were added
     this.wpInlineCreate.newInlineWorkPackageCreated
-      .pipe(untilComponentDestroyed(this))
+      .pipe(
+        this.untilDestroyed()
+      )
       .subscribe((toId:string) => {
         this.halEvents.push(this.workPackage, {
           eventType: 'association',
@@ -100,16 +100,15 @@ export class WorkPackageChildrenQueryComponent extends WorkPackageRelationQueryB
       });
 
     // Refresh table when work package is refreshed
-    this.wpCacheService
-      .observe(this.workPackage.id!)
+    this
+      .apiV3Service
+      .work_packages
+      .id(this.workPackage)
+      .observe()
       .pipe(
         filter(() => this.embeddedTable && this.embeddedTable.isInitialized),
-        untilComponentDestroyed(this)
+        this.untilDestroyed()
       )
       .subscribe(() => this.refreshTable());
-  }
-
-  ngOnDestroy() {
-    // Nothing to do
   }
 }

@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -28,7 +28,7 @@ See docs/COPYRIGHT.rdoc for more details.
 ++#%>
 
 <%= error_messages_for 'copy_project' %>
-<%= toolbar title: l(:label_project_new) %>
+<%= toolbar title: t(:label_project_new) %>
 
 <%= labelled_tabular_form_for @copy_project, url: { action: 'copy', coming_from: 'settings' } do |f| %>
   <%= hidden_field_tag :coming_from, 'settings' %>
@@ -36,6 +36,7 @@ See docs/COPYRIGHT.rdoc for more details.
   <%= render partial: 'projects/form', locals: { f: f,
                                                  project: @copy_project,
                                                  errors: @errors,
+                                                 is_copy: true,
                                                  render_advanced: true,
                                                  render_types: false,
                                                  render_modules: false,
@@ -45,5 +46,5 @@ See docs/COPYRIGHT.rdoc for more details.
 
   <%= render partial: "copy_projects/copy_settings/copy_associations", locals: { project: @project } %>
 
-  <%= submit_tag l(:button_copy), class: 'button -highlight' %>
+  <%= submit_tag t(:button_copy), class: 'button -highlight' %>
 <% end %>

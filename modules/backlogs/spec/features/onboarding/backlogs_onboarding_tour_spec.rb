@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -51,7 +51,7 @@ describe 'backlogs onboarding tour', js: true do
 
   let(:impediment) do
     FactoryBot.build(:impediment, author: user,
-                     fixed_version: sprint,
+                     version: sprint,
                      assigned_to: user,
                      project: project,
                      type: type_task,
@@ -74,7 +74,7 @@ describe 'backlogs onboarding tour', js: true do
                       priority: priority,
                       position: 1,
                       story_points: 3,
-                      fixed_version: sprint )
+                      version: sprint )
   end
 
   before do

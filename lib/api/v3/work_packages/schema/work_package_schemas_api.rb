@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -82,7 +82,7 @@ module API
               end
 
               WorkPackageSchemaCollectionRepresenter.new(schemas,
-                                                         schemas_path_with_filters_params,
+                                                         self_link: schemas_path_with_filters_params,
                                                          current_user: current_user)
             end
 
@@ -113,7 +113,7 @@ module API
                 schema = TypedWorkPackageSchema.new(project: @project, type: @type)
                 self_link = api_v3_paths.work_package_schema(@project.id, @type.id)
                 represented_schema = WorkPackageSchemaRepresenter.create(schema,
-                                                                         self_link,
+                                                                         self_link: self_link,
                                                                          current_user: current_user)
 
                 with_etag! represented_schema.json_cache_key

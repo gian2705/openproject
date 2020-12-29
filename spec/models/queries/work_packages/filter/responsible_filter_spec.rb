@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -114,7 +114,10 @@ describe Queries::WorkPackages::Filter::ResponsibleFilter, type: :model do
       it 'returns the mapped value' do
         objects = instance.value_objects
 
-        expect(objects.map(&:id)).to eql ['me', responsible.id, responsible2.id]
+        # The first value is guaranteed to be 'me'.
+        # There is no order on the other values.
+        expect(objects.map(&:id)[0]).to eql 'me'
+        expect(objects.map(&:id)[1..-1]).to match_array [responsible.id, responsible2.id]
       end
     end
 
@@ -130,10 +133,7 @@ describe Queries::WorkPackages::Filter::ResponsibleFilter, type: :model do
 
     context 'for a group value with a group member being assignee' do
       let(:values) { [group.id.to_s] }
-
-      before do
-        group.users << responsible
-      end
+      let(:group) { FactoryBot.create(:group, members: responsible) }
 
       it 'does not return the work package' do
         is_expected
@@ -154,10 +154,7 @@ describe Queries::WorkPackages::Filter::ResponsibleFilter, type: :model do
       let(:values) { [user.id.to_s] }
       let(:responsible) { group }
       let(:user) { FactoryBot.create(:user) }
-
-      before do
-        group.users << user
-      end
+      let(:group) { FactoryBot.create(:group, members: user) }
 
       it 'does not return the work package' do
         is_expected

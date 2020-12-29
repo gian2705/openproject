@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -51,7 +51,7 @@ describe WorkPackages::UpdateService, type: :model do
   end
 
   before do
-    # Stub update_ancestors because it messes with the JournalManager expect
+    # Stub update_ancestors because it messes with the jouralizing expectations
     allow(instance).to receive(:update_ancestors).and_return []
   end
 
@@ -87,8 +87,8 @@ describe WorkPackages::UpdateService, type: :model do
     let(:send_notifications) { true }
 
     before do
-      expect(JournalManager)
-        .to receive(:with_send_notifications)
+      expect(Journal::NotificationConfiguration)
+        .to receive(:with)
         .with(send_notifications)
         .and_yield
 
@@ -98,7 +98,7 @@ describe WorkPackages::UpdateService, type: :model do
     end
 
     shared_examples_for 'service call' do
-      subject { instance.call(call_attributes.merge(send_notifications: send_notifications).symbolize_keys) }
+      subject { instance.call(**call_attributes.merge(send_notifications: send_notifications).symbolize_keys) }
 
       it 'is successful' do
         expect(subject.success?).to be_truthy
@@ -119,6 +119,10 @@ describe WorkPackages::UpdateService, type: :model do
       context 'when setting the attributes is unsuccessful (invalid)' do
         let(:errors) { double('set errors', empty?: false) }
         let(:set_service_results) { ServiceResult.new success: false, errors: errors, result: work_package }
+
+        before do
+          allow(errors).to receive(:merge!)
+        end
 
         it 'is unsuccessful' do
           expect(subject.success?).to be_falsey
@@ -142,6 +146,7 @@ describe WorkPackages::UpdateService, type: :model do
         let(:saving_errors) { double('saving_errors', empty?: false) }
 
         before do
+          allow(saving_errors).to receive(:merge!)
           allow(work_package)
             .to receive(:errors)
             .and_return(saving_errors)

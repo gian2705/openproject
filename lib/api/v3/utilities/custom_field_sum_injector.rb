@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -41,11 +41,7 @@ module API
                         name_source: ->(*) { custom_field.name },
                         required: false,
                         writable: false,
-                        show_if: ->(*) {
-                          Setting.work_package_list_summable_columns.any? do |column_name|
-                            /cf_(\d+)/.match(column_name)
-                          end
-                        }
+                        show_if: ->(*) { custom_field.summable? }
         end
 
         def inject_property_value(custom_field)
@@ -53,10 +49,7 @@ module API
                           getter: property_value_getter_for(custom_field),
                           setter: property_value_setter_for(custom_field),
                           render_nil: true,
-                          if: ->(*) {
-                            setting = ::Setting.work_package_list_summable_columns
-                            setting.include?("cf_#{custom_field.id}")
-                          }
+                          if: ->(*) { custom_field.summable? }
         end
       end
     end

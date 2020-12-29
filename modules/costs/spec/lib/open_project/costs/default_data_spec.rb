@@ -1,12 +1,12 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
 # OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
@@ -23,15 +23,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'spec_helper'
 
-describe OpenProject::Costs::DefaultData do
+describe Costs::DefaultData do
   let(:seeder) { BasicData::RoleSeeder.new }
-  let(:member) { OpenProject::Costs::DefaultData.member_role }
-  let(:permissions) { OpenProject::Costs::DefaultData.member_permissions }
+  let(:member) { Costs::DefaultData.member_role }
+  let(:permissions) { Costs::DefaultData.member_permissions }
 
   before do
     allow(seeder).to receive(:builtin_roles).and_return([])

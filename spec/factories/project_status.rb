@@ -1,7 +1,7 @@
 # encoding: utf-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,9 +28,9 @@
 #++
 
 FactoryBot.define do
-  factory :project_status, class: Project::Status do
+  factory :project_status, class: Projects::Status do
     project
     sequence(:explanation) { |n| "Status explanation #{n}" }
-    code { Project::Status.codes[:on_track] }
+    code { Projects::Status.codes[:on_track] }
   end
 end

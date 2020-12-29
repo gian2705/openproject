@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -37,7 +37,7 @@ module API
     #  - APIv3 defines some properties as a different type, which requires a name change
     #     e.g. estimatedTime vs estimated_hours (AR: hours; API: generic duration)
     #  - some names used in AR are even there kind of deprecated
-    #     e.g. fixed_version, which everyone refers to as version
+    #     e.g. version, which everyone refers to as version
     #  - some names in AR are plainly inconsistent, whereas the API tries to be as consistent as
     #    possible, e.g. updated_at vs updated_on
     #
@@ -69,7 +69,7 @@ module API
           attribute = underscore_attribute attribute.to_s.underscore
           attribute = collapse_custom_field_name(attribute)
 
-          special_conversion = special_api_to_ar_conversions[attribute]
+          special_conversion = Constants::ARToAPIConversions.api_to_ar_conversions[attribute]
 
           if refer_to_ids
             special_conversion = denormalize_foreign_key_name(special_conversion, context)
@@ -85,13 +85,6 @@ module API
         end
 
         private
-
-        def special_api_to_ar_conversions
-          @api_to_ar_conversions ||= Constants::ARToAPIConversions.all.inject({}) do |result, (k, v)|
-            result[v.underscore] = k.to_s
-            result
-          end
-        end
 
         # Unifies different attributes refering to the same thing via a foreign key
         # e.g. status_id -> status

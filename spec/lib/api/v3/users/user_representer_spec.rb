@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,7 +29,8 @@
 require 'spec_helper'
 
 describe ::API::V3::Users::UserRepresenter do
-  let(:user) { FactoryBot.build_stubbed(:user, status: 1) }
+  let(:status) { Principal::STATUSES[:active] }
+  let(:user) { FactoryBot.build_stubbed(:user, status: status) }
   let(:current_user) { FactoryBot.build_stubbed(:user) }
   let(:representer) { described_class.new(user, current_user: current_user) }
 
@@ -51,6 +52,9 @@ describe ::API::V3::Users::UserRepresenter do
         is_expected.not_to have_json_path('admin')
         is_expected.not_to have_json_path('updatedAt')
         is_expected.not_to have_json_path('createdAt')
+        is_expected.not_to have_json_path('status')
+        is_expected.not_to have_json_path('email')
+        is_expected.not_to have_json_path('language')
       end
     end
 
@@ -65,6 +69,9 @@ describe ::API::V3::Users::UserRepresenter do
         is_expected.to have_json_path('lastName')
         is_expected.to have_json_path('updatedAt')
         is_expected.to have_json_path('createdAt')
+        is_expected.to have_json_path('status')
+        is_expected.to have_json_path('email')
+        is_expected.to have_json_path('language')
 
         is_expected.not_to have_json_path('admin')
       end
@@ -79,15 +86,19 @@ describe ::API::V3::Users::UserRepresenter do
         is_expected.to have_json_path('firstName')
         is_expected.to have_json_path('lastName')
         is_expected.to have_json_path('name')
+        is_expected.to have_json_path('status')
+        is_expected.to have_json_path('email')
+        is_expected.to have_json_path('admin')
+        is_expected.to have_json_path('language')
       end
 
       it_behaves_like 'has UTC ISO 8601 date and time' do
-        let(:date) { user.created_on }
+        let(:date) { user.created_at }
         let(:json_path) { 'createdAt' }
       end
 
       it_behaves_like 'has UTC ISO 8601 date and time' do
-        let(:date) { user.updated_on }
+        let(:date) { user.updated_at }
         let(:json_path) { 'updatedAt' }
       end
     end
@@ -95,24 +106,44 @@ describe ::API::V3::Users::UserRepresenter do
     describe 'email' do
       let(:user) { FactoryBot.build_stubbed(:user, status: 1, preference: preference) }
 
+      shared_examples_for 'shows the users E-Mail address' do
+        it do
+          is_expected.to be_json_eql(user.mail.to_json).at_path('email')
+        end
+      end
+
       context 'user shows his E-Mail address' do
         let(:preference) { FactoryBot.build(:user_preference, hide_mail: false) }
 
-        it 'shows the users E-Mail address' do
-          is_expected.to be_json_eql(user.mail.to_json).at_path('email')
-        end
+        it_behaves_like 'shows the users E-Mail address'
       end
 
       context 'user hides his E-Mail address' do
         let(:preference) { FactoryBot.build(:user_preference, hide_mail: true) }
 
         it 'does not render the users E-Mail address' do
-          is_expected.to be_json_eql(nil.to_json).at_path('email')
+          is_expected
+            .not_to have_json_path('email')
+        end
+
+        context 'if an admin inquires' do
+          let(:current_user) { FactoryBot.build_stubbed(:admin) }
+
+          it_behaves_like 'shows the users E-Mail address'
+        end
+
+        context 'if the user inquires himself' do
+          let(:current_user) { user }
+
+          it_behaves_like 'shows the users E-Mail address'
         end
       end
     end
 
     describe 'status' do
+      # as only admin or self can see the status
+      let(:current_user) { user }
+
       it 'contains the name of the account status' do
         is_expected.to be_json_eql('active'.to_json).at_path('status')
       end
@@ -123,9 +154,19 @@ describe ::API::V3::Users::UserRepresenter do
         expect(subject).to have_json_path('_links/self/href')
       end
 
-      it_behaves_like 'has an untitled link' do
-        let(:link) { 'showUser' }
-        let(:href) { "/users/#{user.id}" }
+      context 'showUser' do
+        it_behaves_like 'has an untitled link' do
+          let(:link) { 'showUser' }
+          let(:href) { "/users/#{user.id}" }
+        end
+
+        context 'with a locked user' do
+          let(:status) { Principal::STATUSES[:locked] }
+
+          it_behaves_like 'has no link' do
+            let(:link) { 'showUser' }
+          end
+        end
       end
 
       context 'when regular current_user' do
@@ -252,7 +293,7 @@ describe ::API::V3::Users::UserRepresenter do
         end
 
         it 'changes when the user is updated' do
-          user.updated_on = Time.now + 20.seconds
+          user.updated_at = Time.now + 20.seconds
 
           expect(representer.json_cache_key)
             .not_to eql former_cache_key

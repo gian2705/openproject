@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Reporting Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2010 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,6 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module CostQuery::CustomFieldMixin
@@ -70,6 +79,7 @@ module CostQuery::CustomFieldMixin
 
   def on_prepare(&block)
     return factory.on_prepare unless factory?
+
     @on_prepare = block if block
     @on_prepare ||= proc {}
     @on_prepare
@@ -88,7 +98,7 @@ module CostQuery::CustomFieldMixin
     @class_name = class_name
     dont_inherit :group_fields
     db_field table_name
-    if field.list? && all_values_int?(field)
+    if field.list?
       join_table list_join_table(field)
     else
       join_table default_join_table(field)
@@ -97,21 +107,15 @@ module CostQuery::CustomFieldMixin
     self
   end
 
-  ##
-  # HACK: CustomValues of lists MAY have non-integer values when the list
-  # contained invalid values.
-  def all_values_int?(field)
-    field.custom_values.pluck(:value).all? { |val| val.to_i > 0 }
-  rescue StandardError
-    false
-  end
-
   def list_join_table(field)
     cast_as = SQL_TYPES[field.field_format]
     cf_name = "custom_field#{field.id}"
 
     custom_values_table = CustomValue.table_name
     custom_options_table = CustomOption.table_name
+
+    # CustomValues of lists MAY have non-integer values when the list contained invalid values.
+    # Because of this, we do not cast the cv.value but rather the co.id
 
     <<-SQL
     -- BEGIN Custom Field Join: #{cf_name}
@@ -123,7 +127,7 @@ module CostQuery::CustomFieldMixin
       cv.customized_id
       FROM #{custom_values_table} cv
       INNER JOIN #{custom_options_table} co
-      ON cv.custom_field_id = co.custom_field_id AND CAST(cv.value AS decimal(60,3)) = co.id
+      ON cv.custom_field_id = co.custom_field_id AND cv.value = co.id::VARCHAR
     ) AS #{cf_name}
     ON #{cf_name}.customized_type = 'WorkPackage'
 
@@ -154,6 +158,7 @@ module CostQuery::CustomFieldMixin
 
   def new(*)
     fail "Only subclasses of #{self} should be instanciated." if factory?
+
     super
   end
 end

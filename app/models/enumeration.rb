@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,7 +28,7 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Enumeration < ActiveRecord::Base
+class Enumeration < ApplicationRecord
   default_scope { order("#{Enumeration.table_name}.position ASC") }
 
   belongs_to :project
@@ -40,7 +40,9 @@ class Enumeration < ActiveRecord::Base
   before_destroy :check_integrity
 
   validates_presence_of :name
-  validates_uniqueness_of :name, scope: %i(type project_id)
+  validates_uniqueness_of :name,
+                          scope: %i(type project_id),
+                          case_sensitive: false
   validates_length_of :name, maximum: 30
 
   scope :shared, -> { where(project_id: nil) }

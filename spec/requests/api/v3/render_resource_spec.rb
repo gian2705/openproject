@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -69,8 +69,8 @@ describe 'API v3 Render resource', type: :request do
 
             it_behaves_like 'valid response' do
               let(:text) do
-                '<p>Hello World! This <em>is</em> markdown with a ' +
-                  '<a href="http://community.openproject.org">link</a> ' +
+                '<p class="op-uc-p">Hello World! This <em>is</em> markdown with a ' +
+                  '<a href="http://community.openproject.org" rel="noopener noreferrer" class="op-uc-link">link</a> ' +
                   'and ümläutß.</p>'
               end
             end
@@ -81,8 +81,8 @@ describe 'API v3 Render resource', type: :request do
             let(:id) { work_package.id }
             let(:href) { "/work_packages/#{id}" }
             let(:text) {
-              '<p>Hello World! Have a look at <a '\
-                  "class=\"issue work_package preview-trigger\" "\
+              '<p class="op-uc-p">Hello World! Have a look at <a '\
+                  "class=\"issue work_package preview-trigger op-uc-link\" "\
                   "href=\"#{href}\">##{id}</a></p>"
             }
 

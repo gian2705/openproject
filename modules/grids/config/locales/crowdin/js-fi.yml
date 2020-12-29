@@ -1,8 +1,9 @@
 fi:
   js:
     grid:
-      add_widget: 'Add widget'
+      add_widget: 'Lisää widgetti'
       remove: 'Remove widget'
+      configure: 'Configure widget'
       upsale:
         text: "Some widgets, like the work package graph widget, are only available in the "
         link: 'enterprise edition.'
@@ -14,14 +15,14 @@ fi:
           no_results: 'No documents yet.'
         members:
           title: 'Jäsenet'
-          no_results: 'No visible members.'
-          view_all_members: 'Näytä kaikki jäsenet'
+          no_results: 'Ei nähtävissä olevia jäseniä.'
+          view_all_members: 'Kaikki jäsenet'
           add: 'Jäsen'
           too_many: 'Displaying %{count} of %{total} members.'
         news:
           title: 'Uutiset'
           at: 'at'
-          no_results: 'Ei mitään uutta raportoitavaksi.'
+          no_results: 'Ei uutta raportoitavaa.'
         project_description:
           title: 'Projektin kuvaus'
           no_results: "No description has been written yet. One can be provided in the 'Project settings'."
@@ -33,17 +34,20 @@ fi:
           on_track: 'On track'
           off_track: 'Off track'
           at_risk: 'At risk'
-          not_set: 'Not set'
+          not_set: 'Määrittelemätön'
         subprojects:
           title: 'Aliprojektit'
-          no_results: 'No subprojects.'
+          no_results: 'Ei aliprojekteja.'
+        time_entries_current_user:
+          title: 'Käyttämäni aika'
+          displayed_days: 'Days displayed in the widget:'
         time_entries_list:
-          title: 'Spent time (last 7 days)'
+          title: 'Käytetty aika (viimeiset 7 päivää)'
           no_results: 'No time entries for the last 7 days.'
         work_packages_accountable:
-          title: "Kaikki työpaketit joista olen vastuussa"
+          title: "Kaikki tehtävät joista olen vastuussa"
         work_packages_assigned:
-          title: 'Minulle määritetyt työpaketit'
+          title: 'Minulle määritellyt tehtävät'
         work_packages_created:
           title: 'Work packages created by me'
         work_packages_watched:
@@ -55,5 +59,5 @@ fi:
         work_packages_calendar:
           title: 'Kalenteri'
         work_packages_overview:
-          title: 'Work packages overview'
-          placeholder: 'Click to edit ...'
+          title: 'Tehtävien yleisnäkymä'
+          placeholder: 'Muokkaa klikkaamalla...'

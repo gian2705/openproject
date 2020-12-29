@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -37,7 +37,7 @@ class News::CommentsController < ApplicationController
     @comment = Comment.new(permitted_params.comment)
     @comment.author = User.current
     if @news.comments << @comment
-      flash[:notice] = l(:label_comment_added)
+      flash[:notice] = I18n.t(:label_comment_added)
     end
 
     redirect_to news_path(@news)

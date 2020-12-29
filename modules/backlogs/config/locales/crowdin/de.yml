@@ -1,17 +1,11 @@
 #-- copyright
-#OpenProject Backlogs Plugin
-#Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-#Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-#Copyright (C)2010-2011 friflaj
-#Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-#Copyright (C)2009-2010 Mark Maglana
-#Copyright (C)2009 Joe Heck, Nate Lowrie
-#This program is free software; you can redistribute it and/or modify it under
-#the terms of the GNU General Public License version 3.
-#OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-#The copyright follows:
-#Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-#Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License version 3.
+#OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+#Copyright (C) 2006-2017 Jean-Philippe Lang
+#Copyright (C) 2010-2013 the ChiliProject Team
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
 #as published by the Free Software Foundation; either version 2
@@ -23,9 +17,8 @@
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#See doc/COPYRIGHT.rdoc for more details.
+#See docs/COPYRIGHT.rdoc for more details.
 #++
-#---
 de:
   activerecord:
     attributes:
@@ -33,7 +26,7 @@ de:
         position: "Position"
         remaining_hours: "Verbleibende Stunden"
         remaining_time: "Verbleibende Stunden"
-        story_points: "Story Punkte"
+        story_points: "Story-Punkte"
         backlogs_work_package_type: "Backlog Typ"
     errors:
       models:
@@ -43,22 +36,16 @@ de:
               can_only_contain_work_packages_of_current_sprint: "kann nur die IDs von Arbeitspaketen des aktuellen Sprints enthalten."
               must_block_at_least_one_work_package: "muss die ID von mindestens einem Arbeitspaket enthalten."
             parent_id:
+              parent_child_relationship_across_projects: "ist ungültig, da '%{work_package_name}' ein Backlog-Task ist und daher kein Eltern-Arbeitspaket außerhalb  des jetzigen Projekts haben kann."
               type_must_be_one_of_the_following: "muss einer der folgenden Typen sein: %{type_names}."
+            version_id:
+              task_version_must_be_the_same_as_story_version: "muss der Version der übergeordneten Story entsprechen."
         sprint:
           cannot_end_before_it_starts: "Sprint kann nicht enden, bevor er begonnen hat."
-  activemodel:
-    errors:
-      models:
-        work_package:
-          attributes:
-            fixed_version_id:
-              task_version_must_be_the_same_as_story_version: "muss der Version der übergeordneten Story entsprechen."
-            parent_id:
-              parent_child_relationship_across_projects: "ist ungültig da '%{work_package_name}' ein backlog Task ist und daher kein Eltern-Arbeitspaket außerhalb  des jetzigen Projekts haben kann."
   backlogs:
     add_new_story: "Neue Aufgabe"
     any: "beliebig"
-    backlog_settings: "Backlog Einstellungen"
+    backlog_settings: "Backlog-Einstellungen"
     burndown_graph: "Burndown Graph"
     card_paper_size: "Format für Kartendruck"
     chart_options: "Chart-Optionen"
@@ -83,7 +70,7 @@ de:
     remaining_hours_ideal: "Verbleibende Stunden (ideal)"
     show_burndown_chart: "Burndown-Chart"
     story: "Story"
-    story_points: "Story Punkte"
+    story_points: "Story-Punkte"
     story_points_ideal: "Story Punkte (ideal)"
     task: "Aufgabe"
     task_color: "Farbe für Aufgaben"
@@ -94,10 +81,10 @@ de:
   backlogs_card_specification: "Etikettenart für den Kartendruck"
   backlogs_inactive: "Projekt zeigt keine Aktivität"
   backlogs_points_burn_direction: "Burnup/-down Punkte"
-  backlogs_product_backlog: "Produkt Backlog"
-  backlogs_product_backlog_is_empty: "Produkt Backlog ist leer"
-  backlogs_product_backlog_unsized: "Die Spitze des Produkt Backlogs hat Stories ohne Aufwandsangaben"
-  backlogs_sizing_inconsistent: "Story Aufwand weicht von den Schätzwerten ab"
+  backlogs_product_backlog: "Produkt-Backlog"
+  backlogs_product_backlog_is_empty: "Produkt-Backlog ist leer"
+  backlogs_product_backlog_unsized: "Die Spitze des Produkt-Backlogs hat Stories ohne Aufwandsangaben"
+  backlogs_sizing_inconsistent: "Die Story-Aufwände weichen von den Schätzwerten ab"
   backlogs_sprint_notes_missing: "Geschlossene Sprints ohne Closed sprints without Retrospective-/Besprechungsnotizen"
   backlogs_sprint_unestimated: "Geschlossene oder aktive Sprints mit nicht abgeschätzten Stories"
   backlogs_sprint_unsized: "Das Projekt hat Stories auf aktiven oder vor kurzem geschlossenen Sprints welche keine Aufwandsangaben enthalten"

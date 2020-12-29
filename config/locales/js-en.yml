@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -48,6 +48,7 @@ en:
     close_form_title: "Close form"
 
     button_add_watcher: "Add watcher"
+    button_add: "Add"
     button_back: "Back"
     button_back_to_list_view: "Back to list view"
     button_cancel: "Cancel"
@@ -65,6 +66,8 @@ en:
     button_duplicate: "Duplicate"
     button_edit: "Edit"
     button_filter: "Filter"
+    button_collapse_all: "Collapse all"
+    button_expand_all: "Expand all"
     button_advanced_filter: "Advanced filter"
     button_list_view: "List view"
     button_show_view: "Fullscreen view"
@@ -93,6 +96,8 @@ en:
         inline: 'Highlight inline:'
         entire_card_by: 'Entire card by'
       remove_from_list: 'Remove card from list'
+
+    caption_rate_history: "Rate history"
 
     clipboard:
       browser_error: "Your browser doesn't support copying to clipboard. Please copy the selected text manually."
@@ -130,6 +135,11 @@ en:
         manual: 'Switch to Markdown source'
         wysiwyg: 'Switch to WYSIWYG editor'
       macro:
+        error: 'Cannot expand macro: %{message}'
+        attribute_reference:
+          macro_help_tooltip: 'This text segment is being dynamically rendered by a macro.'
+          not_found: 'Requested resource could not be found'
+          invalid_attribute: "The selected attribute '%{name}' does not exist."
         child_pages:
           button: 'Links to child pages'
           include_parent: 'Include parent'
@@ -179,6 +189,63 @@ en:
         edit_query: 'Edit query'
         new_group: 'New group'
         reset_to_defaults: 'Reset to defaults'
+      enterprise:
+        trial:
+          confirmation: "Confirmation of email address"
+          confirmation_info: >
+            We sent you an email on %{date} to %{email}.
+            Please check your inbox and click the confirmation link provided to start your 14 days trial.
+          form:
+            general_consent: >
+              I agree with the <a target="_blank" href="%{link_terms}">terms of service</a>
+              and the <a target="_blank" href="%{link_privacy}">privacy policy</a>.
+            invalid_email: "Invalid email address"
+            label_company: "Company"
+            label_first_name: "First name"
+            label_last_name: "Last name"
+            label_email: "Email"
+            label_domain: "Domain"
+            label_subscriber: "Subscriber"
+            label_maximum_users: "Maximum active users"
+            label_starts_at: "Starts at"
+            label_expires_at: "Expires at"
+            receive_newsletter: I want to receive the OpenProject <a target="_blank" href="%{link}">newsletter</a>.
+            taken_domain: There can only be one active trial per domain.
+            taken_email: Each user can only create one trial.
+          email_not_received: "You did not receive an email? You can resend the email with the link on the right."
+          try_another_email: "Or try it with another email address."
+          next_steps: "Next steps"
+          resend_link: "Resend"
+          resend_success: "Email has been resent. Please check your emails and click the confirmation link provided."
+          resend_warning: "Could not resend email."
+          session_timeout: "Your session timed out. Please try to reload the page or resend email."
+          status_label: "Status:"
+          status_confirmed: "confirmed"
+          status_waiting: "email sent - waiting for confirmation"
+          test_ee: "Test the Enterprise Edition 14 days for free"
+          quick_overview: "Get a quick overview of project management and team collaboration with OpenProject Enterprise Edition."
+        upsale:
+          become_hero: "Become a hero!"
+          benefits:
+            description: "What are the benefits?"
+            high_security: "Security features"
+            high_security_text: "Single sign on (SAML, OpenID Connect, CAS), two-factor authentication and automatic sync of LDAP groups."
+            installation: "Installation support"
+            installation_text: "Experienced software engineers guide you through the complete installation and setup process in your own infrastructure."
+            premium_features: "Premium features"
+            premium_features_text: "Agile boards, custom theme and logo, graphs, intelligent workflows with custom actions, full text search for work package attachments and multi-select custom fields."
+            professional_support: "Professional support"
+            professional_support_text: "Get reliable, high-touch support from senior support engineers with expert knowledge about running OpenProject in business-critical environments."
+          button_start_trial: "Start free trial"
+          button_book_now: "Book now"
+          confidence: >
+            We deliver the confidence of a tested and supported enterprise-class project management software - with Open Source and an open mind.
+          link_quote: "Get a quote"
+          text: >
+            The OpenProject Enterprise Edition builds on top of the Community Edition.
+            It includes premium features and professional support mainly aimed at organizations with more than 10 users that manage business critical projects with OpenProject.
+          unlimited: "Unlimited"
+          you_contribute: "Developers need to pay their bills, too. With the Enterprise Edition, you substantially contribute to this Open Source community effort."
 
     custom_actions:
       date:
@@ -190,6 +257,9 @@ en:
       cannot_save_changes_with_message: "Cannot save your changes due to the following error: %{error}"
       query_saving: "The view could not be saved."
       embedded_table_loading: "The embedded view could not be loaded: %{message}"
+    enumeration_activities: "Activities (time tracking)"
+    enumeration_doc_categories: "Document categories"
+    enumeration_work_package_priorities: "Work package priorities"
     filter:
       description:
         text_open_filter: "Open this filter with 'ALT' and arrow keys."
@@ -224,13 +294,32 @@ en:
       blocks:
         new_features:
           text_new_features: "Read about new features and product updates."
-          current_new_feature_html: "OpenProject contains a new <b>Overview page</b> to <b>display important project information</b> and show whether the project is on track. </br>
-                                     You can insert various new status widgets, such as:
-                                      <ul><li>project status,</li>
-                                      <li>overview of work package status,</li>
-                                      <li>task progress,</li>
-                                      <li>tasks assigned to users.</li></ul>"
-          learn_about: "Learn more about the new status widgets"
+          learn_about: "Learn more about the new features"
+          standard:
+            learn_about_link: https://www.openproject.org/openproject-11-1-release
+            current_new_feature_html: >
+              The release contains various new features and improvements: <br>
+              <ul class="%{list_styling_class}">
+                <li><b>Improved stylings</b>  of the WYSIWYG editor.</li>
+                <li>Direct display of <b>user name for @notifications</b> while editing.</li>
+                <li>Extended authentication profile with an <b>OpenID Connect provider.</b></li>
+                <li>Display project <b>milestones aggregated</b> in single row in Gantt chart.</li>
+                <li><b>Collapse all button for groups</b> in the work packages list.</li>
+                <li><b>Optimization for printing,</b> e.g. wiki pages, via the browser print function.</li>
+              </ul>
+          bim:
+            learn_about_link:  https://www.openproject.org/openproject-11-0-release
+            current_new_feature_html: >
+              The release contains various new features and improvements: <br>
+              <ul class="%{list_styling_class}">
+                <li><b>Improved stylings</b>  of the WYSIWYG editor.</li>
+                <li>Direct display of <b>user name for @notifications</b> while editing.</li>
+                <li>Extended authentication profile with an <b>OpenID Connect provider.</b></li>
+                <li>Display project <b>milestones aggregated</b> in single row in Gantt chart.</li>
+                <li><b>Collapse all button for groups</b> in the work packages list.</li>
+                <li><b>Optimization for printing,</b> e.g. wiki pages, via the browser print function.</li>
+              </ul>
+
     label_activate: "Activate"
     label_add_column_after: "Add column after"
     label_add_column_before: "Add column before"
@@ -241,13 +330,14 @@ en:
     label_add_row_before: "Add row before"
     label_add_selected_columns: "Add selected columns"
     label_added_by: "added by"
-    label_added_time_by: "Added by %{author} %{age}"
+    label_added_time_by: "Added by <a href=%{authorLink}>%{author}</a> at %{age}"
     label_ago: "days ago"
     label_all: "all"
     label_all_work_packages: "all work packages"
     label_and: "and"
     label_ascending: "Ascending"
     label_author: "Author: %{user}"
+    label_avatar: "Avatar"
     label_between: "between"
     label_board: "Board"
     label_board_locked: "Locked"
@@ -261,6 +351,8 @@ en:
     label_deactivate: "Deactivate"
     label_descending: "Descending"
     label_description: "Description"
+    label_details: "Details"
+    label_display: "Display"
     label_cancel_comment: "Cancel comment"
     label_closed_work_packages: "closed"
     label_collapse: "Collapse"
@@ -279,31 +371,41 @@ en:
     label_expand_all: "Expand all"
     label_expand_project_menu: "Expand project menu"
     label_export: "Export"
+    label_export_preparing: "The export is being prepared and will be downloaded shortly."
     label_filename: "File"
     label_filesize: "Size"
+    label_general: "General"
+    label_global_roles: "Global Roles"
     label_greater_or_equal: ">="
     label_group: 'Group'
     label_group_by: "Group by"
+    label_group_plural: "Groups"
     label_hide_attributes: "Show less"
     label_hide_column: "Hide column"
     label_hide_project_menu: "Collapse project menu"
     label_in: "in"
     label_in_less_than: "in less than"
     label_in_more_than: "in more than"
+    label_incoming_emails: "Incoming emails"
+    label_information_plural: "Information"
     label_import: "Import"
     label_latest_activity: "Latest activity"
     label_last_updated_on: "Last updated on"
+    label_learn_more_link: "Learn more"
     label_less_or_equal: "<="
     label_less_than_ago: "less than days ago"
     label_loading: "Loading..."
+    label_mail_notification: "Email notifications"
     label_me: "me"
+    label_meeting_agenda: "Agenda"
+    label_meeting_minutes: "Minutes"
     label_menu_collapse: "collapse"
     label_menu_expand: "expand"
     label_more_than_ago: "more than days ago"
     label_next: "Next"
     label_no_color: "No color"
     label_no_data: "No data to display"
-    label_no_due_date: "no end date"
+    label_no_due_date: "no finish date"
     label_no_start_date: "no start date"
     label_no_value: "No value"
     label_none: "none"
@@ -317,12 +419,16 @@ en:
     label_previous: "Previous"
     label_per_page: "Per page:"
     label_please_wait: "Please wait"
+    label_project_plural: "Projects"
     label_visibility_settings: "Visibility settings"
     label_quote_comment: "Quote this comment"
+    label_recent: "Recent"
     label_reset: "Reset"
     label_remove_column: "Remove column"
     label_remove_columns: "Remove selected columns"
     label_remove_row: "Remove row"
+    label_report: "Report"
+    label_repository_plural: "Repositories"
     label_save_as: "Save as"
     label_select_watcher: "Select a watcher..."
     label_selected_filter_list: "Selected filters"
@@ -333,6 +439,7 @@ en:
     label_sort_higher: "Move up"
     label_sort_lower: "Move down"
     label_sorting: "Sorting"
+    label_spent_time: "Spent time"
     label_star_query: "Favored"
     label_press_enter_to_save: "Press enter to save."
     label_public_query: "Public"
@@ -340,16 +447,20 @@ en:
     label_sum_for: "Sum for"
     label_subject: "Subject"
     label_this_week: "this week"
-    label_today: "today"
+    label_today: "Today"
+    label_time_entry_plural: "Spent time"
     label_up: "Up"
+    label_user_plural: "Users"
     label_activity_show_only_comments: "Show activities with comments only"
     label_activity_show_all: "Show all activities"
     label_total_progress: "%{percent}% Total progress"
     label_total_amount: "Total: %{amount}"
     label_updated_on: "updated on"
     label_value_derived_from_children: "(value derived from children)"
+    label_children_derived_duration: "Work package's children derived duration"
     label_warning: "Warning"
     label_work_package: "Work package"
+    label_work_package_parent: "Parent work package"
     label_work_package_plural: "Work packages"
     label_watch: "Watch"
     label_watch_work_package: "Watch work package"
@@ -383,6 +494,7 @@ en:
     label_wait: "Please wait for configuration..."
     label_upload_counter: "%{done} of %{count} files finished"
     label_validation_error: "The work package could not be saved due to the following errors:"
+    label_version_plural: "Versions"
     label_view_has_changed: "This view has unsaved changes. Click to save them."
 
     help_texts:
@@ -412,7 +524,7 @@ en:
           drag: 'Drag & Drop your cards within a list to re-order, or to another list. A double click will open the details view.'
         wp:
           toggler: "Now let's have a look at the <b>Work package</b> section, which gives you a more detailed view of your work."
-          list: 'This is the <b>Work package</b> list with the important work within your project, such as tasks, features, milestones, bugs, and more. <br> You can create or edit a work package directly within this list. To see its details you can double click on a row.'
+          list: 'This is the <b>Work package</b> list with the important work within your project, such as tasks, milestones, phases, and more. <br> You can create or edit a work package directly within this list. To see its details you can double click on a row.'
           full_view: 'Within the <b>Work package details</b> you find all relevant information, such as description, status and priority, activities, dependencies or comments.'
           back_button: 'With the arrow you can navigate back to the work package list.'
           create_button: 'The <b>Create</b> button will add a new work package to your project.'
@@ -443,6 +555,7 @@ en:
       context: 'Project context'
       work_package_belongs_to: 'This work package belongs to project %{projectname}.'
       click_to_switch_context: 'Open this work package in that project.'
+      confirm_template_load: 'Switching the template will reload the page and you will lose all input to this form. Continue?'
 
       autocompleter:
         label: 'Project autocompletion'
@@ -461,24 +574,24 @@ en:
         upgrade_to_ee_text: "Wow! If you need this feature you are a super pro! Would you mind supporting us OpenSource developers by becoming an Enterprise Edition client?"
         more_information: "More information"
         nevermind: "Nevermind"
-        filter_types:
-          parent: "being child of"
-          precedes: "preceding"
-          follows: "following"
-          relates: "relating to"
-          duplicates: "duplicating"
-          duplicated: "duplicated by"
-          blocks: "blocking"
-          blocked: "blocked by"
-          partof: "being part of"
-          includes: "including"
-          requires: "requiring"
-          required: "required by"
+      edit:
+        form_configuration: "Form Configuration"
+        projects: "Projects"
+        settings: "Settings"
 
     time_entry:
+      project: 'Project'
+      work_package: 'Work package'
+      work_package_required: 'Requires selecting a work package first.'
       activity: 'Activity'
       comment: 'Comment'
+      duration: 'Duration'
+      spent_on: 'Date'
       hours: 'Hours'
+      title: 'Log time'
+
+    two_factor_authentication:
+      label_two_factor_authentication: 'Two-factor authentication'
 
     watchers:
       label_loading: loading watchers...
@@ -545,20 +658,11 @@ en:
 
     field_value_enter_prompt: "Enter a value for '%{field}'"
 
-    select2:
-      input_too_short:
-        one: "Please enter one more character"
-        other: "Please enter {{count}} more characters"
-        zero: "Please enter more characters"
-      load_more: "Loading more results ..."
-      no_matches: "No matches found"
-      searching: "Searching ..."
-      selection_too_big:
-        one: "You can only select one item"
-        other: "You can only select {{limit}} items"
-        zero: "You cannot select any items"
-
     project_menu_details: "Details"
+
+    scheduling:
+      manual: 'Manual scheduling'
+      automatic: 'Automatic scheduling'
 
     sort:
       sorted_asc: 'Ascending sort applied, '
@@ -729,6 +833,7 @@ en:
         startDate: "Start date"
         status: "Status"
         subject: "Subject"
+        subproject: "Subproject"
         title: "Title"
         type: "Type"
         updatedAt: "Updated on"
@@ -775,6 +880,9 @@ en:
           not_found: "There is no such view"
           duplicate_query_title: "Name of this view already exists. Change anyway?"
         text_no_results: "No matching views were found."
+      scheduling:
+        is_parent: "The dates of this work package are automatically deduced from its children. Activate 'Manual scheduling' to set the dates."
+        is_switched_from_manual_to_automatic: "The dates of this work package may need to be recalculated after switching from manual to automatic scheduling due to relationships with other work packages."
       table:
         configure_button: 'Configure work package table'
         summary: "Table with rows of work package and columns of work package attributes."
@@ -808,14 +916,13 @@ en:
           automatic: 'Automatic'
           manually: 'Manually'
           warning: 'You will lose your previous sorting when activating the automatic sorting mode.'
-        columns_help_text: "Use the input above to add or remove columns to your table view. You can drag and drop the columns to reorder them."
+        columns_help_text: "Use the input above to add columns to your table view. You can drag and drop the columns to reorder them."
         upsale:
           attribute_highlighting: 'Need certain work packages to stand out from the mass?'
           relation_columns: 'Need to see relations in the work package list?'
           check_out_link: 'Check out the Enterprise Edition.'
         relation_filters:
-          first_part: "Show all work packages"
-          second_part: "the current work package"
+          filter_work_packages_by_relation_type: 'Filter work packages by relation type'
       tabs:
         overview: Overview
         activity: Activity
@@ -864,6 +971,9 @@ en:
         has_children: "The work package has %{childUnits}:"
         confirm_deletion_children: "I acknowledge that ALL descendants of the listed work packages will be recursively removed."
         deletes_children: "All child work packages and their descendants will also be recursively deleted."
+      destroy_time_entry:
+        title: "Confirm deletion of time entry"
+        text: "Are you sure you want to delete the following time entry?"
 
     notice_no_results_to_display: "No visible results to display."
     notice_successful_create: "Successful creation."

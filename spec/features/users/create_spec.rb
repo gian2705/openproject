@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,7 +29,8 @@
 require 'spec_helper'
 
 describe 'create users', type: :feature, selenium: true do
-  let(:current_user) { FactoryBot.create :admin }
+  using_shared_fixtures :admin
+  let(:current_user) { admin }
   let(:auth_source) { FactoryBot.build :dummy_auth_source }
   let(:new_user_page) { Pages::NewUser.new }
 
@@ -42,7 +43,7 @@ describe 'create users', type: :feature, selenium: true do
       perform_enqueued_jobs
       ActionMailer::Base.deliveries.last
     end
-    let(:mail_body) { mail.body.parts.first.to_s }
+    let(:mail_body) { mail.body.parts.first.body.to_s }
     let(:token) { mail_body.scan(/token=(.*)$/).first.first }
 
     it 'creates the user' do

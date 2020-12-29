@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,7 +27,7 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Setting < ActiveRecord::Base
+class Setting < ApplicationRecord
   DATE_FORMATS = [
     '%Y-%m-%d',
     '%d/%m/%Y',
@@ -165,7 +165,7 @@ class Setting < ActiveRecord::Base
     new_setting.value = v
 
     # Keep the current cache key,
-    # since updated_on will change after .save
+    # since updated_at will change after .save
     old_cache_key = cache_key
 
     if new_setting.save
@@ -235,7 +235,7 @@ class Setting < ActiveRecord::Base
   def self.clear_cache(key = cache_key)
     Rails.cache.delete(key)
     RequestStore.delete :cached_settings
-    RequestStore.delete :settings_updated_on
+    RequestStore.delete :settings_updated_at
   end
 
   private
@@ -281,8 +281,8 @@ class Setting < ActiveRecord::Base
   end
 
   def self.cache_key
-    RequestStore.store[:settings_updated_on] ||= Setting.maximum(:updated_on)
-    most_recent_settings_change = (RequestStore.store[:settings_updated_on] || Time.now.utc).to_i
+    RequestStore.store[:settings_updated_at] ||= Setting.column_names.include?(:updated_at) && Setting.maximum(:updated_at)
+    most_recent_settings_change = (RequestStore.store[:settings_updated_at] || Time.now.utc).to_i
     "/openproject/settings/all/#{most_recent_settings_change}"
   end
 

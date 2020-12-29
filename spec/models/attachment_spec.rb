@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -226,43 +226,22 @@ describe Attachment, type: :model do
     end
   end
 
-  describe "#external_url" do
+  # We just use with_direct_uploads here to make sure the
+  # FogAttachment class is defined and Fog is mocked.
+  describe "#external_url", with_direct_uploads: true do
     let(:author) { FactoryBot.create :user }
 
     let(:image_path) { Rails.root.join("spec/fixtures/files/image.png") }
     let(:text_path) { Rails.root.join("spec/fixtures/files/testfile.txt") }
     let(:binary_path) { Rails.root.join("spec/fixtures/files/textfile.txt.gz") }
 
-    let(:fog_attachment_class) do
-      class FogAttachment < Attachment
-        # Remounting the uploader overrides the original file setter taking care of setting,
-        # among other things, the content type. So we have to restore that original
-        # method this way.
-        # We do this in a new, separate class, as to not interfere with any other specs.
-        alias_method :set_file, :file=
-        mount_uploader :file, FogFileUploader
-        alias_method :file=, :set_file
-      end
-
-      FogAttachment
-    end
-
-    let(:image_attachment) { fog_attachment_class.new author: author, file: File.open(image_path) }
-    let(:text_attachment) { fog_attachment_class.new author: author, file: File.open(text_path) }
-    let(:binary_attachment) { fog_attachment_class.new author: author, file: File.open(binary_path) }
-
-    before do
-      Fog.mock!
-
-      connection = Fog::Storage.new provider: "AWS"
-      connection.directories.create key: "my-bucket"
-
-      CarrierWave::Configuration.configure_fog! credentials: {}, directory: "my-bucket", public: false
-    end
+    let(:image_attachment) { FogAttachment.new author: author, file: File.open(image_path) }
+    let(:text_attachment) { FogAttachment.new author: author, file: File.open(text_path) }
+    let(:binary_attachment) { FogAttachment.new author: author, file: File.open(binary_path) }
 
     shared_examples "it has a temporary download link" do
       let(:url_options) { {} }
-      let(:query) { attachment.external_url(url_options).to_s.split("?").last }
+      let(:query) { attachment.external_url(**url_options).to_s.split("?").last }
 
       it "should have a default expiry time" do
         expect(query).to include "X-Amz-Expires="
@@ -274,6 +253,14 @@ describe Attachment, type: :model do
 
         it "should use that time" do
           expect(query).to include "X-Amz-Expires=3600"
+        end
+      end
+
+      context 'with expiry time exeeding maximum' do
+        let(:url_options) { { expires_in: 1.year } }
+
+        it "uses the allowed max" do
+          expect(query).to include "X-Amz-Expires=604799"
         end
       end
     end
@@ -307,6 +294,78 @@ describe Attachment, type: :model do
       it "should make S3 use content_disposition 'attachment; filename=...'" do
         expect(binary_attachment.content_disposition).to eq "attachment"
         expect(binary_attachment.external_url.to_s).to include "response-content-disposition=attachment"
+      end
+    end
+  end
+
+  describe 'full text extraction job on commit' do
+    let(:created_attachment) do
+      FactoryBot.create(:attachment,
+                        author: author,
+                        container: container)
+    end
+
+    shared_examples_for 'runs extraction' do
+      it 'runs extraction' do
+        extraction_with_id = nil
+
+        allow(ExtractFulltextJob)
+          .to receive(:perform_later) do |id|
+          extraction_with_id = id
+        end
+
+        attachment.save
+
+        expect(extraction_with_id).to eql attachment.id
+      end
+    end
+
+    shared_examples_for 'does not run extraction' do
+      it 'does not run extraction' do
+        created_attachment
+
+        expect(ExtractFulltextJob)
+          .not_to receive(:perform_later)
+
+        created_attachment.save
+      end
+    end
+
+    context 'for a work package' do
+      let(:work_package) { FactoryBot.create(:work_package) }
+      let(:container) { work_package }
+
+      context 'on create' do
+        it_behaves_like 'runs extraction'
+      end
+
+      context 'on update' do
+        it_behaves_like 'does not run extraction'
+      end
+    end
+
+    context 'for a wiki page' do
+      let(:wiki_page) { FactoryBot.create(:wiki_page) }
+      let(:container) { wiki_page }
+
+      context 'on create' do
+        it_behaves_like 'does not run extraction'
+      end
+
+      context 'on update' do
+        it_behaves_like 'does not run extraction'
+      end
+    end
+
+    context 'without a container' do
+      let(:container) { nil }
+
+      context 'on create' do
+        it_behaves_like 'runs extraction'
+      end
+
+      context 'on update' do
+        it_behaves_like 'does not run extraction'
       end
     end
   end

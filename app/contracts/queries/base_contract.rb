@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -58,11 +58,8 @@ module Queries
       Query
     end
 
-    def validate
-      validate_project
-      user_allowed_to_make_public
-      super
-    end
+    validate :validate_project
+    validate :user_allowed_to_make_public
 
     def validate_project
       errors.add :project, :error_not_found if project_id.present? && !project_visible?

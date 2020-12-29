@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -67,6 +67,13 @@ describe 'Status action board', type: :feature, js: true do
                       type: type,
                       role: role,
                       old_status_id: other_status.id,
+                      new_status_id: open_status.id)
+  }
+  let!(:workflow_type_back_open) {
+    FactoryBot.create(:workflow,
+                      type: type,
+                      role: role,
+                      old_status_id: closed_status.id,
                       new_status_id: open_status.id)
   }
 
@@ -198,8 +205,28 @@ describe 'Status action board', type: :feature, js: true do
       expect(queries.last.name).to eq 'Closed'
       expect(queries.first.ordered_work_packages).to be_empty
 
-      subjects = WorkPackage.where(id: second.ordered_work_packages.pluck(:work_package_id)).pluck(:subject, :status_id)
-      expect(subjects).to match_array [['Task 1', closed_status.id]]
+      subjects = WorkPackage.where(id: second.ordered_work_packages.pluck(:work_package_id))
+      expect(subjects.pluck(:subject, :status_id)).to match_array [['Task 1', closed_status.id]]
+
+      # Open remaining in split view
+      wp = second.ordered_work_packages.first.work_package
+      card = board_page.card_for(wp)
+      split_view = card.open_details_view
+      split_view.expect_subject
+      split_view.edit_field(:status).update('Open')
+      split_view.expect_and_dismiss_notification message: 'Successful update.'
+
+      wp.reload
+      expect(wp.status).to eq(open_status)
+
+      board_page.expect_card('Open', 'Task 1', present: true)
+      board_page.expect_card('Closed', 'Task 1', present: false)
+
+      # Re-add task 1 to closed
+      board_page.reference('Closed', subjects.first)
+
+      board_page.expect_card('Open', 'Task 1', present: false)
+      board_page.expect_card('Closed', 'Task 1', present: true)
     end
   end
 end

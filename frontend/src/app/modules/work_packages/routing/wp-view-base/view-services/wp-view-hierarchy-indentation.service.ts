@@ -1,21 +1,20 @@
-import {QueryResource} from 'core-app/modules/hal/resources/query-resource';
-import {WorkPackageQueryStateService} from './wp-view-base.service';
 import {Injectable} from '@angular/core';
-import {WorkPackageViewHierarchies} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-table-hierarchies";
 import {WorkPackageResource} from "core-app/modules/hal/resources/work-package-resource";
 import {WorkPackageViewHierarchiesService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-hierarchy.service";
 import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
 import {WorkPackageRelationsHierarchyService} from "core-components/wp-relations/wp-relations-hierarchy/wp-relations-hierarchy.service";
 import {States} from "core-components/states.service";
-import {WorkPackageCacheService} from "core-components/work-packages/work-package-cache.service";
+import {WorkPackageViewDisplayRepresentationService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-display-representation.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Injectable()
 export class WorkPackageViewHierarchyIdentationService {
 
   constructor(private wpViewHierarchies:WorkPackageViewHierarchiesService,
+              private wpDisplayRepresentation:WorkPackageViewDisplayRepresentationService,
               private states:States,
               private wpRelationHierarchy:WorkPackageRelationsHierarchyService,
-              private wpCacheService:WorkPackageCacheService,
+              private apiV3Service:APIV3Service,
               private querySpace:IsolatedQuerySpace) {
   }
 
@@ -23,7 +22,7 @@ export class WorkPackageViewHierarchyIdentationService {
    * Return whether the current hierarchy mode is active
    */
   public get applicable():boolean {
-    return this.wpViewHierarchies.isEnabled;
+    return this.wpViewHierarchies.isEnabled && this.wpDisplayRepresentation.isList;
   }
 
   /**
@@ -90,7 +89,7 @@ export class WorkPackageViewHierarchyIdentationService {
 
     // If the predecessor is in an ancestor chain.
     // get the first element of the ancestor chain that workPackage is not in
-    const predecessor = await this.wpCacheService.require(predecessorId);
+    const predecessor = await this.apiV3Service.work_packages.id(predecessorId).get().toPromise();
 
     const difference = _.difference(predecessor.ancestorIds, workPackage.ancestorIds);
     if (difference && difference.length > 0) {

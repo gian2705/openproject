@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -35,6 +35,13 @@
 module API
   module V3
     class Root < ::API::OpenProjectAPI
+      helpers ::API::V3::Utilities::EpropsConversion
+
+      # All endpoint accept query props as gzipped and base64 encoded json objects
+      before do
+        transform_eprops
+      end
+
       mount ::API::V3::Activities::ActivitiesAPI
       mount ::API::V3::Attachments::AttachmentsAPI
       mount ::API::V3::Categories::CategoriesAPI
@@ -55,7 +62,6 @@ module API
       mount ::API::V3::Roles::RolesAPI
       mount ::API::V3::Statuses::StatusesAPI
       mount ::API::V3::StringObjects::StringObjectsAPI
-      mount ::API::V3::TimeEntries::TimeEntriesAPI
       mount ::API::V3::Types::TypesAPI
       mount ::API::V3::Users::UsersAPI
       mount ::API::V3::UserPreferences::UserPreferencesAPI

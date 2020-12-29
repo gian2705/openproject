@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,40 +23,40 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {Component, Inject, OnDestroy} from '@angular/core';
-import {StateService, Transition} from '@uirouter/core';
-import {WorkPackageCacheService} from 'core-components/work-packages/work-package-cache.service';
+import {Component} from '@angular/core';
+import {StateService} from '@uirouter/core';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
-import {componentDestroyed} from 'ng2-rx-componentdestroyed';
-import {takeUntil} from 'rxjs/operators';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   templateUrl: './overview-tab.html',
   selector: 'wp-overview-tab',
 })
-export class WorkPackageOverviewTabComponent implements OnDestroy {
+export class WorkPackageOverviewTabComponent extends UntilDestroyedMixin {
   public workPackageId:string;
   public workPackage:WorkPackageResource;
   public tabName = this.I18n.t('js.label_latest_activity');
 
   public constructor(readonly I18n:I18nService,
                      readonly $state:StateService,
-                     readonly wpCacheService:WorkPackageCacheService) {
+                     readonly apiV3Service:APIV3Service) {
+    super();
 
     this.workPackageId = this.$state.params.workPackageId;
-    wpCacheService.loadWorkPackage(this.workPackageId)
-      .values$()
+
+    this
+      .apiV3Service
+      .work_packages
+      .id(this.workPackageId)
+      .requireAndStream()
       .pipe(
-        takeUntil(componentDestroyed(this))
+        this.untilDestroyed()
       )
       .subscribe((wp) => this.workPackage = wp);
-  }
-
-  ngOnDestroy() {
-    // Nothing to do
   }
 }

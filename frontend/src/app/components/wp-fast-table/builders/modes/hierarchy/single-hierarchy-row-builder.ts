@@ -9,16 +9,18 @@ import {
   hierarchyRootClass
 } from "core-components/wp-fast-table/helpers/wp-table-hierarchy-helpers";
 import {WorkPackageViewHierarchiesService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-hierarchy.service";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 export const indicatorCollapsedClass = '-hierarchy-collapsed';
 export const hierarchyCellClassName = 'wp-table--hierarchy-span';
 export const additionalHierarchyRowClassName = 'wp-table--hierarchy-aditional-row';
 export const hierarchyIndentation = 20;
+export const hierarchyBaseIndentation = 25;
 
 export class SingleHierarchyRowBuilder extends SingleRowBuilder {
   // Injected
-  public wpTableHierarchies = this.injector.get(WorkPackageViewHierarchiesService);
-  public states = this.injector.get(States);
+  @InjectField() public wpTableHierarchies:WorkPackageViewHierarchiesService;
+  @InjectField() public states:States;
 
   // Retain a map of hierarchy elements present in the table
   // with at least a visible child
@@ -124,17 +126,19 @@ export class SingleHierarchyRowBuilder extends SingleRowBuilder {
       .addClass('-with-hierarchy')
       .prepend(hierarchyElement);
 
-    // Assure that the content is still visble when the hierarchy indentation is very large
+    // Assure that the content is still visible when the hierarchy indentation is very large
     jRow.find('td.subject').css('minWidth', 125 + (hierarchyIndentation * hierarchyLevel) + 'px');
+    jRow.find('td.subject .wp-table--cell-container')
+      .css('width', 'calc(100% - ' + hierarchyBaseIndentation + 'px - ' + (hierarchyIndentation * hierarchyLevel) + 'px)');
   }
 
   /**
    * Build the hierarchy indicator at the given indentation level.
    */
-  private buildHierarchyIndicator(workPackage:WorkPackageResource, jRow:JQuery | null, level:number):HTMLElement {
+  private buildHierarchyIndicator(workPackage:WorkPackageResource, jRow:JQuery|null, level:number):HTMLElement {
     const hierarchyIndicator = document.createElement('span');
     const collapsed = this.wpTableHierarchies.collapsed(workPackage.id!);
-    const indicatorWidth = 25 + (hierarchyIndentation * level) + 'px';
+    const indicatorWidth = hierarchyBaseIndentation + (hierarchyIndentation * level) + 'px';
     hierarchyIndicator.classList.add(hierarchyCellClassName);
     hierarchyIndicator.style.width = indicatorWidth;
     hierarchyIndicator.dataset.indentation = indicatorWidth;

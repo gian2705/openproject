@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -32,7 +32,7 @@ import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import * as moment from 'moment-timezone';
 import {Moment} from 'moment';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class TimezoneService {
   constructor(readonly ConfigurationService:ConfigurationService,
               readonly I18n:I18nService) {
@@ -58,7 +58,7 @@ export class TimezoneService {
     return d;
   }
 
-  public parseDate(date:string, format?:string) {
+  public parseDate(date:Date|string, format?:string) {
     return moment(date, format);
   }
 
@@ -149,7 +149,7 @@ export class TimezoneService {
   }
 
   public formattedDuration(durationString:string) {
-    return this.I18n.t('js.units.hour', {count: this.toHours(durationString)});
+    return this.I18n.t('js.units.hour', { count: this.toHours(durationString) });
   }
 
   public formattedISODate(date:any) {

@@ -1,10 +1,18 @@
 <%#-- copyright
-OpenProject Meeting Plugin
-
-Copyright (C) 2011-2014 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
+
+OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+Copyright (C) 2006-2017 Jean-Philippe Lang
+Copyright (C) 2010-2013 the ChiliProject Team
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,16 +23,18 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-See doc/COPYRIGHT.md for more details.
+See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
+
+<%= render partial: 'meetings/meeting_header' %>
 
 <% html_title "#{t(:label_meeting)}: #{@meeting.title}" %>
 <%= toolbar title: t(:label_meeting),
             link_to: link_to(@meeting),
             html: { class: 'meeting--main-toolbar' } do %>
   <% unless User.current.anonymous? %>
-    <li class="toolbar-item">
+    <li class="toolbar-item hidden-for-mobile">
       <div class="button">
         <%= watcher_link @meeting, User.current %>
       </div>
@@ -33,14 +43,16 @@ See doc/COPYRIGHT.md for more details.
   <% if authorize_for(:meetings, :edit) %>
     <li class="toolbar-item">
       <%= link_to({:controller => '/meetings', :action => 'edit', :id => @meeting}, class: 'button',:accesskey => accesskey(:edit)) do%>
-        <%= op_icon('button--icon icon-edit') %> <%= t(:button_edit) %>
+        <%= op_icon('button--icon icon-edit') %>
+        <span class="button--text"><%= t(:button_edit) %></span>
       <% end %>
     </li>
   <% end %>
   <% if authorize_for(:meetings, :copy) %>
-    <li class="toolbar-item">
+    <li class="toolbar-item hidden-for-mobile">
       <%= link_to({:controller => '/meetings', :action => 'copy', :id => @meeting}, class: 'button') do %>
-        <%= op_icon('button--icon icon-copy') %> <%= t(:button_copy) %>
+        <%= op_icon('button--icon icon-copy') %>
+        <span class="button--text"><%= t(:button_copy) %></span>
       <% end %>
     </li>
   <% end %>
@@ -50,7 +62,8 @@ See doc/COPYRIGHT.md for more details.
                   class: 'button',
                   method: :delete,
                   data: { confirm: t(:text_are_you_sure) }) do %>
-        <%= op_icon('button--icon icon-delete') %> <%= t(:button_delete) %>
+        <%= op_icon('button--icon icon-delete') %>
+        <span class="button--text"><%= t(:button_delete) %></span>
       <% end %>
     </li>
   <% end %>
@@ -77,16 +90,14 @@ See doc/COPYRIGHT.md for more details.
   </div>
 </div>
 
-<%= render_tabs [{:name => 'agenda', :action => :create_meeting_agendas, :partial => 'meeting_contents/show', :label => :label_meeting_agenda, :content => @meeting.agenda || @meeting.build_agenda, :content_type => "meeting_agenda"},
-                 {:name => 'minutes', :action => :create_meeting_minutes, :partial => 'meeting_contents/show', :label => :label_meeting_minutes, :content => @meeting.minutes || @meeting.build_minutes, :content_type => "meeting_minutes"}] %>
+<%= render_tabs [{:name => 'agenda', :action => :create_meeting_agendas, :partial => 'meeting_contents/show', :path => meeting_agenda_path(@meeting), :label => :label_meeting_agenda, :content => @meeting.agenda || @meeting.build_agenda, :content_type => "meeting_agenda"},
+                 {:name => 'minutes', :action => :create_meeting_minutes, :partial => 'meeting_contents/show', :path => meeting_minutes_path(@meeting), :label => :label_meeting_minutes, :content => @meeting.minutes || @meeting.build_minutes, :content_type => "meeting_minutes"}] %>
 
 <% if @meeting.journals.changing.present? %>
 <div id="history">
-  <h3><%=l(:label_history)%></h3>
+  <h3><%=t(:label_history)%></h3>
   <% @meeting.journals.each do |journal| %>
     <%= render_meeting_journal @meeting, journal %>
   <% end %>
 </div>
 <% end %>
-
-<%= render :partial => 'shared/meeting_header' %>

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,18 +32,18 @@ describe 'sticky messages', type: :feature do
   let(:forum) { FactoryBot.create(:forum) }
 
   let!(:message1) do
-    FactoryBot.create :message, forum: forum, created_on: Time.now - 1.minute do |message|
-      Message.where(id: message.id).update_all(updated_on: Time.now - 1.minute)
+    FactoryBot.create :message, forum: forum, created_at: Time.now - 1.minute do |message|
+      Message.where(id: message.id).update_all(updated_at: Time.now - 1.minute)
     end
   end
   let!(:message2) do
-    FactoryBot.create :message, forum: forum, created_on: Time.now - 2.minute do |message|
-      Message.where(id: message.id).update_all(updated_on: Time.now - 2.minute)
+    FactoryBot.create :message, forum: forum, created_at: Time.now - 2.minute do |message|
+      Message.where(id: message.id).update_all(updated_at: Time.now - 2.minute)
     end
   end
   let!(:message3) do
-    FactoryBot.create :message, forum: forum, created_on: Time.now - 3.minute do |message|
-      Message.where(id: message.id).update_all(updated_on: Time.now - 3.minute)
+    FactoryBot.create :message, forum: forum, created_at: Time.now - 3.minute do |message|
+      Message.where(id: message.id).update_all(updated_at: Time.now - 3.minute)
     end
   end
 
@@ -56,7 +56,7 @@ describe 'sticky messages', type: :feature do
 
   before do
     login_as user
-    visit project_forums_path(forum.project)
+    visit project_forum_path(forum.project, forum)
   end
 
   def expect_order_of_messages(*order)
@@ -75,7 +75,7 @@ describe 'sticky messages', type: :feature do
     check('message[sticky]')
     click_button('Save')
 
-    visit project_forums_path(forum.project)
+    visit project_forum_path(forum.project, forum)
 
     expect_order_of_messages(message2, message1, message3)
   end

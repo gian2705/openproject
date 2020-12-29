@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,8 +30,8 @@
 
 class MembersController < ApplicationController
   model_object Member
-  before_action :find_model_object_and_project, except: [:autocomplete_for_member, :paginate_users]
-  before_action :find_project_by_project_id, only: [:autocomplete_for_member, :paginate_users]
+  before_action :find_model_object_and_project, except: [:autocomplete_for_member]
+  before_action :find_project_by_project_id, only: [:autocomplete_for_member]
   before_action :authorize
 
   include Pagination::Controller
@@ -47,11 +47,11 @@ class MembersController < ApplicationController
 
   def create
     if params[:member]
-      members = new_members_from_params
+      members = new_members_from_params(params[:member])
       @project.members << members
     end
 
-    if members.present? && members.all?(&:valid?)
+    if no_create_errors?(members)
       flash[:notice] = members_added_notice members
 
       redirect_to project_members_path(project_id: @project, status: 'all')
@@ -74,7 +74,7 @@ class MembersController < ApplicationController
     member = update_member_from_params
 
     if member.save
-      flash[:notice] = l(:notice_successful_update)
+      flash[:notice] = I18n.t(:notice_successful_update)
     else
       # only possible message is about choosing at least one role
       flash[:error] = member.errors.full_messages.first
@@ -102,19 +102,9 @@ class MembersController < ApplicationController
   end
 
   def autocomplete_for_member
-    size = params[:page_limit].to_i || 10
-    page = params[:page]
-
-    if page
-      page = page.to_i
-      @principals = Principal.paginate_scope!(Principal.search_scope_without_project(@project, params[:q]),
-                                              page: page, page_limit: size)
-      # we always get all the items on a page, so just check if we just got the last
-      @more = @principals.total_pages > page
-      @total = @principals.total_entries
-    else
-      @principals = Principal.possible_members(params[:q], 100) - @project.principals
-    end
+    @principals = Principal
+                  .possible_members(params[:q], 100)
+                  .where.not(id: @project.principals)
 
     @email = suggest_invite_via_email? current_user,
                                        params[:q],
@@ -122,12 +112,6 @@ class MembersController < ApplicationController
 
     respond_to do |format|
       format.json
-      format.html do
-        render partial: 'members/autocomplete_for_member',
-               locals: { project: @project,
-                         principals: @principals,
-                         roles: Role.givable }
-      end
     end
   end
 
@@ -169,12 +153,6 @@ class MembersController < ApplicationController
     /\A\S+@\S+\.\S+\z/
   end
 
-  def self.tab_scripts
-    scripts = %w(hideOnLoad init_members_cb)
-
-    scripts.join('(); ') + '();'
-  end
-
   def set_index_data!
     set_roles_and_principles!
 
@@ -199,12 +177,16 @@ class MembersController < ApplicationController
                .includes(:roles, :principal, :member_roles)
   end
 
-  def new_members_from_params
-    roles = Role.where(id: possibly_seperated_ids_for_entity(params[:member], :role))
+  def new_members_from_params(member_params)
+    roles = roles_for_new_members(member_params)
 
     if roles.present?
-      user_ids = invite_new_users possibly_seperated_ids_for_entity(params[:member], :user)
+      user_ids = user_ids_for_new_members(member_params)
       members = user_ids.map { |user_id| new_member user_id }
+      # In edge cases, the user might choose a group together with a member which is also part of a group added
+      # at the same time. If the group is added before the user, a :taken error is produced. To avoid this, we
+      # get the user to be added first.
+      members = sort_by_groups_last(members)
 
       # most likely wrong user input, use a dummy member for error handling
       if !members.present? && roles.present?
@@ -225,6 +207,14 @@ class MembersController < ApplicationController
     Member.new(permitted_params.member).tap do |member|
       member.user_id = user_id if user_id
     end
+  end
+
+  def user_ids_for_new_members(member_params)
+    invite_new_users possibly_seperated_ids_for_entity(member_params, :user)
+  end
+
+  def roles_for_new_members(member_params)
+    Role.where(id: possibly_seperated_ids_for_entity(member_params, :role))
   end
 
   def invite_new_users(user_ids)
@@ -291,9 +281,19 @@ class MembersController < ApplicationController
 
   def members_added_notice(members)
     if members.size == 1
-      l(:notice_member_added, name: members.first.name)
+      I18n.t(:notice_member_added, name: members.first.name)
     else
-      l(:notice_members_added, number: members.size)
+      I18n.t(:notice_members_added, number: members.size)
     end
+  end
+
+  def no_create_errors?(members)
+    members.present? && members.map(&:errors).select(&:any?).empty?
+  end
+
+  def sort_by_groups_last(members)
+    group_ids = Group.where(id: members.map(&:user_id)).pluck(:id)
+
+    members.sort_by { |m| group_ids.include?(m.user_id) ? 1 : -1 }
   end
 end

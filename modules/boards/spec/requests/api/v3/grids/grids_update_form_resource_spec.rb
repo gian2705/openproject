@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -121,7 +121,7 @@ describe "PATCH /api/v3/grids/:id/form for Board Grids", type: :request, content
 
       it 'has a validation error on scope as the value is not writeable' do
         expect(subject.body)
-          .to be_json_eql("You must not write a read-only attribute.".to_json)
+          .to be_json_eql("Scope was attempted to be written but is not writable.".to_json)
           .at_path('_embedded/validationErrors/scope/message')
       end
     end

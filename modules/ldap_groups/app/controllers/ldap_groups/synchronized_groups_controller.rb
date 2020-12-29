@@ -6,9 +6,11 @@ module LdapGroups
 
     layout 'admin'
     menu_item :plugin_ldap_groups
+    include PaginationHelper
 
     def index
       @groups = SynchronizedGroup.includes(:auth_source, :group)
+      @filters = SynchronizedFilter.includes(:auth_source, :groups)
     end
 
     def new
@@ -46,15 +48,6 @@ module LdapGroups
       redirect_to action: :index
     end
 
-    def update_settings
-      Setting.plugin_openproject_ldap_groups = {
-          group_key: params[:group_key],
-          group_base: params[:group_base]
-      }
-      flash[:notice] = I18n.t(:notice_successful_update)
-      redirect_to action: :index
-    end
-
     private
 
     def find_group
@@ -73,11 +66,19 @@ module LdapGroups
     def permitted_params
       params
         .require(:synchronized_group)
-        .permit(:entry, :group_id, :auth_source_id)
+        .permit(:dn, :group_id, :auth_source_id)
     end
 
     def default_breadcrumb
-      t('ldap_groups.synchronized_groups.plural')
+      if action_name == 'index'
+        t('ldap_groups.synchronized_groups.plural')
+      else
+        ActionController::Base.helpers.link_to(t('ldap_groups.synchronized_groups.plural'), ldap_groups_synchronized_groups_path)
+      end
+    end
+
+    def show_local_breadcrumb
+      true
     end
   end
 end

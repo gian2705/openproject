@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,10 +23,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
-import {WorkPackageCacheService} from '../../work-packages/work-package-cache.service';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {States} from '../../states.service';
 import {StateService} from '@uirouter/core';
@@ -34,6 +33,7 @@ import {Injectable} from '@angular/core';
 import {PathHelperService} from 'core-app/modules/common/path-helper/path-helper.service';
 import {HalEventsService} from "core-app/modules/hal/services/hal-events.service";
 import {WorkPackageNotificationService} from "core-app/modules/work_packages/notifications/work-package-notification.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Injectable()
 export class WorkPackageRelationsHierarchyService {
@@ -42,11 +42,11 @@ export class WorkPackageRelationsHierarchyService {
               protected halEvents:HalEventsService,
               protected notificationService:WorkPackageNotificationService,
               protected pathHelper:PathHelperService,
-              protected wpCacheService:WorkPackageCacheService) {
+              protected apiV3Service:APIV3Service) {
 
   }
 
-  public changeParent(workPackage:WorkPackageResource, parentId:string | null) {
+  public changeParent(workPackage:WorkPackageResource, parentId:string|null) {
     let payload:any = {
       lockVersion: workPackage.lockVersion
     };
@@ -54,7 +54,7 @@ export class WorkPackageRelationsHierarchyService {
     if (parentId) {
       payload['_links'] = {
         parent: {
-          href: this.pathHelper.api.v3.work_packages.id(parentId).toString()
+          href: this.apiV3Service.work_packages.id(parentId).path
         }
       };
     } else {
@@ -68,7 +68,11 @@ export class WorkPackageRelationsHierarchyService {
     return workPackage
       .changeParent(payload)
       .then((wp:WorkPackageResource) => {
-        this.wpCacheService.updateWorkPackage(wp);
+        this
+          .apiV3Service
+          .work_packages
+          .cache
+          .updateWorkPackage(wp);
         this.notificationService.showSave(wp);
         this.halEvents.push(workPackage, {
           eventType: 'association',
@@ -89,12 +93,22 @@ export class WorkPackageRelationsHierarchyService {
   }
 
   public addExistingChildWp(workPackage:WorkPackageResource, childWpId:string):Promise<WorkPackageResource> {
-    return this.wpCacheService
-      .require(childWpId)
-      .then((wpToBecomeChild:WorkPackageResource | undefined) => {
+    return this
+      .apiV3Service
+      .work_packages
+      .id(childWpId)
+      .get()
+      .toPromise()
+      .then((wpToBecomeChild:WorkPackageResource|undefined) => {
         return this.changeParent(wpToBecomeChild!, workPackage.id!)
           .then(wp => {
-            this.wpCacheService.loadWorkPackage(workPackage.id!, true);
+            // Reload work package
+            this
+              .apiV3Service
+              .work_packages
+              .id(workPackage)
+              .refresh();
+
             this.halEvents.push(workPackage, {
               eventType: 'association',
               relatedWorkPackage: wpToBecomeChild!.id!,
@@ -106,11 +120,11 @@ export class WorkPackageRelationsHierarchyService {
       });
   }
 
-  public addNewChildWp(workPackage:WorkPackageResource) {
+  public addNewChildWp(baseRoute:string, workPackage:WorkPackageResource) {
     workPackage.project.$load()
       .then(() => {
         const args = [
-          'work-packages.list.new',
+          baseRoute + '.new',
           {
             parent_id: workPackage.id
           }
@@ -135,8 +149,26 @@ export class WorkPackageRelationsHierarchyService {
         },
         lockVersion: childWorkPackage.lockVersion
       }).then(wp => {
-        this.wpCacheService.loadWorkPackage(parentWorkPackage.id!, true);
-        this.wpCacheService.updateWorkPackage(wp);
+        if (parentWorkPackage) {
+          this
+            .apiV3Service
+            .work_packages
+            .id(parentWorkPackage)
+            .refresh()
+            .then((wp) => {
+              this.halEvents.push(wp, {
+              eventType: 'association',
+              relatedWorkPackage: null,
+              relationType: 'child'
+            });
+          });
+        }
+
+        this
+          .apiV3Service
+          .work_packages
+          .cache
+          .updateWorkPackage(wp);
       })
         .catch((error) => {
           this.notificationService.handleRawError(error, childWorkPackage);

@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,13 +25,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
-require 'model_contract'
-
 module CustomActions
-  class ExecuteContract < Reform::Contract
+  class ExecuteContract < ModelContract
     property :lock_version
     property :work_package_id
 
@@ -43,7 +41,7 @@ module CustomActions
     def work_package_visible
       return unless model.work_package_id
 
-      unless WorkPackage.visible.where(id: model.work_package_id).exists?
+      unless WorkPackage.visible(user).where(id: model.work_package_id).exists?
         errors.add(:work_package_id, :does_not_exist)
       end
     end

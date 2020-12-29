@@ -36,8 +36,8 @@
   <legend class="form--fieldset-legend" title="<%= t 'webhooks.outgoing.form.events.title' %>">
       <%= t 'webhooks.outgoing.form.events.title' %>
   </legend>
-  <div class="form--fieldset-control">
-    <span class="form--fieldset-control-container">
+  <div class="form--toolbar">
+    <span class="form--toolbar-item">
         (<%= check_all_links 'webhooks-selected-events' %>)
     </span>
   </div>
@@ -96,3 +96,18 @@
     </div>
   </div>
 </fieldset>
+
+<%= nonced_javascript_tag do %>
+  (function($) {
+    // Toggle selector for new/edit webhooks projects
+    $('input[name="webhook[project_ids]"]').change(function(){
+      $('.webhooks--selected-project-ids').prop('disabled', $(this).val() === 'all');
+    });
+
+    $('input[name="webhook[type_ids]"]').change(function(){
+      $('.webhooks--selected-type-ids').prop('disabled', $(this).val() === 'all');
+    });
+  }(jQuery));
+<% end %>
+
+

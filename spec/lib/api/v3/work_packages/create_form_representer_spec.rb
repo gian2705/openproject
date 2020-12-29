@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -34,20 +34,20 @@ describe ::API::V3::WorkPackages::CreateFormRepresenter do
   include API::V3::Utilities::PathHelper
 
   let(:errors) { [] }
-  let(:project) {
+  let(:project) do
     FactoryBot.build_stubbed(:project)
-  }
-  let(:work_package) do
-    wp = FactoryBot.build_stubbed(:work_package, project: project)
-    allow(wp).to receive(:assignable_versions).and_return []
-    wp
   end
-  let(:current_user) {
+  let(:work_package) do
+    FactoryBot.build_stubbed(:stubbed_work_package, project: project).tap do |wp|
+      allow(wp).to receive(:assignable_versions).and_return []
+    end
+  end
+  let(:current_user) do
     FactoryBot.build_stubbed(:user)
-  }
-  let(:representer) {
+  end
+  let(:representer) do
     described_class.new(work_package, current_user: current_user, errors: errors)
-  }
+  end
 
   context 'generation' do
     subject(:generated) { representer.to_json }

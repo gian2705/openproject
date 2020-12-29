@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -119,34 +119,6 @@ describe WikiController, type: :controller do
     assert_equal 'testfile.txt', page.attachments.first.filename
   end
 
-  it 'should update page' do
-    page = Wiki.find(1).pages.find_by(title: 'Another page')
-    page.content.recreate_initial_journal!
-
-    session[:user_id] = 2
-    assert_no_difference 'WikiPage.count' do
-      assert_no_difference 'WikiContent.count' do
-        assert_difference 'Journal.count' do
-          put :update, params: { project_id: 1,
-                                 id: 'Another page',
-                                 content: {
-                                   comments: 'my comments',
-                                   text: 'edited',
-                                   lock_version: 1,
-                                   page: { title: 'Another page',
-                                           parent_id: '' } } }
-        end
-      end
-    end
-    assert_redirected_to '/projects/ecookbook/wiki/another-page'
-
-    page.reload
-    assert_equal 'edited', page.content.text
-    assert_equal 'edited', page.content.text
-    assert_equal page.content.journals.map(&:version).max, page.content.version
-    assert_equal 'my comments', page.content.last_journal.notes
-  end
-
   it 'should update page with failure' do
     session[:user_id] = 2
     assert_no_difference 'WikiPage.count' do
@@ -176,12 +148,11 @@ describe WikiController, type: :controller do
   # because running whole suite is fine, but running only this test
   # results in failure
   it 'should update stale page should not raise an error' do
-    ::JournalVersion.create!(journable_type: 'WikiContent', journable_id: 2, version: 1)
-    journal = FactoryBot.create :wiki_content_journal,
-                                 journable_id: 2,
-                                 version: 1,
-                                 data: FactoryBot.build(:journal_wiki_content_journal,
-                                                         text: "h1. Another page\n\n\nthis is a link to ticket: #2")
+    FactoryBot.create :wiki_content_journal,
+                      journable_id: 2,
+                      version: 1,
+                      data: FactoryBot.build(:journal_wiki_content_journal,
+                                              text: "h1. Another page\n\n\nthis is a link to ticket: #2")
     session[:user_id] = 2
     c = Wiki.find(1).find_page('Another page').content
     c.text = 'Previous text'
@@ -382,7 +353,7 @@ describe WikiController, type: :controller do
     pages = assigns(:pages)
     refute_nil pages
     assert_equal wiki.pages.size, pages.size
-    assert_equal pages.first.content.updated_on, pages.first.updated_on
+    assert_equal pages.first.content.updated_at, pages.first.updated_at
 
     assert_select 'ul', attributes: { class: 'pages-hierarchy' },
                     child: { tag: 'li', child: { tag: 'a', attributes: { href: '/projects/ecookbook/wiki/CookBook%20documentation' },

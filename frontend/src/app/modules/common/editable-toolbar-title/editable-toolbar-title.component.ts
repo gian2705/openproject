@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 import {
   Component,
@@ -39,6 +39,7 @@ import {
 } from "@angular/core";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {ContainHelpers} from "core-app/modules/common/focus/contain-helpers";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 export const triggerEditingEvent = 'op:selectableTitle:trigger';
 export const selectableTitleIdentifier = 'editable-toolbar-title';
@@ -47,7 +48,7 @@ export const selectableTitleIdentifier = 'editable-toolbar-title';
   selector: 'editable-toolbar-title',
   templateUrl: './editable-toolbar-title.html',
   styleUrls: ['./editable-toolbar-title.sass'],
-  host: { 'class': 'title-container' }
+  host: {'class': 'title-container'}
 })
 export class EditableToolbarTitleComponent implements OnInit, OnChanges {
   @Input('title') public inputTitle:string;
@@ -60,13 +61,13 @@ export class EditableToolbarTitleComponent implements OnInit, OnChanges {
   @Output() public onSave = new EventEmitter<string>();
   @Output() public onEmptySubmit = new EventEmitter<void>();
 
-  @ViewChild('editableTitleInput', { static: false }) inputField?:ElementRef;
+  @ViewChild('editableTitleInput') inputField?:ElementRef;
 
   public selectedTitle:string;
   public selectableTitleIdentifier = selectableTitleIdentifier;
 
-  protected readonly elementRef:ElementRef = this.injector.get(ElementRef);
-  protected readonly I18n:I18nService = this.injector.get(I18nService);
+  @InjectField() protected readonly elementRef:ElementRef;
+  @InjectField() protected readonly I18n:I18nService;
 
   public text = {
     click_to_edit: this.I18n.t('js.work_packages.query.click_to_edit_query_name'),
@@ -79,7 +80,7 @@ export class EditableToolbarTitleComponent implements OnInit, OnChanges {
     duplicate_query_title: this.I18n.t('js.work_packages.query.errors.duplicate_query_title')
   };
 
-  constructor(protected readonly injector:Injector) {
+  constructor(readonly injector:Injector) {
   }
 
   ngOnInit() {
@@ -115,7 +116,12 @@ export class EditableToolbarTitleComponent implements OnInit, OnChanges {
   }
 
   public onFocus(event:FocusEvent) {
+    this.toggleToolbarButtonVisibility(true);
     this.selectInputOnInitalFocus(event.target as HTMLInputElement);
+  }
+
+  public onBlur() {
+    this.toggleToolbarButtonVisibility(false);
   }
 
   public selectInputOnInitalFocus(input:HTMLInputElement) {
@@ -205,5 +211,9 @@ export class EditableToolbarTitleComponent implements OnInit, OnChanges {
       const el = this.inputField.nativeElement;
       el.classList.remove('-error');
     }
+  }
+
+  private toggleToolbarButtonVisibility(hidden:boolean) {
+    jQuery('.toolbar-items').toggleClass('hidden-for-mobile', hidden);
   }
 }

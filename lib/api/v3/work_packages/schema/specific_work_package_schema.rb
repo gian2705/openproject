@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -33,8 +33,8 @@ module API
       module Schema
         class SpecificWorkPackageSchema < BaseWorkPackageSchema
           attr_reader :work_package
-          include ::Concerns::AssignableCustomFieldValues
-          include ::Concerns::AssignableValuesContract
+          include AssignableCustomFieldValues
+          include AssignableValuesContract
 
           def initialize(work_package:)
             @work_package = work_package
@@ -48,6 +48,14 @@ module API
                    :available_custom_fields,
                    to: :@work_package
 
+          delegate :assignable_types,
+                   :assignable_statuses,
+                   :assignable_categories,
+                   :assignable_priorities,
+                   :assignable_versions,
+                   :assignable_budgets,
+                   to: :contract
+
           def no_caching?
             true
           end
@@ -55,51 +63,15 @@ module API
           private
 
           def contract
-            @contract ||= begin
-              klass = if work_package.new_record?
-                        ::WorkPackages::CreateContract
-                      else
-                        ::WorkPackages::UpdateContract
-                      end
-
-              klass
-                .new(work_package,
-                     User.current)
-            end
+            @contract ||= contract_class(work_package).new(work_package, User.current)
           end
 
-          def assignable_categories
-            project.categories if project.respond_to?(:categories)
-          end
-
-          def assignable_priorities
-            IssuePriority.active
-          end
-
-          def assignable_versions
-            @work_package.try(:assignable_versions) if project
-          end
-
-          def assignable_types
-            if project.nil?
-              Type.includes(:color)
+          def contract_class(work_package)
+            if work_package.new_record?
+              ::WorkPackages::CreateContract
             else
-              project.types.includes(:color)
+              ::WorkPackages::UpdateContract
             end
-          end
-
-          def assignable_statuses
-            status_origin = @work_package
-
-            # do not allow to skip statuses without intermediately saving the work package
-            # we therefore take the original status of the work_package, while preserving all
-            # other changes to it (e.g. type, assignee, etc.)
-            if @work_package.persisted? && @work_package.status_id_changed?
-              status_origin = @work_package.clone
-              status_origin.status = Status.find_by(id: @work_package.status_id_was)
-            end
-
-            status_origin.new_statuses_allowed_to(User.current)
           end
         end
       end

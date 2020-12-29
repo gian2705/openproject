@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -49,10 +49,10 @@ See docs/COPYRIGHT.rdoc for more details.
       </h3>
       <%= render partial: 'versions/overview', locals: {version: version} %>
       <%= render(partial: "wiki/content", locals: {content: version.wiki_page.content}) if version.wiki_page %>
-      <% if (issues = @issues_by_version[version]) && issues.size > 0 %>
+      <% if (issues = @wps_by_version[version]) && issues.size > 0 %>
       <form>
         <fieldset class="form--fieldset -collapsible">
-          <legend class="form--fieldset-legend" ><%= l(:label_related_work_packages) %></legend>
+          <legend class="form--fieldset-legend" ><%= t(:label_related_work_packages) %></legend>
           <div>
             <ul>
               <%- issues.each do |issue| -%>
@@ -73,4 +73,4 @@ See docs/COPYRIGHT.rdoc for more details.
   <%= render partial: 'roadmap_version_links' %>
 <% end %>
 
-<% html_title(l(:label_roadmap)) %>
+<% html_title(t(:label_roadmap)) %>

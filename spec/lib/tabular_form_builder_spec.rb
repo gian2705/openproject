@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -61,6 +61,23 @@ describe TabularFormBuilder do
           id="user_name" name="user[name]" title="Name" type="text"
           value="JJ Abrams" />
       }).at_path('input')
+    end
+
+    context 'with help text' do
+      let(:options) { { title: 'Name', class: 'custom-class', help_text: { attribute: 'foo', 'attribute-scope': 'bar' } } }
+
+      it 'will output a label with an attribute-help-text tag' do
+        expect(output).to be_html_eql(%{
+          <label class="form--label"
+                 for="user_name"
+                 title="Name">
+            Name
+            <attribute-help-text data-attribute="foo"
+                                 data-attribute-scope="bar">
+            </attribute-help-text>
+          </label>
+        }).at_path('label')
+      end
     end
 
     context 'with affixes' do

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -78,11 +78,7 @@ class BaseMailer < ActionMailer::Base
     end
 
     def mail_timestamp(object)
-      if object.respond_to? :created_at
-        object.send(object.respond_to?(:created_at) ? :created_at : :updated_at)
-      else
-        object.send(object.respond_to?(:created_on) ? :created_on : :updated_on)
-      end
+      object.send(object.respond_to?(:created_at) ? :created_at : :updated_at)
     end
 
     def host

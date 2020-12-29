@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,9 +28,9 @@
 #++
 
 class HelpController < ApplicationController
-  layout 'help'
-
-  def keyboard_shortcuts; end
+  def keyboard_shortcuts
+    redirect_to OpenProject::Static::Links[:shortcuts][:href]
+  end
 
   def text_formatting
     default_link = OpenProject::Static::Links[:text_formatting][:href]

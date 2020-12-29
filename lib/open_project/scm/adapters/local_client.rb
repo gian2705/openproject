@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,7 +30,7 @@
 require 'open3'
 require 'find'
 module OpenProject
-  module Scm
+  module SCM
     module Adapters
       module LocalClient
         def self.included(base)
@@ -68,7 +68,7 @@ module OpenProject
           if storage_available?
             count_required_storage
           else
-            raise Exceptions::ScmError.new I18n.t('repositories.storage.not_available')
+            raise Exceptions::SCMError.new I18n.t('repositories.storage.not_available')
           end
         end
 
@@ -179,7 +179,7 @@ module OpenProject
         def popen3(args, opts = {}, &block)
           logger.debug "Shelling out: `#{stripped_command(args)}`"
           Open3.popen3(client_command, *args, opts, &block)
-        rescue Exceptions::ScmError => e
+        rescue Exceptions::SCMError => e
           raise e
         rescue => e
           error_msg = "SCM command for `#{client_command}` failed: #{strip_credential(e.message)}"

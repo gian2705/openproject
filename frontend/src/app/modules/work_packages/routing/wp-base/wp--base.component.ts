@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,13 +23,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {Component, Injector, OnDestroy, OnInit} from "@angular/core";
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
-import {WorkPackageNotificationService} from "core-app/modules/work_packages/notifications/work-package-notification.service";
+import {Component} from "@angular/core";
 import {EditFormRoutingService} from "core-app/modules/fields/edit/edit-form/edit-form-routing.service";
 import {WorkPackageEditFormRoutingService} from "core-app/modules/work_packages/routing/wp-edit-form/wp-edit-form-routing.service";
 

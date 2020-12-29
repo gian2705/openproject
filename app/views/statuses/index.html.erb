@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -27,8 +27,8 @@ See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 
-<% html_title l(:label_administration), l(:label_work_package_status_plural) -%>
-<%= toolbar title: l(:label_work_package_status_plural) do %>
+<% html_title t(:label_administration), t(:label_work_package_status_plural) -%>
+<%= toolbar title: t(:label_work_package_status_plural) do %>
   <li class="toolbar-item">
     <%= link_to new_status_path,
           { class: 'button -alt-highlight',
@@ -40,9 +40,9 @@ See docs/COPYRIGHT.rdoc for more details.
   </li>
   <% if WorkPackage.use_status_for_done_ratio? %>
     <li class="toolbar-item">
-      <%= link_to update_work_package_done_ratio_statuses_path, class: 'button', method: :post, data: { confirm: l(:text_are_you_sure) } do %>
+      <%= link_to update_work_package_done_ratio_statuses_path, class: 'button', method: :post, data: { confirm: t(:text_are_you_sure) } do %>
         <%= op_icon('button--icon icon-reload') %>
-        <span class="button--text"><%= l(:label_update_work_package_done_ratios) %></span>
+        <span class="button--text"><%= t(:label_update_work_package_done_ratios) %></span>
       <% end %>
     </li>
   <% end %>

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -467,7 +467,7 @@ describe ::Query::Results, type: :model, with_mail: false do
     end
   end
 
-  describe '#sorted_work_packages' do
+  describe '#work_packages' do
     let(:work_package1) { FactoryBot.create(:work_package, project: project_1, id: 1) }
     let(:work_package2) { FactoryBot.create(:work_package, project: project_1, id: 2) }
     let(:work_package3) { FactoryBot.create(:work_package, project: project_1, id: 3) }
@@ -523,7 +523,7 @@ describe ::Query::Results, type: :model, with_mail: false do
         #   work_package 3
         # user_z
         #   work_package 2
-        expect(query_results.sorted_work_packages)
+        expect(query_results.work_packages)
           .to match [work_package1, work_package3, work_package2]
       end
     end
@@ -559,7 +559,7 @@ describe ::Query::Results, type: :model, with_mail: false do
         #   work_package 1
         # user_z
         #   work_package 2
-        expect(query_results.sorted_work_packages)
+        expect(query_results.work_packages)
           .to match [work_package3, work_package1, work_package2]
 
         query.sort_criteria = [['author', 'desc']]
@@ -571,7 +571,7 @@ describe ::Query::Results, type: :model, with_mail: false do
         #   work_package 3
         # user_z
         #   work_package 2
-        expect(query_results.sorted_work_packages)
+        expect(query_results.work_packages)
           .to match [work_package1, work_package3, work_package2]
       end
     end
@@ -594,13 +594,45 @@ describe ::Query::Results, type: :model, with_mail: false do
       it 'respects the sorting (Regression #29689)' do
         query.sort_criteria = [['priority', 'asc']]
 
-        expect(query_results.sorted_work_packages)
+        expect(query_results.work_packages)
           .to match [work_package1, work_package2]
 
         query.sort_criteria = [['priority', 'desc']]
 
-        expect(query_results.sorted_work_packages)
+        expect(query_results.work_packages)
           .to match [work_package2, work_package1]
+      end
+    end
+
+    context 'sorting by priority, grouping by project' do
+      let(:prio_low) { FactoryBot.create :issue_priority, position: 1 }
+      let(:prio_high) { FactoryBot.create :issue_priority, position: 0 }
+      let(:group_by) { 'project' }
+
+      before do
+        allow(User).to receive(:current).and_return(user_1)
+
+        work_package1.priority = prio_low
+        work_package2.priority = prio_high
+
+        work_package1.save(validate: false)
+        work_package2.save(validate: false)
+      end
+
+      it 'properly selects project_id (Regression #31667)' do
+        query.sort_criteria = [['priority', 'asc']]
+
+        expect(query_results.work_packages)
+          .to match [work_package1, work_package2]
+
+        query.sort_criteria = [['priority', 'desc']]
+
+        expect(query_results.work_packages)
+          .to match [work_package2, work_package1]
+
+        group_count = query_results.work_package_count_by_group
+
+        expect(group_count).to eq({ project_1 => 2 })
       end
     end
 
@@ -638,7 +670,7 @@ describe ::Query::Results, type: :model, with_mail: false do
         #   work_package 1
         # user_z
         #   work_package 2
-        expect(query_results.sorted_work_packages)
+        expect(query_results.work_packages)
           .to match [work_package3, work_package1, work_package2]
 
         query.sort_criteria = [['author', 'desc'], ['responsible', 'asc']]
@@ -650,7 +682,7 @@ describe ::Query::Results, type: :model, with_mail: false do
         #   work_package 3
         # user_z
         #   work_package 2
-        expect(query_results.sorted_work_packages)
+        expect(query_results.work_packages)
           .to match [work_package1, work_package3, work_package2]
       end
     end

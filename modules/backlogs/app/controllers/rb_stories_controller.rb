@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,16 +23,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 class RbStoriesController < RbApplicationController
-  include OpenProject::PdfExport::ExportCard
+  include OpenProject::PDFExport::ExportCard
 
   # This is a constant here because we will recruit it elsewhere to whitelist
   # attributes. This is necessary for now as we still directly use `attributes=`
   # in non-controller code.
-  PERMITTED_PARAMS = [:id, :status_id, :fixed_version_id,
+  PERMITTED_PARAMS = [:id, :status_id, :version_id,
                       :story_points, :type_id, :subject, :author_id,
                       :sprint_id]
 
@@ -75,7 +68,7 @@ class RbStoriesController < RbApplicationController
     story = call.result
 
     respond_to do |format|
-      format.html { render partial: 'story', object: story, status: status }
+      format.html { render partial: 'story', object: story, status: status, locals: { errors: call.errors } }
     end
   end
 

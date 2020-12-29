@@ -1,13 +1,13 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
 # OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
@@ -24,7 +24,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module OpenProject::Plugins
@@ -47,11 +47,25 @@ module OpenProject::Plugins
     end
 
     def self.providers_for(strategy)
-      filtered_strategies strategies[strategy_key(strategy)].map(&:call).flatten.map(&:to_hash)
+      matching = Array(strategies[strategy_key(strategy)])
+      filtered_strategies matching.map(&:call).flatten.map(&:to_hash)
+    end
+
+    def self.login_provider_for(user)
+      return unless user.identity_url
+
+      provider_name = user.identity_url.split(':').first
+      find_provider_by_name(provider_name)
+    end
+
+    def self.find_provider_by_name(provider_name)
+      providers.detect { |hash| hash[:name].to_s == provider_name.to_s }
     end
 
     def self.providers
-      filtered_strategies strategies.values.flatten.map(&:call).flatten.map(&:to_hash)
+      RequestStore.fetch(:openproject_omniauth_filtered_strategies) do
+        filtered_strategies strategies.values.flatten.map(&:call).flatten.map(&:to_hash)
+      end
     end
 
     def self.filtered_strategies(options)
@@ -67,6 +81,7 @@ module OpenProject::Plugins
 
     def self.strategy_key(strategy)
       return strategy if strategy.is_a? Symbol
+      return strategy.to_sym if strategy.is_a? String
 
       name = strategy.name.demodulize
       camelization = OmniAuth.config.camelizations.select do |_k, v|

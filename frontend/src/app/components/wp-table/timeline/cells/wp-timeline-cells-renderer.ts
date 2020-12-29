@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Injector} from '@angular/core';
@@ -37,12 +37,13 @@ import {WorkPackageTimelineCell} from './wp-timeline-cell';
 import {HalResourceEditingService} from "core-app/modules/fields/edit/services/hal-resource-editing.service";
 import {RenderedWorkPackage} from "core-app/modules/work_packages/render-info/rendered-work-package.type";
 import {WorkPackageChangeset} from "core-components/wp-edit/work-package-changeset";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 export class WorkPackageTimelineCellsRenderer {
 
   // Injections
-  public states = this.injector.get(States);
-  public halEditing = this.injector.get(HalResourceEditingService);
+  @InjectField() public states:States;
+  @InjectField() public halEditing:HalResourceEditingService;
 
   public cells:{ [classIdentifier:string]:WorkPackageTimelineCell } = {};
 
@@ -79,8 +80,8 @@ export class WorkPackageTimelineCellsRenderer {
     _.each(this.getCellsFor(wpId), (cell) => this.refreshSingleCell(cell));
   }
 
-  public refreshSingleCell(cell:WorkPackageTimelineCell) {
-    const renderInfo = this.renderInfoFor(cell.workPackageId);
+  public refreshSingleCell(cell:WorkPackageTimelineCell, isDuplicatedCell?:boolean, withAlternativeLabels?:boolean) {
+    const renderInfo = this.renderInfoFor(cell.workPackageId, isDuplicatedCell, withAlternativeLabels);
 
     if (renderInfo.workPackage) {
       cell.refreshView(renderInfo);
@@ -139,12 +140,23 @@ export class WorkPackageTimelineCellsRenderer {
     );
   }
 
-  private renderInfoFor(wpId:string):RenderInfo {
+  private renderInfoFor(wpId:string, isDuplicatedCell?:boolean, withAlternativeLabels?:boolean):RenderInfo {
     const wp = this.states.workPackages.get(wpId).value!;
     return {
       viewParams: this.wpTimeline.viewParameters,
       workPackage: wp,
-      change: this.halEditing.changeFor(wp) as WorkPackageChangeset
+      change: this.halEditing.changeFor(wp) as WorkPackageChangeset,
+      isDuplicatedCell,
+      withAlternativeLabels,
     };
   }
+
+  public buildCellsAndRenderOnRow(workPackageIds:string[], rowClassIdentifier:string, isDuplicatedCell?:boolean):WorkPackageTimelineCell[] {
+    const cells = workPackageIds.map(workPackageId => this.buildCell(rowClassIdentifier, workPackageId!));
+
+    cells.forEach((cell:WorkPackageTimelineCell) => this.refreshSingleCell(cell, isDuplicatedCell, true));
+
+    return cells;
+  }
 }
+

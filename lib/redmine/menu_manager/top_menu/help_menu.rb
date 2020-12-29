@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -26,9 +26,6 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-require 'concerns/omniauth_login'
-require 'open_project/static/links'
-
 module Redmine::MenuManager::TopMenu::HelpMenu
   def render_help_top_menu_node(item = help_menu_item)
     cache_key = ['help_top_menu_node',
@@ -48,7 +45,7 @@ module Redmine::MenuManager::TopMenu::HelpMenu
 
   def render_help_dropdown
     link_to_help_pop_up = link_to '',
-                                  title: l(:label_help),
+                                  title: I18n.t(:label_help),
                                   class: 'menu-item--help',
                                   aria: { haspopup: 'true' } do
       op_icon('icon-help')
@@ -72,9 +69,9 @@ module Redmine::MenuManager::TopMenu::HelpMenu
 
   def render_onboarding(result)
     result << content_tag(:li) do
-      content_tag(:span, l('top_menu.getting_started'),
+      content_tag(:span, I18n.t('top_menu.getting_started'),
                   class: 'drop-down--help-headline',
-                  title: l('top_menu.getting_started'))
+                  title: I18n.t('top_menu.getting_started'))
     end
     result << render_onboarding_menu_item
     result << content_tag(:hr, '', class: 'form--separator')
@@ -86,26 +83,21 @@ module Redmine::MenuManager::TopMenu::HelpMenu
 
   def render_help_and_support(result)
     result << content_tag(:li) do
-      content_tag :span, l('top_menu.help_and_support'),
+      content_tag :span, I18n.t('top_menu.help_and_support'),
                   class: 'drop-down--help-headline',
-                  title: l('top_menu.help_and_support')
+                  title: I18n.t('top_menu.help_and_support')
     end
     if EnterpriseToken.show_banners?
       result << static_link_item(:upsale, href_suffix: "/?utm_source=unknown&utm_medium=op-instance&utm_campaign=ee-upsale-help-menu")
     end
     result << static_link_item(:user_guides)
     result << content_tag(:li) {
-      link_to l('label_videos'),
+      link_to I18n.t('label_videos'),
               OpenProject::Configuration.youtube_channel,
-              title: l('label_videos'),
+              title: I18n.t('label_videos'),
               target: '_blank'
     }
-    result << content_tag(:li) {
-      link_to l('homescreen.links.shortcuts'),
-              '',
-              class: 'help-link-shortcuts-link',
-              title: l('homescreen.links.shortcuts')
-    }
+    result << static_link_item(:shortcuts)
     result << static_link_item(:forums)
     result << static_link_item(:professional_support)
     result << content_tag(:hr, '', class: 'form--separator')
@@ -114,9 +106,9 @@ module Redmine::MenuManager::TopMenu::HelpMenu
   def render_additional_resources(result)
     result << content_tag(:li) do
       content_tag :span,
-                  l('top_menu.additional_resources'),
+                  I18n.t('top_menu.additional_resources'),
                   class: 'drop-down--help-headline',
-                  title: l('top_menu.additional_resources')
+                  title: I18n.t('top_menu.additional_resources')
     end
 
     if OpenProject::Static::Links.has? :impressum

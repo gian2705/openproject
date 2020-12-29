@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -66,7 +66,7 @@ module Queries::Filters::Shared::CustomFieldFilter
       match = name.match /cf_(\d+)/
 
       if match.present? && match[1].to_i > 0
-        custom_field_context.custom_field_class.find_by(id: match[1].to_i)
+        all_custom_fields.detect { |cf| cf.id == match[1].to_i }
       end
     end
 
@@ -102,6 +102,16 @@ module Queries::Filters::Shared::CustomFieldFilter
         :Bool
       else
         :Base
+      end
+    end
+
+    def all_custom_fields
+      key = ['Queries::Filters::Shared::CustomFieldFilter',
+             custom_field_context.custom_field_class,
+             'all_custom_fields']
+
+      RequestStore.fetch(key.join('/')) do
+        custom_field_context.custom_field_class.all.to_a
       end
     end
   end

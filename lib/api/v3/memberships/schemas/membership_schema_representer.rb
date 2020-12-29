@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,25 +31,25 @@ module API
     module Memberships
       module Schemas
         class MembershipSchemaRepresenter < ::API::Decorators::SchemaRepresenter
-          def initialize(represented, self_link = nil, current_user: nil, form_embedded: false)
+          def initialize(represented, self_link: nil, current_user: nil, form_embedded: false)
             super(represented,
-                  self_link,
+                  self_link: self_link,
                   current_user: current_user,
                   form_embedded: form_embedded)
           end
 
           schema :id,
-                 type: 'Integer',
-                 visibility: false
+                 type: 'Integer'
 
           schema :created_at,
-                 type: 'DateTime',
-                 visibility: false
+                 type: 'DateTime'
+
+          schema :updated_at,
+                 type: 'DateTime'
 
           schema_with_allowed_link :project,
                                    has_default: false,
-                                   required: true,
-                                   visibility: false,
+                                   required: false,
                                    href_callback: ->(*) {
                                      allowed_projects_href
                                    }
@@ -57,7 +57,6 @@ module API
           schema_with_allowed_link :principal,
                                    has_default: false,
                                    required: true,
-                                   visibility: false,
                                    href_callback: ->(*) {
                                      allowed_principal_href
                                    }
@@ -67,9 +66,8 @@ module API
                                    name_source: :role,
                                    has_default: false,
                                    required: true,
-                                   visibility: false,
                                    href_callback: ->(*) {
-                                     api_v3_paths.path_for(:roles, filters: [{ unit: { operator: '=', values: ['project'] } }])
+                                     allowed_roles_href
                                    }
 
           def self.represented_class
@@ -107,6 +105,18 @@ module API
             end
 
             filters
+          end
+
+          def allowed_roles_href
+            filters = represented.new_record? ? {} : { filters: allowed_roles_filters }
+
+            api_v3_paths.path_for(:roles, **filters)
+          end
+
+          def allowed_roles_filters
+            value = represented.project ? 'project' : 'system'
+
+            [{ unit: { operator: '=', values: [value] } }]
           end
         end
       end

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -34,13 +34,13 @@ class Repository::Subversion < Repository
   validates_format_of :url, with: /\A(http|https|svn(\+[^\s:\/\\]+)?|file):\/\/.+\z/i
 
   def self.scm_adapter_class
-    OpenProject::Scm::Adapters::Subversion
+    OpenProject::SCM::Adapters::Subversion
   end
 
   def configure(scm_type, _args)
     if scm_type == self.class.managed_type
       unless manageable?
-        raise OpenProject::Scm::Exceptions::RepositoryBuildError.new(
+        raise OpenProject::SCM::Exceptions::RepositoryBuildError.new(
           I18n.t('repositories.managed.error_not_manageable')
         )
       end
@@ -51,7 +51,7 @@ class Repository::Subversion < Repository
   end
 
   def self.authorization_policy
-    ::Scm::SubversionAuthorizationPolicy
+    ::SCM::SubversionAuthorizationPolicy
   end
 
   def self.permitted_params(params)

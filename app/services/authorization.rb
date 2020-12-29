@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,14 +28,17 @@
 #++
 
 class Authorization
+  # Returns all users having a certain permission within a project
   def self.users(action, project)
     Authorization::UserAllowedQuery.query(action, project)
   end
 
+  # Returns all projects a user has a certain permission in
   def self.projects(action, user)
     Authorization::ProjectQuery.query(user, action)
   end
 
+  # Returns all roles a user has in a certain project or globally
   def self.roles(user, project = nil)
     if project
       Authorization::UserProjectRolesQuery.query(user, project)

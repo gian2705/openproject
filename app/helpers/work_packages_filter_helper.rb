@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -34,7 +34,7 @@ module WorkPackagesFilterHelper
     query = {
       f: [
         filter_object('status_id', 'c'),
-        filter_object('fixed_version_id', '=', version.id)
+        filter_object('version_id', '=', version.id)
       ]
     }
     project_work_packages_with_query_path(version.project, query, options)
@@ -44,7 +44,7 @@ module WorkPackagesFilterHelper
     query = {
       f: [
         filter_object('status_id', 'o'),
-        filter_object('fixed_version_id', '=', version.id)
+        filter_object('version_id', '=', version.id)
       ]
     }
     project_work_packages_with_query_path(version.project, query, options)
@@ -104,7 +104,7 @@ module WorkPackagesFilterHelper
     query = {
       f: [
         filter_object('status_id', '*'),
-        filter_object('fixed_version_id', '=', version.id),
+        filter_object('version_id', '=', version.id),
         filter_object(property_name, '=', property_id)
       ],
       t: default_sort

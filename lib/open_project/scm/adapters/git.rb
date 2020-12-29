@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,9 +30,9 @@
 require_dependency 'open_project/scm/adapters'
 
 module OpenProject
-  module Scm
+  module SCM
     module Adapters
-      class Git < ::OpenProject::Scm::Adapters::Base
+      class Git < ::OpenProject::SCM::Adapters::Base
         include LocalClient
 
         SCM_GIT_REPORT_LAST_COMMIT = true
@@ -96,16 +96,16 @@ module OpenProject
         # Checks the status of this repository and throws unless it can be accessed
         # correctly by the adapter.
         #
-        # @raise [ScmUnavailable] raised when repository is unavailable.
+        # @raise [SCMUnavailable] raised when repository is unavailable.
         def check_availability!
           refresh_repository!
 
           # If it is not empty, it should have at least one branch
           # Any exit code != 0 will raise here
-          raise Exceptions::ScmEmpty unless branches.count > 0
+          raise Exceptions::SCMEmpty unless branches.count > 0
         rescue Exceptions::CommandFailed => e
           logger.error("Availability check failed due to failed Git command: #{e.message}")
-          raise Exceptions::ScmUnavailable
+          raise Exceptions::SCMUnavailable
         end
 
         ##
@@ -454,7 +454,7 @@ module OpenProject
           capture_git(args, binmode: true)
         end
 
-        class Revision < OpenProject::Scm::Adapters::Revision
+        class Revision < OpenProject::SCM::Adapters::Revision
           # Returns the readable identifier
           def format_identifier
             identifier[0, 8]

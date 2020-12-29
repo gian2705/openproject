@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -33,9 +33,14 @@ class Services::RemoveWatcher
   end
 
   def run(success: -> {}, failure: -> {})
-    if @work_package.watcher_users.include?(@user)
+    watcher = @work_package.watchers.find_by_user_id(@user.id)
+
+    if watcher.present?
       @work_package.watcher_users.delete(@user)
       success.call
+      OpenProject::Notifications.send('watcher_removed',
+                                      watcher: watcher,
+                                      watcher_remover: User.current)
     else
       failure.call
     end

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,13 +30,7 @@ require 'spec_helper'
 require 'work_package'
 
 describe UsersController, type: :controller do
-  before do
-    User.delete_all
-  end
-
-  after do
-    User.current = nil
-  end
+  using_shared_fixtures :admin, :anonymous
 
   let(:user_password) {'bob!' * 4}
   let(:user) do
@@ -46,8 +40,6 @@ describe UsersController, type: :controller do
                       password_confirmation: user_password,
                        )
   end
-  let(:admin) { FactoryBot.create(:admin) }
-  let(:anonymous) { FactoryBot.create(:anonymous) }
 
   describe 'GET new' do
     context "with user limit reached" do
@@ -192,12 +184,10 @@ describe UsersController, type: :controller do
     end
 
     context 'with admin rights' do
-      let(:admin_user) { FactoryBot.create :admin }
-
       before do
         expect(ActionMailer::Base.deliveries).to be_empty
 
-        as_logged_in_user admin_user do
+        as_logged_in_user admin do
           post :resend_invitation, params: { id: invited_user.id }
         end
       end
@@ -287,7 +277,7 @@ describe UsersController, type: :controller do
       describe "WHEN the current user is the admin
                 WHEN the given password does not match
                 WHEN the setting users_deletable_by_admins is set to true" do
-        let(:admin) { FactoryBot.create(:admin) }
+        using_shared_fixtures :admin
 
         before do
           disable_flash_sweep
@@ -309,19 +299,12 @@ describe UsersController, type: :controller do
                 WHEN the given password does match
                 WHEN the setting users_deletable_by_admins is set to true" do
 
-        let(:admin_password) { 'admin!' * 4 }
-        let(:admin) do
-          FactoryBot.create(:admin,
-                            password: admin_password,
-                            password_confirmation: admin_password)
-        end
-
         before do
           disable_flash_sweep
           allow(Setting).to receive(:users_deletable_by_admins?).and_return(true)
 
           as_logged_in_user admin do
-            post :destroy, params: base_params.merge(:'_password_confirmation' => admin_password)
+            post :destroy, params: base_params.merge(:'_password_confirmation' => 'adminADMIN!')
           end
         end
 
@@ -331,7 +314,7 @@ describe UsersController, type: :controller do
 
       describe "WHEN the current user is the admin
                 WHEN the setting users_deletable_by_admins is set to false" do
-        let(:admin) { FactoryBot.create(:admin) }
+        using_shared_fixtures :admin
 
         before do
           disable_flash_sweep

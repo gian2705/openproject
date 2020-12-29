@@ -71,17 +71,13 @@
     </div>
   </div>
 
-  <div *ngIf="workPackage.bcf">
-    <bcf-wp-single-view [workPackage]="workPackage"></bcf-wp-single-view>
-  </div>
+  <ng-container *ngFor="let component of prependedAttributeGroupComponents()">
+    <ndc-dynamic [ndcDynamicComponent]="component"
+                 [ndcDynamicInputs]="{ workPackage: workPackage }">
+    </ndc-dynamic>
+  </ng-container>
 
   <div class="attributes-group description-group">
-    <div class="attributes-group--header">
-      <div class="attributes-group--header-container">
-        <h3 class="attributes-group--header-text"
-            [textContent]="text.fields.description"></h3>
-      </div>
-    </div>
     <div class="single-attribute work-packages--details--description">
       <editable-attribute-field [fieldName]="'description'"
                      [resource]="workPackage"
@@ -122,8 +118,7 @@
   </div>
 </div>
 
-<div class="work-packages--attachments attributes-group"
-     *ngIf="workPackage.canAddAttachments || workPackage.hasAttachments">
+<div class="work-packages--attachments attributes-group">
   <div class="work-packages--attachments-container">
     <div class="attributes-group--header">
       <div class="attributes-group--header-container">
@@ -136,7 +131,8 @@
     </ndc-dynamic>
 
     <ndc-dynamic [ndcDynamicComponent]="attachmentUploadComponent()"
-                 [ndcDynamicInputs]="{ resource: workPackage }">
+                 [ndcDynamicInputs]="{ resource: workPackage }"
+                 *ngIf="workPackage.canAddAttachments">
     </ndc-dynamic>
   </div>
 </div>

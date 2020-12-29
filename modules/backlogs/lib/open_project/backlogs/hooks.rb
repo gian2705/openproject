@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,53 +23,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module OpenProject::Backlogs::Hooks
-  class Hook < Redmine::Hook::Listener
-    include ActionView::Helpers::TagHelper
-    include ActionView::Context
-    include WorkPackagesHelper
-
-    def work_packages_show_attributes(context = {})
-      work_package = context[:work_package]
-      attributes = context[:attributes]
-
-      return unless work_package.backlogs_enabled?
-      return if context[:from] == 'OpenProject::Backlogs::WorkPackageView::FieldsParagraph'
-
-      attributes << work_package_show_story_points_attribute(work_package)
-      attributes << work_package_show_remaining_hours_attribute(work_package)
-
-      attributes
-    end
-
-    private
-
-    def work_package_show_story_points_attribute(work_package)
-      return nil unless work_package.is_story?
-
-      work_package_show_table_row(:story_points, :"story-points") do
-        work_package.story_points ? work_package.story_points.to_s : empty_element_tag
-      end
-    end
-
-    def work_package_show_remaining_hours_attribute(work_package)
-      work_package_show_table_row(:remaining_hours) do
-        work_package.remaining_hours ? l_hours(work_package.remaining_hours) : empty_element_tag
-      end
-    end
-  end
-
   class LayoutHook < Redmine::Hook::ViewListener
     include RbCommonHelper
-
-    # TODO: there are hook implementations in here that need to be ported
-    #       to render a partial instead of returning a hand crafted snippet
-
-    render_on :view_work_packages_form_details_bottom,
-              partial: 'hooks/backlogs/view_work_packages_form_details_bottom'
 
     def view_versions_show_bottom(context = {})
       version = context[:version]
@@ -88,7 +40,7 @@ module OpenProject::Backlogs::Hooks
 
       if User.current.allowed_to?(:edit_wiki_pages, project)
         snippet += '<span id="edit_wiki_page_action">'
-        snippet += link_to l(:button_edit_wiki), { controller: '/rb_wikis', action: 'edit', project_id: project.id, sprint_id: version.id }, class: 'icon icon-edit'
+        snippet += link_to I18n.t(:button_edit_wiki), { controller: '/rb_wikis', action: 'edit', project_id: project.id, sprint_id: version.id }, class: 'icon icon-edit'
         snippet += '</span>'
 
         # This wouldn't be necesary if the schedules plugin didn't disable the

@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -22,40 +22,30 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 
-import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
+import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from "@angular/common";
 import {AvatarUploadFormComponent} from "./avatar-upload-form/avatar-upload-form.component";
 import {HookService} from "../../hook-service";
 
-export function initializeAvatarsPlugin(injector:Injector) {
-  return () => {
+@NgModule({
+    imports: [
+      CommonModule,
+    ],
+    declarations: [
+        AvatarUploadFormComponent
+    ]
+})
+export class PluginModule {
+  constructor(injector:Injector) {
     const hookService = injector.get(HookService);
     hookService.register('openProjectAngularBootstrap', () => {
       return [
         { selector: 'avatar-upload-form', cls: AvatarUploadFormComponent }
       ];
     });
-
   }
-}
-
-@NgModule({
-    imports: [
-      CommonModule,
-    ],
-    providers: [
-      { provide: APP_INITIALIZER, useFactory: initializeAvatarsPlugin, deps: [Injector], multi: true },
-    ],
-    declarations: [
-        AvatarUploadFormComponent
-    ],
-    entryComponents: [
-        AvatarUploadFormComponent
-    ]
-})
-export class PluginModule {
 }
 
 

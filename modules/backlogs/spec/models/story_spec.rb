@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
@@ -46,14 +39,14 @@ describe Story, type: :model do
   let(:issue_priority) { @issue_priority ||= FactoryBot.create(:priority) }
   let(:task_type) { FactoryBot.create(:type_task) }
   let(:task) {
-    FactoryBot.create(:story, fixed_version: version,
+    FactoryBot.create(:story, version: version,
                                project: project,
                                status: status1,
                                type: task_type,
                                priority: issue_priority)
   }
   let(:story1) {
-    FactoryBot.create(:story, fixed_version: version,
+    FactoryBot.create(:story, version: version,
                                project: project,
                                status: status1,
                                type: type_feature,
@@ -61,7 +54,7 @@ describe Story, type: :model do
   }
 
   let(:story2) {
-    FactoryBot.create(:story, fixed_version: version,
+    FactoryBot.create(:story, version: version,
                                project: project,
                                status: status1,
                                type: type_feature,
@@ -107,7 +100,7 @@ describe Story, type: :model do
         before do
           version2
           story1
-          story2.fixed_version_id = version2.id
+          story2.version_id = version2.id
           story2.save!
         end
 
@@ -123,7 +116,7 @@ describe Story, type: :model do
           version2
           story1
 
-          story2.fixed_version_id = version2.id
+          story2.version_id = version2.id
           story2.save!
         end
 
@@ -142,7 +135,7 @@ describe Story, type: :model do
           other_project = FactoryBot.create(:project)
           version2.update! project_id: other_project.id
 
-          story2.fixed_version_id = version2.id
+          story2.version_id = version2.id
           story2.project = other_project
           # reset memoized versions to reflect changes above
           story2.instance_variable_set('@assignable_versions', nil)

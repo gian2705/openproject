@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -47,7 +47,7 @@ module API
 
             ::API::V3::Relations::RelationCollectionRepresenter.new(
               relations,
-              api_v3_paths.work_package_relations(@work_package.id),
+              self_link: api_v3_paths.work_package_relations(@work_package.id),
               current_user: current_user
             )
           end

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,9 +30,9 @@
 require 'uri'
 
 module OpenProject
-  module Scm
+  module SCM
     module Adapters
-      class Subversion < ::OpenProject::Scm::Adapters::Base
+      class Subversion < ::OpenProject::SCM::Adapters::Base
         include LocalClient
 
         def client_command
@@ -93,23 +93,23 @@ module OpenProject
         # Checks the status of this repository and throws unless it can be accessed
         # correctly by the adapter.
         #
-        # @raise [ScmUnavailable] raised when repository is unavailable.
+        # @raise [SCMUnavailable] raised when repository is unavailable.
         def check_availability!
           # Check whether we can access svn repository uuid
           popen3(['info', '--xml', target]) do |stdout, stderr|
             doc = Nokogiri::XML(stdout.read)
 
-            raise Exceptions::ScmEmpty if doc.at_xpath('/info/entry/commit[@revision="0"]')
+            raise Exceptions::SCMEmpty if doc.at_xpath('/info/entry/commit[@revision="0"]')
 
             return if doc.at_xpath('/info/entry/repository/uuid')
 
             stderr.each_line do |l|
               Rails.logger.error("SVN access error: #{l}") if l =~ /E\d+:/
-              raise Exceptions::ScmUnauthorized.new if l.include?('E215004: Authentication failed')
+              raise Exceptions::SCMUnauthorized.new if l.include?('E215004: Authentication failed')
             end
           end
 
-          raise Exceptions::ScmUnavailable
+          raise Exceptions::SCMUnavailable
         end
 
         ##
@@ -272,7 +272,7 @@ module OpenProject
           return if kind == 'dir' && revision.time.nil?
 
           Entry.new(
-            name: URI.unescape(name),
+            name: CGI.unescape(name),
             path: ((path.empty? ? '' : "#{path}/") + name),
             kind: kind,
             size: size.empty? ? nil : size.to_i,

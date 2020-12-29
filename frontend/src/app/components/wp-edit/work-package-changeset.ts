@@ -1,16 +1,15 @@
 import {WorkPackageResource} from "core-app/modules/hal/resources/work-package-resource";
 import {ResourceChangeset} from "core-app/modules/fields/changeset/resource-changeset";
+import {SchemaResource} from "core-app/modules/hal/resources/schema-resource";
+import { WorkPackageSchemaProxy } from 'core-app/modules/hal/schemas/work-package-schema-proxy';
 
 export class WorkPackageChangeset extends ResourceChangeset<WorkPackageResource> {
 
   public setValue(key:string, val:any) {
     super.setValue(key, val);
 
-    // Update the form for fields that may alter the form itself
-    // when the work package is new. Otherwise, the save request afterwards
-    // will update the form automatically.
-    if (this.pristineResource.isNew && (key === 'project' || key === 'type')) {
-      this.updateForm().then(() => this.push());
+    if (key === 'project' || key === 'type') {
+      this.updateForm();
     }
   }
 
@@ -34,5 +33,16 @@ export class WorkPackageChangeset extends ResourceChangeset<WorkPackageResource>
     super.setNewDefaultFor(key, val);
   }
 
-
+  /**
+   * Get the best schema currently available, either the default resource schema (must exist).
+   * If loaded, return the form schema, which provides better information on writable status
+   * and contains available values.
+   */
+  public get schema():SchemaResource {
+    if (this.form$.hasValue()) {
+      return WorkPackageSchemaProxy.create(super.schema, this.projectedResource);
+    } else {
+      return super.schema;
+    }
+  }
 }

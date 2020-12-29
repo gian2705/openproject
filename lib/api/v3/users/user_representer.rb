@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -48,6 +48,8 @@ module API
         self_link
 
         link :showUser do
+          next if represented.locked?
+
           {
             href: api_v3_paths.show_user(represented.id),
             type: 'text/html'
@@ -136,8 +138,7 @@ module API
 
         property :mail,
                  as: :email,
-                 render_nil: true,
-                 getter: ->(*) { pref.hide_mail ? nil : mail }
+                 cache_if: -> { !represented.pref.hide_mail || current_user_is_admin_or_self }
 
         property :avatar,
                  exec_context: :decorator,
@@ -147,7 +148,8 @@ module API
         property :status,
                  getter: ->(*) { status_name },
                  setter: ->(fragment:, represented:, **) { represented.status = User::STATUSES[fragment.to_sym] },
-                 render_nil: true
+                 render_nil: true,
+                 cache_if: -> { current_user_is_admin_or_self }
 
         property :identity_url,
                  exec_context: :decorator,
@@ -155,6 +157,13 @@ module API
                  getter: ->(*) { represented.identity_url },
                  setter: ->(fragment:, represented:, **) { represented.identity_url = fragment },
                  render_nil: true,
+                 cache_if: -> { current_user_is_admin_or_self }
+
+        property :language,
+                 exec_context: :decorator,
+                 render_nil: false,
+                 getter: ->(*) { represented.language },
+                 setter: ->(fragment:, represented:, **) { represented.language = fragment },
                  cache_if: -> { current_user_is_admin_or_self }
 
         # Write-only properties
@@ -169,7 +178,7 @@ module API
         ##
         # Used while parsing JSON to initialize `auth_source_id` through the given link.
         def initialize_embedded_links!(data)
-          auth_source_id = parse_auth_source_id data, "authSource"
+          auth_source_id = parse_auth_source_id data, "auth_source"
 
           if auth_source_id
             auth_source = AuthSource.find_by_unique auth_source_id

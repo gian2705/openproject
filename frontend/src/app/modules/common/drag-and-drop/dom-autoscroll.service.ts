@@ -31,9 +31,12 @@ export class DomAutoscrollService {
 
   public init() {
     jQuery(window).on('mousemove.domautoscroll touchmove.domautoscroll', (evt:any) => {
-      this.pointCB(evt);
-      this.onMove(evt);
+      if (this.down) {
+        this.pointCB(evt);
+        this.onMove(evt);
+      }
     });
+    jQuery(window).on('mousedown.domautoscroll touchstart.domautoscroll', () => this.down = true);
     jQuery(window).on('mouseup.domautoscroll touchend.domautoscroll', () => this.onUp());
     jQuery(window).on('scroll.domautoscroll', (evt:any) => this.setScroll(evt));
   }
@@ -45,11 +48,19 @@ export class DomAutoscrollService {
     this.cleanAnimation();
   }
 
-  public add(el:Element) {
-    this.elements.push(el);
+  public add(el:Element|Element[]) {
+    if (Array.isArray(el)) {
+      this.elements = this.elements.concat(el);
+
+      // Remove duplicates
+      this.elements = Array.from(new Set(this.elements));
+    } else {
+      this.elements.push(el);
+    }
   }
 
   public onUp() {
+    this.down = false;
     cancelAnimationFrame(this.animationFrame);
     cancelAnimationFrame(this.windowAnimationFrame);
   }

@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -79,23 +79,13 @@ class WorkPackages::ScheduleDependency
     self.known_work_packages_by_id = known_work_packages.group_by(&:id)
     self.known_work_packages_by_parent_id = known_work_packages.group_by(&:parent_id)
 
-    new_dependencies = add_dependencies(following)
-
-    if new_dependencies.any?
-      load_all_following(new_dependencies.keys)
-    end
+    add_dependencies(following)
   end
 
   def load_following(work_packages)
-    # include associations required for journal creation later on
     WorkPackage
-      .hierarchy_tree_following(work_packages)
-      .includes(:custom_values,
-                :attachments,
-                :type,
-                :project,
-                :journals,
-                parent_relation: :from,
+      .for_scheduling(work_packages)
+      .includes(parent_relation: :from,
                 follows_relations: :to)
   end
 
@@ -127,11 +117,9 @@ class WorkPackages::ScheduleDependency
 
     moved = find_moved(added)
 
-    newly_added = moved.except(*dependencies.keys)
+    moved.except(*dependencies.keys)
 
     dependencies.merge!(moved)
-
-    newly_added
   end
 
   class Dependency

@@ -3,9 +3,10 @@ vi:
     grid:
       add_widget: 'Add widget'
       remove: 'Remove widget'
+      configure: 'Configure widget'
       upsale:
-        text: "Some widgets, like the work package graph widget, are only available in the "
-        link: 'enterprise edition.'
+        text: "Một số widget, như widget biểu đồ gói công việc, chỉ có sẵn trong"
+        link: 'Phiên bản doanh nghiệp.'
       widgets:
         custom_text:
           title: 'Custom text'
@@ -30,13 +31,16 @@ vi:
           no_results: 'No custom fields have been defined for projects.'
         project_status:
           title: 'Tình trạng dự án'
-          on_track: 'On track'
-          off_track: 'Off track'
-          at_risk: 'At risk'
-          not_set: 'Not set'
+          on_track: 'Theo dõi'
+          off_track: 'Không theo dõi'
+          at_risk: 'Có rủi ro'
+          not_set: 'Không được thiết lập'
         subprojects:
           title: 'Dự án con'
           no_results: 'No subprojects.'
+        time_entries_current_user:
+          title: 'Thời gian hiện tại (My spent time)'
+          displayed_days: 'Days displayed in the widget:'
         time_entries_list:
           title: 'Thời gian làm việc (trong 7 ngày gần nhất)'
           no_results: 'Không có ghi nhận thời gian làm việc trong 7 ngày gần nhất.'

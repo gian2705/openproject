@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -93,13 +93,6 @@ module ApplicationHelper
     t "status_#{user.status_name}"
   end
 
-  def toggle_link(name, id, options = {}, html_options = {})
-    onclick = "jQuery('##{id}').toggle(); "
-    onclick << (options[:focus] ? "jQuery('##{options[:focus]}').focus(); " : 'this.blur(); ')
-    onclick << 'return false;'
-    link_to_function(name, onclick, html_options)
-  end
-
   def delete_link(url, options = {})
     options = {
       method: :delete,
@@ -115,7 +108,7 @@ module ApplicationHelper
   end
 
   def format_activity_day(date)
-    date == User.current.today ? l(:label_today).titleize : format_date(date)
+    date == User.current.today ? I18n.t(:label_today).titleize : format_date(date)
   end
 
   def format_activity_description(text)
@@ -124,14 +117,10 @@ module ApplicationHelper
       .html_safe
   end
 
-  def format_version_name(version)
-    h(version.to_s_for_project(@project))
-  end
-
   def due_date_distance_in_words(date)
     if date
       label = date < Date.today ? :label_roadmap_overdue : :label_roadmap_due_in
-      l(label, distance_of_date_in_words(Date.today, date))
+      I18n.t(label, value: distance_of_date_in_words(Date.today, date))
     end
   end
 
@@ -260,7 +249,16 @@ module ApplicationHelper
 
   def authoring(created, author, options = {})
     label = options[:label] || :label_added_time_by
-    l(label, author: link_to_user(author), age: time_tag(created)).html_safe
+    I18n.t(label, author: link_to_user(author), age: time_tag(created)).html_safe
+  end
+
+  def authoring_at(created, author)
+    return if author.nil?
+
+    I18n.t(:'js.label_added_time_by',
+           author: author.name,
+           age: created,
+           authorLink: user_path(author)).html_safe
   end
 
   def time_tag(time)
@@ -293,7 +291,7 @@ module ApplicationHelper
     formats = capture(Redmine::Views::OtherFormatsBuilder.new(self), &block)
     unless formats.nil? || formats.strip.empty?
       content_tag 'p', class: 'other-formats' do
-        (l(:label_export_to) + formats).html_safe
+        (I18n.t(:label_export_to) + formats).html_safe
       end
     end
   end
@@ -301,7 +299,7 @@ module ApplicationHelper
   # Returns the theme, controller name, and action as css classes for the
   # HTML body.
   def body_css_classes
-    css = ['theme-' + OpenProject::Design.identifier.to_s]
+    css = ['theme-' + OpenProject::CustomStyles::Design.identifier.to_s]
 
     if params[:controller] && params[:action]
       css << 'controller-' + params[:controller]
@@ -373,9 +371,9 @@ module ApplicationHelper
   end
 
   def check_all_links(form_name)
-    link_to_function(l(:button_check_all), "checkAll('#{form_name}', true)") +
+    link_to_function(t(:button_check_all), "OpenProject.helpers.checkAll('#{form_name}', true)") +
       ' | ' +
-      link_to_function(l(:button_uncheck_all), "checkAll('#{form_name}', false)")
+      link_to_function(t(:button_uncheck_all), "OpenProject.helpers.checkAll('#{form_name}', false)")
   end
 
   def current_layout
@@ -457,28 +455,6 @@ module ApplicationHelper
   #   defaults to no index, follow, and no archive
   def robot_exclusion_tag(content = 'NOINDEX,FOLLOW,NOARCHIVE')
     "<meta name='ROBOTS' content='#{h(content)}' />".html_safe
-  end
-
-  # Returns true if arg is expected in the API response
-  def include_in_api_response?(arg)
-    unless @included_in_api_response
-      param = params[:include]
-      @included_in_api_response = param.is_a?(Array) ? param.map(&:to_s) : param.to_s.split(',')
-      @included_in_api_response.map!(&:strip)
-    end
-    @included_in_api_response.include?(arg.to_s)
-  end
-
-  # Returns options or nil if nometa param or X-OpenProject-Nometa header
-  # was set in the request
-  def api_meta(options)
-    if params[:nometa].present? || request.headers['X-OpenProject-Nometa']
-      # compatibility mode for activeresource clients that raise
-      # an error when deserializing an array with attributes
-      nil
-    else
-      options
-    end
   end
 
   #

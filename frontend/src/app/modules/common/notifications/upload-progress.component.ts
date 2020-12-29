@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -26,23 +26,20 @@
 // See docs/COPYRIGHT.rdoc for more details.
 //++
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {
-  UploadFile,
-  UploadHttpEvent,
-  UploadInProgress
-} from "core-components/api/op-file-upload/op-file-upload.service";
-import {untilComponentDestroyed} from "ng2-rx-componentdestroyed";
+import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {UploadFile, UploadHttpEvent, UploadInProgress} from "core-components/api/op-file-upload/op-file-upload.service";
 import {HttpErrorResponse, HttpEventType, HttpProgressEvent} from "@angular/common/http";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {debugLog} from "core-app/helpers/debug_output";
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
 
 @Component({
   selector: 'notifications-upload-progress',
   template: `
     <li>
       <span class="filename" [textContent]="fileName"></span>
-      <progress [hidden]="completed" max="100" [value]="value">{{value}}%</progress>
+      <progress max="100" value="0" #progressBar></progress>
+      <p #progressPercentage>0%</p>
       <span class="upload-completed" *ngIf="completed || error">
       <op-icon icon-classes="icon-close" *ngIf="error"></op-icon>
       <op-icon icon-classes="icon-checkmark" *ngIf="completed"></op-icon>
@@ -50,17 +47,31 @@ import {debugLog} from "core-app/helpers/debug_output";
     </li>
   `
 })
-export class UploadProgressComponent implements OnInit, OnDestroy {
+export class UploadProgressComponent extends UntilDestroyedMixin implements OnInit {
   @Input() public upload:UploadInProgress;
   @Output() public onError = new EventEmitter<HttpErrorResponse>();
   @Output() public onSuccess = new EventEmitter<undefined>();
 
+  @ViewChild('progressBar')
+  progressBar:ElementRef;
+  @ViewChild('progressPercentage')
+  progressPercentage:ElementRef;
+
   public file:UploadFile;
-  public value:number = 0;
   public error:boolean = false;
   public completed = false;
 
+  set value(value:number) {
+    this.progressBar.nativeElement.value = value;
+    this.progressPercentage.nativeElement.innerText = `${value}%`;
+
+    if (value === 100) {
+      this.progressBar.nativeElement.style.display = 'none';
+    }
+  }
+
   constructor(protected readonly I18n:I18nService) {
+    super();
   }
 
   ngOnInit() {
@@ -69,7 +80,7 @@ export class UploadProgressComponent implements OnInit, OnDestroy {
 
     observable
       .pipe(
-        untilComponentDestroyed(this)
+        this.untilDestroyed()
       )
       .subscribe(
         (evt:UploadHttpEvent) => {
@@ -96,11 +107,7 @@ export class UploadProgressComponent implements OnInit, OnDestroy {
       );
   }
 
-  ngOnDestroy() {
-    // Nothing to do.
-  }
-
-  public get fileName():string | undefined {
+  public get fileName():string|undefined {
     return this.file && this.file.name;
   }
 

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -153,7 +153,7 @@ describe API::V3::WorkPackages::Schema::WorkPackageSchemasAPI, type: :request do
                                     type: type)
           self_link = api_v3_paths.work_package_schema(project.id, type.id)
           represented_schema = representer_class.create(schema,
-                                                        self_link,
+                                                        self_link: self_link,
                                                         current_user: current_user)
 
           expect(OpenProject::Cache.fetch(represented_schema.json_cache_key)).to_not be_nil
@@ -185,12 +185,6 @@ describe API::V3::WorkPackages::Schema::WorkPackageSchemasAPI, type: :request do
     let(:schema_path) { api_v3_paths.work_package_sums_schema }
     subject { last_response }
 
-    before do
-      allow(Setting)
-        .to receive(:work_package_list_summable_columns)
-        .and_return(['estimated_hours'])
-    end
-
     context 'logged in' do
       before do
         allow(User).to receive(:current).and_return(current_user)
@@ -206,10 +200,10 @@ describe API::V3::WorkPackages::Schema::WorkPackageSchemasAPI, type: :request do
         it 'should return the schema for estimated_hours' do
           expected = { 'type': 'Duration',
                        'name': 'Estimated time',
-                       'visibility': 'default',
                        'required': false,
                        'hasDefault': false,
-                       'writable': false }
+                       'writable': false,
+                       'options': {} }
           expect(subject.body).to be_json_eql(expected.to_json).at_path('estimatedTime')
         end
       end

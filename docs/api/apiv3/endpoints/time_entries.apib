@@ -1,36 +1,39 @@
 # Group Time Entries
 
 ## Actions
-| Link                | Description                                                          | Condition                                                                                           |
-|:-------------------:| -------------------------------------------------------------------- | ----------------------------------------------------------------                                    |
-| updateImmediately   | Directly perform edits on this time entry                            | **Permission**: 'edit time entries' or 'edit own time entries if the time entry belongs to the user |
-| delete              | Delete this time entry                                               | **Permission**: 'edit time entries' or 'edit own time entries if the time entry belongs to the user |
+| Link                | Description                                                                | Condition                                                                                           |
+|:-------------------:| -------------------------------------------------------------------------- | ----------------------------------------------------------------                                    |
+| updateImmediately   | Directly perform edits on this time entry                                  | **Permission**: 'edit time entries' or 'edit own time entries' if the time entry belongs to the user |
+| update              | Form endpoint that aids in preparing and performing edits on a TimeEntry   | **Permission**: 'edit time entries' or 'edit own time entries' if the time entry belongs to the user |
+| delete              | Delete this time entry                                                     | **Permission**: 'edit time entries' or 'edit own time entries' if the time entry belongs to the user |
 
 ## Linked Properties
 | Link          | Description                                                                                                                             | Type                | Constraints           | Supported operations | Condition                                 |
 | :-----------: | --------------------------------------------------------------                                                                          | -------------       | --------------------- | -------------------- | ----------------------------------------- |
 | self          | This time entry                                                                                                                         | TimeEntry           | not null              | READ                 |                                           |
 | project       | The project the time entry is bundled in. The project might be different from the work package's project once the workPackage is moved. | Project             | not null              | READ / WRITE         |                                           |
-| workPackage   | The work package the time entry is created on                                                                                           | WorkPackage         | not null              | READ                 |                                           |
-| user          | The user the time entry tracks expenditures for                                                                                         | User                | not null              |  READ                |                                           |
-| activity      | The time entry activity the time entry is categorized as                                                                                | TimeEntriesActivity | not null              | READ                 |                                           |
+| workPackage   | The work package the time entry is created on                                                                                           | WorkPackage         |                       | READ / WRITE         |                                           |
+| user          | The user the time entry tracks expenditures for                                                                                         | User                | not null              | READ                 |                                           |
+| activity      | The time entry activity the time entry is categorized as                                                                                | TimeEntriesActivity | not null              | READ / WRITE         |                                           |
 
 Depending on custom fields defined for time entries, additional links might exist.
+
+Time entries are either linked to a work package or to a project. If they are linked to a project, the work package reference is empty. If they are linked to a work package, the project reference is filled up automatically to point to the work package's project.
 
 ## Local Properties
 
 | Property     | Description                                               | Type     | Constraints                                          | Supported operations | Condition                                                   |
 | :----------: | --------------------------------------------------------- | -------- | ---------------------------------------------------- | -------------------- | ----------------------------------------------------------- |
 | id           | Time entries' id                                          | Integer  | x > 0                                                | READ                 |                                                             |
-| comment      | A text provided by the user detailing the time entry      | String   | max 255 characters                                   | READ                 |                                                             |
-| spentOn      | The date the expenditure is booked for                    | Date     |                                                      | READ                 |                                                             |
-| hours        | The time quantifiying the expenditure                     | Time     |                                                      | READ                 |                                                             |
+| comment      | A text provided by the user detailing the time entry      | String   | max 255 characters                                   | READ / WRITE         |                                                             |
+| spentOn      | The date the expenditure is booked for                    | Date     |                                                      | READ / WRITE         |                                                             |
+| hours        | The time quantifiying the expenditure                     | Time     |                                                      | READ / WRITE         |                                                             |
 | createdAt    | The time the time entry was created                       | DateTime |                                                      | READ                 |                                                             |
 | updatedAt    | The time the time entry was last updated                  | DateTime |                                                      | READ                 |                                                             |
 
 Depending on custom fields defined for time entries, additional properties might exist.
 
-## Time entry [/api/v3/time_entries/{id}]
+## View time entry [/api/v3/time_entries/{id}]
 
 + Model
     + Body
@@ -103,13 +106,13 @@ Depending on custom fields defined for time entries, additional properties might
 
 + Response 200 (application/hal+json)
 
-    [Time entry][]
+    [View time entry][]
 
 + Response 404 (application/hal+json)
 
     Returned if the time entry does not exist or if the user does not have permission to view them.
 
-    **Required permission** `view time entries` in the project the time entry is assigned to
+    **Required permission** `view time entries` in the project the time entry is assigned to or `view own time entries` for time entries belonging to the user
 
     + Body
 
@@ -119,6 +122,183 @@ Depending on custom fields defined for time entries, additional properties might
                 "message": "The requested resource could not be found."
             }
 
+## Create time entry [/api/v3/time_entries]
+
+## Create Time entry [POST]
+
+Creates a new time entry applying the attributes provided in the body. Please note that while there is a fixed set of attributes, custom fields can extend a time entries' attributes and are accepted by the endpoint.
+
++ Request Create time entry
+
+    + Body
+
+            {
+                "_links": {
+                  "project": {
+                    "href": "/api/v3/projects/34"
+                  },
+                  "activity": {
+                    "href": "/api/v3/time_entries/activities/18"
+                  },
+                  "workPackage": {
+                    "href": "/api/v3/work_packages/5"
+                  },
+                  "customField4": {
+                    "href": "/api/v3/users/5"
+                  },
+                  "customField51": {
+                    "href": "/api/v3/custom_options/11"
+                  }
+                },
+                "hours": 'PT5H',
+                "comment": {
+                    "raw": "Some comment"
+                },
+                "spentOn": "2017-07-28",
+                "customField1": {
+                  "raw": "some text custom field value"
+                },
+                "customField8": 5
+            }
+
++ Response 201
+
+    [View time entry][]
+
++ Response 400 (application/hal+json)
+
+    Occurs when the client did not send a valid JSON object in the request body.
+
+    + Body
+
+            {
+                "_type": "Error",
+                 "errorIdentifier": "urn:openproject-org:api:v3:errors:InvalidRequestBody",
+                "message": "The request body was not a single JSON object."
+            }
+
++ Response 403 (application/hal+json)
+
+    Returned if the client does not have sufficient permissions.
+
+    **Required permission:** Log time
+
+    + Body
+
+            {
+                "_type": "Error",
+                "errorIdentifier": "urn:openproject-org:api:v3:errors:MissingPermission",
+                "message": "You are not authorized to access this resource."
+            }
+
++ Response 422 (application/hal+json)
+
+    Returned if:
+
+    * a constraint for a property was violated (`PropertyConstraintViolation`)
+
+    + Body
+
+            {
+                "_type": "Error",
+                "errorIdentifier": "urn:openproject-org:api:v3:errors:PropertyConstraintViolation",
+                "message": "Work package is invalid.",
+                "_embedded": {
+                    "details": {
+                        "attribute": "workPackage"
+                    }
+                }
+            }
+
+## Update time entry [/api/v3/time_entries/{id}]
+
+## Update Time entry [PATCH]
+
+Updates the given time entry by applying the attributes provided in the body. Please note that while there is a fixed set of attributes, custom fields can extend a time entries' attributes and are accepted by the endpoint.
+
++ Parameters
+    + id (required, integer, `1`) ... Time entry id
+
++ Request Update time entry
+
+    + Body
+
+            {
+                "_links": {
+                  "activity": {
+                    "href": "/api/v3/time_entries/activities/18"
+                  },
+                  "workPackage": {
+                    "href": "/api/v3/work_packages/5"
+                  },
+                  "customField4": {
+                    "href": "/api/v3/users/5"
+                  },
+                  "customField51": {
+                    "href": "/api/v3/custom_options/11"
+                  }
+                },
+                "hours": "PT5H",
+                "comment": {
+                  "raw": "Some comment"
+                },
+                "spentOn": "2017-07-28",
+                "customField1": {
+                  "raw": "some text custom field value"
+                },
+                "customField8": 5
+            }
+
++ Response 200
+
+    [View time entry][]
+
++ Response 400 (application/hal+json)
+
+    Occurs when the client did not send a valid JSON object in the request body.
+
+    + Body
+
+            {
+                "_type": "Error",
+                "errorIdentifier": "urn:openproject-org:api:v3:errors:InvalidRequestBody",
+                "message": "The request body was not a single JSON object."
+            }
+
++ Response 403 (application/hal+json)
+
+    Returned if the client does not have sufficient permissions.
+
+    **Required permission:** Edit (own) time entries, depending on what time entry is being modified.
+
+    + Body
+
+            {
+                "_type": "Error",
+                "errorIdentifier": "urn:openproject-org:api:v3:errors:MissingPermission",
+                "message": "You are not authorized to access this resource."
+            }
+
++ Response 422 (application/hal+json)
+
+    Returned if:
+
+    * a constraint for a property was violated (`PropertyConstraintViolation`)
+
+    + Body
+
+            {
+                "_type": "Error",
+                "errorIdentifier": "urn:openproject-org:api:v3:errors:PropertyConstraintViolation",
+                "message": "Work package is invalid.",
+                "_embedded": {
+                    "details": {
+                        "attribute": "workPackage"
+                    }
+                }
+            }
+
+## Delete time entry [/api/v3/time_entries/{id}]
 
 ## Delete time entry [DELETE]
 
@@ -147,7 +327,9 @@ Permanently deletes the specified time entry.
 
 + Response 404 (application/hal+json)
 
-    Returned if the time entry does not exist.
+    Returned if the time entry does not exist or if the user does not have sufficient permissions to see the time entry.
+
+    **Required permission** `view time entries` in the project the time entry is assigned to or `view own time entries` for time entries belonging to the user
 
     + Body
 
@@ -158,7 +340,7 @@ Permanently deletes the specified time entry.
             }
 
 
-## Time entries [/api/v3/time_entries{?offset,pageSize,filters,sortBy}]
+## List time entries [/api/v3/time_entries{?offset,pageSize,filters,sortBy}]
 
 + Model
     + Body
@@ -263,11 +445,19 @@ Permanently deletes the specified time entry.
                   },
                   "nextByOffset": {
                       "href": "/api/v3/time_entries?offset=2&pageSize=2"
+                  },
+                  "createTimeEntry": {
+                      "href": "/api/v3/time_entries/form",
+                      "method": "post"
+                  },
+                  "createTimeEntryImmediately": {
+                      "href": "/api/v3/time_entries",
+                      "method": "post"
                   }
               }
             }
 
-## List Time entries [GET]
+## List time entries [GET]
 
 Lists time entries. The time entries returned depend on the filters provided and also on the permission of the requesting user.
 
@@ -281,7 +471,8 @@ Lists time entries. The time entries returned depend on the filters provided and
       + id: Sort by primary key
       + hours: Sort by logged hours
       + spent_on: Sort by spent on date
-      + created_on: Sort by time entry creation datetime
+      + created_at: Sort by time entry creation datetime
+      + updated_at: Sort by the time the time entry was updated last
 
     + filters (optional, string, `[{ "work_package": { "operator": "=", "values": ["1", "2"] } }, { "project": { "operator": "=", "values": ["1"] } }]`) ... JSON specifying filter conditions.
     Accepts the same format as returned by the [queries](#queries) endpoint. Currently supported filters are:
@@ -289,12 +480,13 @@ Lists time entries. The time entries returned depend on the filters provided and
       + project: Filter time entries by project
       + user: Filter time entries by users
       + spent_on: Filter time entries by spent on date
-      + created_on: Filter time entries by creation datetime
+      + created_at: Filter time entries by creation datetime
+      + updated_at: Filter time entries by the last time they where updated
       + activity: Filter time entries by time entry activity
 
 + Response 200 (application/hal+json)
 
-    [Time entries][]
+    [List time entries][]
 
 + Response 400 (application/hal+json)
 
@@ -322,48 +514,372 @@ Lists time entries. The time entries returned depend on the filters provided and
                 "message": "You are not authorized to view this resource."
             }
 
-## Create Time entry [POST]
+## View time entry schema [/api/v3/time_entries/schema]
 
-Creates a new time entry applying the attributes provided in the body. Please note that while there is a fixed set of attributes, custom fields can extend a time entries' attributes and are accepted by the endpoint.
++ Model
+    + Body
 
-There is no form and schema resource for time entries, yet.
+            {
+                "_type": "Schema",
+                "_dependencies": [],
+                "id": {
+                    "type": "Integer",
+                    "name": "ID",
+                    "required": true,
+                    "hasDefault": false,
+                    "writable": false,
+                    "options": {}
+                },
+                "createdAt": {
+                    "type": "DateTime",
+                    "name": "Created on",
+                    "required": true,
+                    "hasDefault": false,
+                    "writable": false,
+                    "options": {}
+                },
+                "updatedAt": {
+                    "type": "DateTime",
+                    "name": "Updated on",
+                    "required": true,
+                    "hasDefault": false,
+                    "writable": false,
+                    "options": {}
+                },
+                "spentOn": {
+                    "type": "Date",
+                    "name": "Date",
+                    "required": true,
+                    "hasDefault": false,
+                    "writable": true,
+                    "options": {}
+                },
+                "hours": {
+                    "type": "Duration",
+                    "name": "Hours",
+                    "required": true,
+                    "hasDefault": false,
+                    "writable": true,
+                    "options": {}
+                },
+                "user": {
+                    "type": "User",
+                    "name": "User",
+                    "required": true,
+                    "hasDefault": false,
+                    "writable": false,
+                    "options": {}
+                },
+                "workPackage": {
+                    "type": "WorkPackage",
+                    "name": "Work package",
+                    "required": false,
+                    "hasDefault": false,
+                    "writable": true,
+                    "_links": {}
+                },
+                "project": {
+                    "type": "Project",
+                    "name": "Project",
+                    "required": false,
+                    "hasDefault": false,
+                    "writable": true,
+                    "_links": {}
+                },
+                "activity": {
+                    "type": "TimeEntriesActivity",
+                    "name": "Activity",
+                    "required": true,
+                    "hasDefault": true,
+                    "writable": true,
+                    "_links": {}
+                },
+                "customField29": {
+                    "type": "String",
+                    "name": "sfsdfsdfsdfsdfdsf",
+                    "required": false,
+                    "hasDefault": false,
+                    "writable": true,
+                    "options": {
+                        "rtl": null
+                    }
+                },
+                "_links": {
+                    "self": {
+                        "href": "/api/v3/time_entries/schema"
+                    }
+                }
+            }
 
-+ Request Create time entry
+## View time entry schema [GET]
+
++ Response 200 (application/hal+json)
+
+    [View time entry schema][]
+
++ Response 403 (application/hal+json)
+
+    Returned if the client does not have sufficient permissions to see the schema.
+
+    **Required permission:** *log time* or *view time entries* or *edit time entries* or *edit own time entries* on any project
+
+    + Body
+
+            {
+                "_type": "Error",
+                "errorIdentifier": "urn:openproject-org:api:v3:errors:MissingPermission",
+                "message": "You are not authorized to access this resource."
+            }
+
+## Time entry create form [/api/v3/time_entries/form]
+
+This endpoint returns a form allowing a guided creation of new time entries.
+
+For more details and all possible responses see the general specification of [Forms](/api/forms).
+
+## Time entry create form [POST]
+
++ Request Create time entry form
 
     + Body
 
             {
                 "_links": {
-                  "project": {
-                    "href": "/api/v3/projects/34"
-                  },
                   "activity": {
-                    "href": "/api/v3/time_entries/activities/18",
+                    "href": "/api/v3/time_entries/activities/18"
                   },
                   "workPackage": {
                     "href": "/api/v3/work_packages/5"
-                  },
-                  "customField4": {
-                    "href": "/api/v3/users/5"
-                  },
-                  "customField51": {
-                    "href": "/api/v3/custom_options/11"
                   }
                 },
-                "hours": 'PT5H',
+                "hours": "PT5H",
                 "comment": {
-                    "raw": "Some comment",
+                  "raw": "Some comment"
                 },
                 "spentOn": "2017-07-28",
                 "customField1": {
-                  raw: 'some text custom field value'
+                  "raw": "some text custom field value"
                 },
                 "customField8": 5
             }
 
-+ Response 201
++ Response 200 (application/hal+json)
 
-    [Time entry][]
+    + Body
+
+            {
+                "_type": "Form",
+                "_embedded": {
+                    "payload": {
+                        {
+                            "_links": {
+                              "project": {
+                                  "href": "/api/v3/projects/1",
+                                  "title": "Some project"
+                              },
+                              "activity": {
+                                "href": "/api/v3/time_entries/activities/18",
+                                "title": "Management"
+                              },
+                              "workPackage": {
+                                "href": "/api/v3/work_packages/5",
+                                "title": "non sed quis id vel quia culpa ipsam"
+                              }
+                            },
+                            "hours": "PT5H",
+                            "comment": {
+                                "format": "plain",
+                                "raw": "Some comment",
+                                "html": "<p>Some comment</p>"
+                            },
+                            "spentOn": "2017-07-28",
+                            "customField1": {
+                              "format": "markdown",
+                              "raw": "some text custom field value"
+                              "html": "<p>some text custom field value</p>"
+                            },
+                            "customField8": 5
+                        }
+                    },
+                    "schema": {
+                        "_type": "Schema",
+                        "_dependencies": [],
+                        "id": {
+                            "type": "Integer",
+                            "name": "ID",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": false,
+                            "options": {}
+                        },
+                        "createdAt": {
+                            "type": "DateTime",
+                            "name": "Created on",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": false,
+                            "options": {}
+                        },
+                        "updatedAt": {
+                            "type": "DateTime",
+                            "name": "Updated on",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": false,
+                            "options": {}
+                        },
+                        "spentOn": {
+                            "type": "Date",
+                            "name": "Date",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": true,
+                            "options": {}
+                        },
+                        "hours": {
+                            "type": "Duration",
+                            "name": "Hours",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": true,
+                            "options": {}
+                        },
+                        "user": {
+                            "type": "User",
+                            "name": "User",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": false,
+                            "options": {}
+                        },
+                        "workPackage": {
+                            "type": "WorkPackage",
+                            "name": "Work package",
+                            "required": false,
+                            "hasDefault": false,
+                            "writable": true,
+                            "_links": {
+                                "allowedValues": {
+                                    "href": "/api/v3/work_packages?filters=%5B%7B%22project%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%221%22%5D%7D%7D%5D"
+                                }
+                            }
+                        },
+                        "project": {
+                            "type": "Project",
+                            "name": "Project",
+                            "required": false,
+                            "hasDefault": false,
+                            "writable": true,
+                            "_links": {
+                                "allowedValues": {
+                                    "href": "/api/v3/time_entries/available_projects"
+                                }
+                            }
+                        },
+                        "activity": {
+                            "type": "TimeEntriesActivity",
+                            "name": "Activity",
+                            "required": true,
+                            "hasDefault": true,
+                            "writable": true,
+                            "_embedded": {
+                                "allowedValues": [
+                                    {
+                                        "_type": "TimeEntriesActivity",
+                                        "id": 18,
+                                        "name": "Management",
+                                        "position": 1,
+                                        "default": true,
+                                        "_links": {
+                                            "self": {
+                                                "href": "/api/v3/time_entries/activities/18",
+                                                "title": "Management"
+                                            },
+                                            "projects": [
+                                                {
+                                                    "href": "/api/v3/projects/some-project",
+                                                    "title": "Some project"
+                                                },
+                                                {
+                                                    "href": "/api/v3/projects/some-other-project",
+                                                    "title": "Some other project"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "_type": "TimeEntriesActivity",
+                                        "id": 23,
+                                        "name": "Implementation",
+                                        "position": 1,
+                                        "default": true,
+                                        "_links": {
+                                            "self": {
+                                                "href": "/api/v3/time_entries/activities/23",
+                                                "title": "Implementation"
+                                            },
+                                            "projects": [
+                                                {
+                                                    "href": "/api/v3/projects/some-project",
+                                                    "title": "Some project"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "_links": {
+                                "allowedValues": [
+                                    {
+                                        "href": "/api/v3/time_entries/activities/18",
+                                        "title": "Management"
+                                    },
+                                    {
+                                        "href": "/api/v3/time_entries/activities/23",
+                                        "title": "Implementation"
+                                    }
+                                ]
+                            }
+                        },
+                        "customField1": {
+                            "type": "Formattable",
+                            "name": "Some formattable",
+                            "required": false,
+                            "hasDefault": false,
+                            "writable": true,
+                            "options": {
+                                "rtl": null
+                            }
+                        },
+                        "customField8": {
+                            "type": "Integer",
+                            "name": "Some integer",
+                            "required": false,
+                            "hasDefault": false,
+                            "writable": true,
+                            "options": {
+                                "rtl": null
+                            }
+                        },
+                        "_links": {}
+                    },
+                    "validationErrors": {}
+                },
+                "_links": {
+                    "self": {
+                        "href": "/api/v3/time_entries/form",
+                        "method": "post"
+                    },
+                    "validate": {
+                        "href": "/api/v3/time_entries/form",
+                        "method": "post"
+                    },
+                    "commit": {
+                        "href": "/api/v3/time_entries",
+                        "method": "post"
+                    }
+                }
+            }
 
 + Response 400 (application/hal+json)
 
@@ -381,7 +897,7 @@ There is no form and schema resource for time entries, yet.
 
     Returned if the client does not have sufficient permissions.
 
-    **Required permission:** Log time
+    **Required permission:** *log time* in any project
 
     + Body
 
@@ -391,64 +907,249 @@ There is no form and schema resource for time entries, yet.
                 "message": "You are not authorized to access this resource."
             }
 
-+ Response 422 (application/hal+json)
+## Time entry update form [/api/v3/time_entries/:id/form]
 
-    Returned if:
+This endpoint returns a form allowing a guided update of existing time entries.
 
-    * a constraint for a property was violated (`PropertyConstraintViolation`)
+For more details and all possible responses see the general specification of [Forms](/api/forms).
 
-    + Body
+## Time entry update form [POST]
 
-            {
-                "_type": "Error",
-                "errorIdentifier": "urn:openproject-org:api:v3:errors:PropertyConstraintViolation",
-                "message": "Work package is invalid.",
-                "_embedded": {
-                    "details": {
-                        "attribute"=>"workPackage"
-                    }
-                }
-            }
++ Parameters
+    + id (required, integer, `1`) ... time entries activity id
 
-## Update Time entry [PATCH]
-
-Updates the given time entry by applying the attributes provided in the body. Please note that while there is a fixed set of attributes, custom fields can extend a time entries' attributes and are accepted by the endpoint.
-
-There is no form and schema resource for time entries, yet.
-
-+ Request Update time entry
++ Request Create time entry form
 
     + Body
 
             {
                 "_links": {
-                  "activity": {
-                    "href": "/api/v3/time_entries/activities/18",
-                  },
                   "workPackage": {
-                    "href": "/api/v3/work_packages/5"
-                  },
-                  "customField4": {
-                    "href": "/api/v3/users/5"
-                  },
-                  "customField51": {
-                    "href": "/api/v3/custom_options/11"
+                    "href": "/api/v3/work_packages/9"
                   }
                 },
-                "hours": 'PT5H',
-                "comment": {
-                  "raw": "Some comment",
-                },
-                "spentOn": "2017-07-28",
+                "hours": "PT8H",
                 "customField1": {
-                  raw: 'some text custom field value'
-                },
-                "customField8": 5
+                  "raw": "some altered text custom field value"
             }
 
-+ Response 200
++ Response 200 (application/hal+json)
 
-    [Time entry][]
+    + Body
+
+            {
+                "_type": "Form",
+                "_embedded": {
+                    "payload": {
+                        {
+                            "_links": {
+                              "project": {
+                                  "href": "/api/v3/projects/1",
+                                  "title": "Some project"
+                              },
+                              "activity": {
+                                "href": "/api/v3/time_entries/activities/18",
+                                "title": "Management"
+                              },
+                              "workPackage": {
+                                "href": "/api/v3/work_packages/9",
+                                "title": "The updated work package"
+                              }
+                            },
+                            "hours": "PT8H",
+                            "comment": {
+                                "format": "plain",
+                                "raw": "Some comment",
+                                "html": "<p>Some comment</p>"
+                            },
+                            "spentOn": "2017-07-28",
+                            "customField1": {
+                              "format": "markdown",
+                              "raw": "some altered text custom field value"
+                              "html": "<p>some altered text custom field value</p>"
+                            },
+                            "customField8": 5
+                        }
+                    },
+                    "schema": {
+                        "_type": "Schema",
+                        "_dependencies": [],
+                        "id": {
+                            "type": "Integer",
+                            "name": "ID",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": false,
+                            "options": {}
+                        },
+                        "createdAt": {
+                            "type": "DateTime",
+                            "name": "Created on",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": false,
+                            "options": {}
+                        },
+                        "updatedAt": {
+                            "type": "DateTime",
+                            "name": "Updated on",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": false,
+                            "options": {}
+                        },
+                        "spentOn": {
+                            "type": "Date",
+                            "name": "Date",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": true,
+                            "options": {}
+                        },
+                        "hours": {
+                            "type": "Duration",
+                            "name": "Hours",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": true,
+                            "options": {}
+                        },
+                        "user": {
+                            "type": "User",
+                            "name": "User",
+                            "required": true,
+                            "hasDefault": false,
+                            "writable": false,
+                            "options": {}
+                        },
+                        "workPackage": {
+                            "type": "WorkPackage",
+                            "name": "Work package",
+                            "required": false,
+                            "hasDefault": false,
+                            "writable": true,
+                            "_links": {
+                                "allowedValues": {
+                                    "href": "/api/v3/work_packages?filters=%5B%7B%22project%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%221%22%5D%7D%7D%5D"
+                                }
+                            }
+                        },
+                        "project": {
+                            "type": "Project",
+                            "name": "Project",
+                            "required": false,
+                            "hasDefault": false,
+                            "writable": true,
+                            "_links": {
+                                "allowedValues": {
+                                    "href": "/api/v3/time_entries/available_projects"
+                                }
+                            }
+                        },
+                        "activity": {
+                            "type": "TimeEntriesActivity",
+                            "name": "Activity",
+                            "required": true,
+                            "hasDefault": true,
+                            "writable": true,
+                            "_embedded": {
+                                "allowedValues": [
+                                    {
+                                        "_type": "TimeEntriesActivity",
+                                        "id": 18,
+                                        "name": "Management",
+                                        "position": 1,
+                                        "default": true,
+                                        "_links": {
+                                            "self": {
+                                                "href": "/api/v3/time_entries/activities/18",
+                                                "title": "Management"
+                                            },
+                                            "projects": [
+                                                {
+                                                    "href": "/api/v3/projects/some-project",
+                                                    "title": "Some project"
+                                                },
+                                                {
+                                                    "href": "/api/v3/projects/some-other-project",
+                                                    "title": "Some other project"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "_type": "TimeEntriesActivity",
+                                        "id": 23,
+                                        "name": "Implementation",
+                                        "position": 1,
+                                        "default": true,
+                                        "_links": {
+                                            "self": {
+                                                "href": "/api/v3/time_entries/activities/23",
+                                                "title": "Implementation"
+                                            },
+                                            "projects": [
+                                                {
+                                                    "href": "/api/v3/projects/some-project",
+                                                    "title": "Some project"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "_links": {
+                                "allowedValues": [
+                                    {
+                                        "href": "/api/v3/time_entries/activities/18",
+                                        "title": "Management"
+                                    },
+                                    {
+                                        "href": "/api/v3/time_entries/activities/23",
+                                        "title": "Implementation"
+                                    }
+                                ]
+                            }
+                        },
+                        "customField1": {
+                            "type": "Formattable",
+                            "name": "Some formattable",
+                            "required": false,
+                            "hasDefault": false,
+                            "writable": true,
+                            "options": {
+                                "rtl": null
+                            }
+                        },
+                        "customField8": {
+                            "type": "Integer",
+                            "name": "Some integer",
+                            "required": false,
+                            "hasDefault": false,
+                            "writable": true,
+                            "options": {
+                                "rtl": null
+                            }
+                        },
+                        "_links": {}
+                    },
+                    "validationErrors": {}
+                },
+                "_links": {
+                    "self": {
+                        "href": "/api/v3/time_entries/42/form",
+                        "method": "post"
+                    },
+                    "validate": {
+                        "href": "/api/v3/time_entries/42/form",
+                        "method": "post"
+                    },
+                    "commit": {
+                        "href": "/api/v3/time_entries/42",
+                        "method": "post"
+                    }
+                }
+            }
 
 + Response 400 (application/hal+json)
 
@@ -464,9 +1165,9 @@ There is no form and schema resource for time entries, yet.
 
 + Response 403 (application/hal+json)
 
-    Returned if the client does not have sufficient permissions.
+    Returned if the client does not have sufficient permissions to edit the time entry.
 
-    **Required permission:** Edit (own) time entries, depending on what time entry is being modified.
+    **Required permission:** *edit time entries* for every time entry of a project, or *edit own time entries* for time entries belonging to the user.
 
     + Body
 
@@ -476,26 +1177,69 @@ There is no form and schema resource for time entries, yet.
                 "message": "You are not authorized to access this resource."
             }
 
-+ Response 422 (application/hal+json)
++ Response 404 (application/hal+json)
 
-    Returned if:
+    Returned if the time entry does not exist or if the client does not have sufficient permissions to view it.
 
-    * a constraint for a property was violated (`PropertyConstraintViolation`)
+    **Required permission** `view time entries` in the project the time entry is assigned to or `view own time entries` for time entries belonging to the user
 
     + Body
 
             {
                 "_type": "Error",
-                "errorIdentifier": "urn:openproject-org:api:v3:errors:PropertyConstraintViolation",
-                "message": "Work package is invalid.",
-                "_embedded": {
-                    "details": {
-                        "attribute"=>"workPackage"
-                    }
-                }
+                "errorIdentifier": "urn:openproject-org:api:v3:errors:NotFound",
+                "message": "The requested resource could not be found."
             }
 
+## Available projects for time entries [/api/v3/time_entries/available_projects]
 
++ Model
+    + Body
+
+            {
+              "_links": {
+                "self": {
+                  "href": "/api/v3/time_entries/available_projects"
+                }
+              },
+              "_type": "Collection",
+              "total": 2,
+              "count": 2,
+              "_embedded": {
+                "elements": [
+                  {
+                    "_type": "Project",
+                    << omitted for brevity >>
+                  },
+                  {
+                    "_type": "Project",
+                    << omitted for brevity >>
+                  }
+                ]
+              }
+            }
+
+## Available projects for time entries [GET]
+
+Gets a list of projects in which a time entry can be created in or be assigned to on update. The list contains all projects in which the user issuing the request has the necessary permissions.
+
++ Response 200 (application/hal+json)
+
+    [Available projects for time entries][]
+
++ Response 403 (application/hal+json)
+
+    Returned if the client does not have sufficient permissions.
+
+    **Required permission:** *log time*, *edit time entries* or *edit own time entries* in any project
+
+    + Body
+
+            {
+                "_type": "Error",
+                "errorIdentifier": "urn:openproject-org:api:v3:errors:MissingPermission",
+                "message": "You are not authorized to access this resource."
+            }
 
 
 # Group Time Entry Activities
@@ -522,7 +1266,7 @@ None
 | default      | Flag to signal whether this activity is the default activity | Boolean  |                                                      | READ                 |                                                             |
 
 
-## Time entries activity [/api/v3/time_entries/activity/{id}]
+## View time entries activity [/api/v3/time_entries/activity/{id}]
 
 + Model
     + Body
@@ -555,14 +1299,15 @@ None
                     ]
                 }
             }
-## View time entries activity[GET]
+
+## View time entries activity [GET]
 
 + Parameters
     + id (required, integer, `1`) ... time entries activity id
 
 + Response 200 (application/hal+json)
 
-    [Time entries activity][]
+    [View time entries activity][]
 
 + Response 404 (application/hal+json)
 

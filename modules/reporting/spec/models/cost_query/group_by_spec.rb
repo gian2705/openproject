@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Reporting Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2010 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,6 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
@@ -30,7 +39,7 @@ describe CostQuery, type: :model, reporting_query_helper: true do
     time_entry2.save!
     time_entry2
   end
-  let!(:cost_object1) { FactoryBot.create(:cost_object, project: project1) }
+  let!(:budget1) { FactoryBot.create(:budget, project: project1) }
   let!(:cost_entry1) { FactoryBot.create(:cost_entry, work_package: work_package1, project: project1, spent_on: Date.new(2013, 2, 3)) }
   let!(:cost_entry2) do
     cost_entry2 =  cost_entry1.dup
@@ -46,7 +55,7 @@ describe CostQuery, type: :model, reporting_query_helper: true do
     time_entry4.save!
     time_entry4
   end
-  let!(:cost_object2) { FactoryBot.create(:cost_object, project: project2) }
+  let!(:budget2) { FactoryBot.create(:budget, project: project2) }
   let!(:cost_entry3) { FactoryBot.create(:cost_entry, work_package: work_package2, project: project2, spent_on: Date.new(2012, 1, 1)) }
   let!(:cost_entry4) do
     cost_entry4 =  cost_entry3.dup
@@ -118,8 +127,8 @@ describe CostQuery, type: :model, reporting_query_helper: true do
       expect(@query.result.size).to eq(1)
     end
 
-    it "should compute group_by CostObject" do
-      @query.group_by :cost_object_id
+    it "should compute group_by Budget" do
+      @query.group_by :budget_id
       expect(@query.result.size).to eq(1)
     end
 

@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Component, Inject} from '@angular/core';
@@ -31,8 +31,6 @@ import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import {WorkPackageInlineCreateService} from "core-components/wp-inline-create/wp-inline-create.service";
 import {WorkPackageInlineCreateComponent} from "core-components/wp-inline-create/wp-inline-create.component";
 import {WorkPackageRelationsService} from "core-components/wp-relations/wp-relations.service";
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
-import {WorkPackageCacheService} from "core-components/work-packages/work-package-cache.service";
 import {WpRelationInlineCreateServiceInterface} from "core-components/wp-relations/embedded/wp-relation-inline-create.service.interface";
 import {WorkPackageResource} from "core-app/modules/hal/resources/work-package-resource";
 import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
@@ -41,6 +39,7 @@ import {UrlParamsHelperService} from "core-components/wp-query/url-params-helper
 import {RelationResource} from "core-app/modules/hal/resources/relation-resource";
 import {HalEventsService} from "core-app/modules/hal/services/hal-events.service";
 import {WorkPackageNotificationService} from "core-app/modules/work_packages/notifications/work-package-notification.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   templateUrl: './wp-relation-inline-add-existing.component.html'
@@ -57,7 +56,7 @@ export class WpRelationInlineAddExistingComponent {
 
   constructor(protected readonly parent:WorkPackageInlineCreateComponent,
               @Inject(WorkPackageInlineCreateService) protected readonly wpInlineCreate:WpRelationInlineCreateServiceInterface,
-              protected wpCacheService:WorkPackageCacheService,
+              protected apiV3Service:APIV3Service,
               protected wpRelations:WorkPackageRelationsService,
               protected notificationService:WorkPackageNotificationService,
               protected halEvents:HalEventsService,
@@ -76,7 +75,11 @@ export class WpRelationInlineAddExistingComponent {
 
     this.wpInlineCreate.add(this.workPackage, newRelationId)
       .then(() => {
-        this.wpCacheService.loadWorkPackage(this.workPackage.id!, true);
+        this
+          .apiV3Service
+          .work_packages
+          .id(this.workPackage)
+          .refresh();
 
         this.halEvents.push(this.workPackage, {
           eventType: 'association',

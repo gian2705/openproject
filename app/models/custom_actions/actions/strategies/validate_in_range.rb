@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module CustomActions::Actions::Strategies::ValidateInRange
@@ -52,20 +52,18 @@ module CustomActions::Actions::Strategies::ValidateInRange
   def validate_smaller_than_maximum(errors)
     if maximum && values[0] > maximum
       errors.add :actions,
-                 I18n.t(:'activerecord.errors.models.custom_actions.smaller_than_or_equal_to',
-                        name: human_name,
-                        count: maximum),
-                 error_symbol: :smaller_than_or_equal_to
+                 :smaller_than_or_equal_to,
+                 name: human_name,
+                 count: maximum
     end
   end
 
   def validate_greater_than_minimum(errors)
     if minimum && values[0] < minimum
       errors.add :actions,
-                 I18n.t(:'activerecord.errors.models.custom_actions.greater_than_or_equal_to',
-                        name: human_name,
-                        count: minimum),
-                 error_symbol: :greater_than_or_equal_to
+                 :greater_than_or_equal_to,
+                 name: human_name,
+                 count: minimum
     end
   end
 end

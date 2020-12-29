@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -44,13 +44,13 @@ describe 'Wysiwyg work package linking',
       visit project_wiki_path(project, :wiki)
     end
 
-    it 'can add tables without headers' do
+    it 'can reference work packages' do
 
       # single hash autocomplete
       editor.click_and_type_slowly "##{work_package.id}"
       editor.click_autocomplete work_package.subject
 
-      expect(editor.editor_element).to have_selector('span.mention', text: "##{work_package.id}")
+      expect(editor.editor_element).to have_selector('a.mention', text: "##{work_package.id}")
 
       # Save wiki page
       click_on 'Save'

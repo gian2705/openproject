@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,6 +28,7 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
+# TODO: use default update base class
 class WorkPackages::UpdateService
   include ::WorkPackages::Shared::UpdateAncestors
   include ::Shared::ServiceContext
@@ -43,7 +44,7 @@ class WorkPackages::UpdateService
   end
 
   def call(send_notifications: true, **attributes)
-    in_context(send_notifications) do
+    in_context(model, send_notifications) do
       update(attributes)
     end
   end

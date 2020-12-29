@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -46,6 +46,13 @@ describe User, 'allowed_to?' do
                                roles: [role2],
                                principal: user)
   }
+  let(:global_permission) { OpenProject::AccessControl.permissions.find { |p| p.global? } }
+  let(:global_role) { FactoryBot.build(:global_role, permissions: [global_permission.name]) }
+  let(:global_member) do
+    FactoryBot.build(:global_member,
+                     principal: user,
+                     roles: [global_role])
+  end
 
   before do
     anonymous_role.save!
@@ -302,7 +309,7 @@ describe User, 'allowed_to?' do
              w/ requesting a controller and action allowed by multiple permissions
              w/ the project being public
              w/ anonymous being allowed the action' do
-      let(:permission) { { controller: '/project_settings', action: 'show' } }
+      let(:permission) { { controller: '/project_settings/categories', action: 'show' } }
 
       before do
         project.public = true
@@ -403,8 +410,27 @@ describe User, 'allowed_to?' do
       end
     end
 
+    context "w/o the user being member in a project
+             w/ the user having the global role
+             w/ the global role having the necessary permission" do
+
+      before do
+        project.save!
+
+        global_role.save!
+
+        global_member.save!
+      end
+
+      it 'is false' do
+        expect(user.allowed_to?(global_permission.name, project)).to be_falsey
+      end
+    end
+
     context 'w/ requesting a controller and action
              w/ the user being allowed the action' do
+      let(:permission) { :view_wiki_pages }
+
       before do
         role.add_permission! permission
 
@@ -414,7 +440,7 @@ describe User, 'allowed_to?' do
       end
 
       it 'should be true' do
-        expect(user.allowed_to?({ controller: 'work_packages', action: 'new' }, project))
+        expect(user.allowed_to?({ controller: 'wiki', action: 'show' }, project))
           .to be_truthy
       end
     end
@@ -486,6 +512,8 @@ describe User, 'allowed_to?' do
     context 'w/ the user being a member in the project
              w/ inquiring for controller and action
              w/ the role having the necessary permission' do
+      let(:permission) { :view_wiki_pages }
+
       before do
         role.add_permission! permission
 
@@ -495,7 +523,7 @@ describe User, 'allowed_to?' do
       end
 
       it 'should be true' do
-        expect(user.allowed_to?({ controller: 'work_packages', action: 'new' }, nil, global: true))
+        expect(user.allowed_to?({ controller: 'wiki', action: 'show' }, nil, global: true))
           .to be_truthy
       end
     end
@@ -531,6 +559,49 @@ describe User, 'allowed_to?' do
       end
     end
 
+    context "w/o the user being member in a project
+             w/ the user having a global role
+             w/ the global role having the necessary permission" do
+      before do
+        global_role.save!
+
+        global_member.save!
+      end
+
+      it 'is true' do
+        expect(user.allowed_to?(global_permission.name, nil, global: true)).to be_truthy
+      end
+    end
+
+    context "w/o the user being member in a project
+             w/ the user having a global role
+             w/o the global role having the necessary permission" do
+
+      before do
+        global_role.permissions = []
+        global_role.save!
+
+        global_member.save!
+      end
+
+      it 'is false' do
+        expect(user.allowed_to?(global_permission.name, nil, global: true)).to be_falsey
+      end
+    end
+
+    context "w/o the user being member in a project
+             w/o the user having the global role
+             w/ the global role having the necessary permission" do
+
+      before do
+        global_role.save!
+      end
+
+      it 'is false' do
+        expect(user.allowed_to?(global_permission.name, nil, global: true)).to be_falsey
+      end
+    end
+
     context 'w/ the user being anonymous
              w/ anonymous being allowed the action' do
       before do
@@ -560,7 +631,7 @@ describe User, 'allowed_to?' do
       end
 
       it 'should be true' do
-        expect(user.allowed_to?({ controller: '/project_settings', action: 'show' }, nil, global: true))
+        expect(user.allowed_to?({ controller: '/project_settings/categories', action: 'show' }, nil, global: true))
           .to be_truthy
       end
     end

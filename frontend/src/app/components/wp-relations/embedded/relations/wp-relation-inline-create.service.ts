@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,24 +23,22 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Injectable, Injector, OnDestroy} from '@angular/core';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {WorkPackageInlineCreateService} from "core-components/wp-inline-create/wp-inline-create.service";
 import {WpRelationInlineAddExistingComponent} from "core-components/wp-relations/embedded/inline/add-existing/wp-relation-inline-add-existing.component";
-import {WorkPackageRelationsHierarchyService} from "core-components/wp-relations/wp-relations-hierarchy/wp-relations-hierarchy.service";
 import {WorkPackageRelationsService} from "core-components/wp-relations/wp-relations.service";
-import {RelationResource} from "core-app/modules/hal/resources/relation-resource";
 import {WpRelationInlineCreateServiceInterface} from "core-components/wp-relations/embedded/wp-relation-inline-create.service.interface";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 @Injectable()
 export class WpRelationInlineCreateService extends WorkPackageInlineCreateService implements WpRelationInlineCreateServiceInterface, OnDestroy {
+  @InjectField() wpRelations:WorkPackageRelationsService;
 
-  protected readonly wpRelations:WorkPackageRelationsService = this.injector.get(WorkPackageRelationsService);
-
-  constructor(protected readonly injector:Injector) {
+  constructor(public injector:Injector) {
     super(injector);
   }
 
@@ -96,12 +94,4 @@ export class WpRelationInlineCreateService extends WorkPackageInlineCreateServic
     reference: this.I18n.t('js.relation_buttons.add_existing'),
     create: this.I18n.t('js.relation_buttons.create_new')
   };
-
-  /**
-   * Ensure hierarchical injected versions of this service correctly unregister
-   */
-  ngOnDestroy() {
-    super.ngOnDestroy();
-  }
-
 }

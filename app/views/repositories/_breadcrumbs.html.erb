@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -52,7 +52,7 @@ dirs.each_with_index do |dir, index|
   rev_text = @changeset.nil? ? @rev : format_revision(@changeset)
 %>
 <span class="repository-bradcrumbs--identifier">
-  <%= "(#{l('repositories.at_identifier', identifier: rev_text)})" if rev_text.present? %>
+  <%= "(#{t('repositories.at_identifier', identifier: rev_text)})" if rev_text.present? %>
 </span>
 
 <% html_title(h(with_leading_slash(path))) -%>

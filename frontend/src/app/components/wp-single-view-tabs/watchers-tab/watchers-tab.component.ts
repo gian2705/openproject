@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,30 +23,28 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit} from '@angular/core';
 import {Transition} from '@uirouter/core';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {HalResource} from 'core-app/modules/hal/resources/hal-resource';
 import {LoadingIndicatorService} from 'core-app/modules/common/loading-indicator/loading-indicator.service';
-import {WorkPackageCacheService} from 'core-components/work-packages/work-package-cache.service';
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
-import {componentDestroyed} from 'ng2-rx-componentdestroyed';
-import {takeUntil} from 'rxjs/operators';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import {WorkPackageWatchersService} from 'core-components/wp-single-view-tabs/watchers-tab/wp-watchers.service';
 import {PathHelperService} from "core-app/modules/common/path-helper/path-helper.service";
 import {AngularTrackingHelpers} from "core-components/angular/tracking-functions";
 import {WorkPackageNotificationService} from "core-app/modules/work_packages/notifications/work-package-notification.service";
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   templateUrl: './watchers-tab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'wp-watchers-tab',
 })
-export class WorkPackageWatchersTabComponent implements OnInit, OnDestroy {
+export class WorkPackageWatchersTabComponent extends UntilDestroyedMixin implements OnInit {
   public workPackageId:string;
   public workPackage:WorkPackageResource;
   public trackByHref = AngularTrackingHelpers.trackByHref;
@@ -74,26 +72,30 @@ export class WorkPackageWatchersTabComponent implements OnInit, OnDestroy {
                      readonly $transition:Transition,
                      readonly notificationService:WorkPackageNotificationService,
                      readonly loadingIndicator:LoadingIndicatorService,
-                     readonly wpCacheService:WorkPackageCacheService,
                      readonly cdRef:ChangeDetectorRef,
-                     readonly pathHelper:PathHelperService) {
+                     readonly pathHelper:PathHelperService,
+                     readonly apiV3Service:APIV3Service) {
+    super();
   }
 
   public ngOnInit() {
     this.$element = jQuery(this.elementRef.nativeElement);
 
     this.workPackageId = this.$transition.params('to').workPackageId;
-    this.wpCacheService.loadWorkPackage(this.workPackageId)
-      .values$()
+    this
+      .apiV3Service
+      .work_packages
+      .id(this.workPackageId)
+      .requireAndStream()
       .pipe(
-        takeUntil(componentDestroyed(this))
+        this.untilDestroyed()
       )
       .subscribe((wp:WorkPackageResource) => {
         this.workPackage = wp;
         this.loadCurrentWatchers();
       });
 
-    this.availableWatchersPath = this.pathHelper.api.v3.work_packages.id(this.workPackageId).available_watchers;
+    this.availableWatchersPath = this.apiV3Service.work_packages.id(this.workPackageId).available_watchers.path;
   }
 
   public loadCurrentWatchers() {
@@ -123,19 +125,24 @@ export class WorkPackageWatchersTabComponent implements OnInit, OnDestroy {
 
 
   public addWatcher(user:any) {
-    this.loadingPromise = this.workPackage.addWatcher.$link.$fetch({user: {href: user.href}})
+    this.loadingPromise = this.workPackage.addWatcher.$link.$fetch({ user: { href: user.href } })
       .then(() => {
         // Forcefully reload the resource to update the watch/unwatch links
         // should the current user have been added
         this.wpWatchersService.require(this.workPackage, true);
-        this.wpCacheService.loadWorkPackage(this.workPackage.id!, true);
+        this
+          .apiV3Service
+          .work_packages
+          .id(this.workPackage)
+          .refresh();
+
         this.cdRef.detectChanges();
       })
       .catch((error:any) => this.notificationService.showError(error, this.workPackage));
   }
 
   public removeWatcher(watcher:any) {
-    this.workPackage.removeWatcher.$link.$prepare({user_id: watcher.id})()
+    this.workPackage.removeWatcher.$link.$prepare({ user_id: watcher.id })()
       .then(() => {
         _.remove(this.watching, (other:HalResource) => {
           return other.href === watcher.href;
@@ -144,13 +151,13 @@ export class WorkPackageWatchersTabComponent implements OnInit, OnDestroy {
         // Forcefully reload the resource to update the watch/unwatch links
         // should the current user have been removed
         this.wpWatchersService.require(this.workPackage, true);
-        this.wpCacheService.loadWorkPackage(this.workPackage.id!, true);
+        this
+          .apiV3Service
+          .work_packages
+          .id(this.workPackage)
+          .refresh();
         this.cdRef.detectChanges();
       })
       .catch((error:any) => this.notificationService.showError(error, this.workPackage));
-  }
-
-  ngOnDestroy() {
-    // Nothing to do
   }
 }

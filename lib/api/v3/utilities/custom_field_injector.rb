@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -34,6 +34,7 @@ module API
       class CustomFieldInjector
         TYPE_MAP = {
           'string' => 'String',
+          'empty' => 'String',
           'text' => 'Formattable',
           'int' => 'Integer',
           'float' => 'Float',
@@ -188,7 +189,8 @@ module API
                         writable: writable,
                         min_length: cf_min_length(custom_field),
                         max_length: cf_max_length(custom_field),
-                        regular_expression: cf_regexp(custom_field)
+                        regular_expression: cf_regexp(custom_field),
+                        options: cf_options(custom_field)
         end
 
         def path_method_for(custom_field)
@@ -303,7 +305,10 @@ module API
                                  represented.project_id.to_s
                                end
 
-            filters = static_filters << { member: { operator: '=', values: [project_id_value.to_s] } }
+            # Careful to not alter the static_filters object here.
+            # It is made available in the closure (which is class level) and would thus
+            # keep the appended filters between requests.
+            filters = static_filters + [{ member: { operator: '=', values: [project_id_value.to_s] } }]
 
             api_v3_paths.path_for(:principals, filters: filters, page_size: 0)
           }
@@ -319,6 +324,12 @@ module API
 
         def cf_regexp(custom_field)
           custom_field.regexp unless custom_field.regexp.blank?
+        end
+
+        def cf_options(custom_field)
+          {
+            rtl: ("true" if custom_field.content_right_to_left)
+          }
         end
 
         def list_schemas_values_callback(custom_field)
@@ -375,9 +386,9 @@ module API
             custom_field_class(custom_fields)
           end
 
-          def create(*args)
-            create_class(args.first, args.last[:current_user])
-              .new(*args)
+          def create(represented, **args)
+            create_class(represented, args[:current_user])
+              .new(represented, **args)
           end
 
           def custom_field_class(custom_fields)

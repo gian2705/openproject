@@ -14,24 +14,25 @@ import {DragAndDropHelpers} from "core-app/modules/common/drag-and-drop/drag-and
 import {WorkPackageViewOrderService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-order.service";
 import {RenderedWorkPackage} from "core-app/modules/work_packages/render-info/rendered-work-package.type";
 import {BrowserDetector} from "core-app/modules/common/browser/browser-detector.service";
-import {WorkPackageCacheService} from "core-components/work-packages/work-package-cache.service";
 import {WorkPackagesListService} from "core-components/wp-list/wp-list.service";
-import {AuthorisationService} from "core-app/modules/common/model-auth/model-auth.service";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
+import {isInsideCollapsedGroup} from "core-components/wp-fast-table/helpers/wp-table-row-helpers";
+import {collapsedGroupClass} from "core-components/wp-fast-table/helpers/wp-table-hierarchy-helpers";
 
 export class DragAndDropTransformer {
 
-  private readonly states:States = this.injector.get(States);
-  private readonly querySpace:IsolatedQuerySpace = this.injector.get(IsolatedQuerySpace);
-  private readonly dragService:DragAndDropService|null = this.injector.get(DragAndDropService, null);
-  private readonly inlineCreateService = this.injector.get(WorkPackageInlineCreateService);
-  private readonly halNotification = this.injector.get(HalResourceNotificationService);
-  private readonly wpTableSortBy = this.injector.get(WorkPackageViewSortByService);
-  private readonly wpTableOrder = this.injector.get(WorkPackageViewOrderService);
-  private readonly browserDetector = this.injector.get(BrowserDetector);
-  private readonly wpCacheService = this.injector.get(WorkPackageCacheService);
-  private readonly wpListService = this.injector.get(WorkPackagesListService);
-
-  private readonly dragActionRegistry = this.injector.get(TableDragActionsRegistryService);
+  @InjectField() private readonly states:States;
+  @InjectField() private readonly querySpace:IsolatedQuerySpace;
+  @InjectField() private readonly inlineCreateService:WorkPackageInlineCreateService;
+  @InjectField() private readonly halNotification:HalResourceNotificationService;
+  @InjectField() private readonly wpTableSortBy:WorkPackageViewSortByService;
+  @InjectField() private readonly wpTableOrder:WorkPackageViewOrderService;
+  @InjectField() private readonly browserDetector:BrowserDetector;
+  @InjectField() private readonly apiV3Service:APIV3Service;
+  @InjectField() private readonly wpListService:WorkPackagesListService;
+  @InjectField() private readonly dragActionRegistry:TableDragActionsRegistryService;
+  @InjectField(DragAndDropService, null) private readonly dragService:DragAndDropService|null;
 
   constructor(public readonly injector:Injector,
               public table:WorkPackageTable) {
@@ -68,13 +69,25 @@ export class DragAndDropTransformer {
         const workPackage = this.states.workPackages.get(wpId).value;
         return !!workPackage && this.actionService.canPickup(workPackage);
       },
-      onMoved: async (el:HTMLElement, target:HTMLElement, source:HTMLElement) => {
+      onMoved: async (el:HTMLElement, target:HTMLElement, source:HTMLElement, sibling:HTMLElement|null) => {
         const wpId:string = el.dataset.workPackageId!;
-        const rowIndex = this.findRowIndex(el);
+        let rowIndex;
 
         try {
-          const workPackage = await this.wpCacheService.require(wpId);
+          const workPackage = await this.apiV3Service.work_packages.id(wpId).get().toPromise();
+
+          if (isInsideCollapsedGroup(sibling)) {
+            const collapsedGroupCSSClass = Array.from(sibling!.classList).find(listClass => listClass.includes(collapsedGroupClass()))!;
+            const collapsedGroupId = collapsedGroupCSSClass.replace(collapsedGroupClass(), '');
+            const collapsedGroupElements = source.getElementsByClassName(collapsedGroupClass(collapsedGroupId));
+            const collapsedGroupLastChild = collapsedGroupElements[collapsedGroupElements.length - 1];
+            rowIndex = this.findRowIndex(collapsedGroupLastChild as HTMLElement);
+          } else {
+            rowIndex = this.findRowIndex(el);
+          }
+
           const newOrder = await this.wpTableOrder.move(this.currentOrder, wpId, rowIndex);
+
           await this.actionService.handleDrop(workPackage, el);
           this.updateRenderedOrder(newOrder);
           this.actionService.onNewOrder(newOrder);
@@ -87,6 +100,8 @@ export class DragAndDropTransformer {
         } catch (e) {
           this.halNotification.handleRawError(e);
 
+          // Restore original element's styles
+          this.actionService.changeShadowElement(el, true);
           // Restore element in from container
           DragAndDropHelpers.reinsert(el, el.dataset.sourceIndex || -1, source);
         }
@@ -98,7 +113,7 @@ export class DragAndDropTransformer {
       },
       onAdded: async (el:HTMLElement) => {
         const wpId:string = el.dataset.workPackageId!;
-        const workPackage = await this.wpCacheService.require(wpId);
+        const workPackage = await this.apiV3Service.work_packages.id(wpId).get().toPromise();
         const rowIndex = this.findRowIndex(el);
 
         return this.actionService
@@ -115,7 +130,7 @@ export class DragAndDropTransformer {
       onCloned: async (clone:HTMLElement, original:HTMLElement) => {
         // Replace clone with one TD of the subject
         const wpId:string = original.dataset.workPackageId!;
-        const workPackage = await this.wpCacheService.require(wpId);
+        const workPackage = await this.apiV3Service.work_packages.id(wpId).get().toPromise();
 
         const colspan = clone.children.length;
         const td = document.createElement('td');
@@ -145,7 +160,11 @@ export class DragAndDropTransformer {
   private async updateRenderedOrder(order:string[]) {
     order = _.uniq(order);
 
-    const mappedOrder = await Promise.all(order.map(id => this.wpCacheService.require(id)));
+    const mappedOrder = await Promise.all(
+      order.map(
+        wpId => this.apiV3Service.work_packages.id(wpId).get().toPromise()
+      )
+    );
 
     /** Re-render the table */
     this.table.initialSetup(mappedOrder);

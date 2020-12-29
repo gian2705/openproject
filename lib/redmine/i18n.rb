@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -45,23 +45,6 @@ module Redmine
           .reject! { |l| /\Ajs-/.match(l.to_s) }
           .uniq
           .map(&:to_sym)
-      end
-    end
-
-    def l(*args)
-      case args.size
-      when 1
-        ::I18n.t(*args)
-      when 2
-        if args.last.is_a?(Hash)
-          ::I18n.t(*args)
-        elsif args.last.is_a?(String)
-          ::I18n.t(args.first, value: args.last)
-        else
-          ::I18n.t(args.first, count: args.last)
-        end
-      else
-        raise "Translation string with multiple values: #{args.first}"
       end
     end
 

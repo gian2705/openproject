@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -58,11 +58,11 @@ module API
                    required: true,
                    has_default: false,
                    writable: default_writable_property(property),
-                   visibility: nil,
                    attribute_group: nil,
                    min_length: nil,
                    max_length: nil,
                    regular_expression: nil,
+                   options: {},
                    show_if: true)
           getter = ->(*) do
             schema_property_getter(type,
@@ -70,11 +70,11 @@ module API
                                    required,
                                    has_default,
                                    writable,
-                                   visibility,
                                    attribute_group,
                                    min_length,
                                    max_length,
-                                   regular_expression)
+                                   regular_expression,
+                                   options)
           end
 
           schema_property(property,
@@ -94,7 +94,6 @@ module API
                                      required: true,
                                      has_default: false,
                                      writable: default_writable_property(property),
-                                     visibility: nil,
                                      attribute_group: nil,
                                      show_if: true)
           getter = ->(*) do
@@ -103,7 +102,6 @@ module API
                                                      required,
                                                      has_default,
                                                      writable,
-                                                     visibility,
                                                      attribute_group,
                                                      href_callback)
           end
@@ -129,7 +127,6 @@ module API
                                            required: true,
                                            has_default: false,
                                            writable: default_writable_property(property),
-                                           visibility: nil,
                                            attribute_group: nil,
                                            show_if: true)
 
@@ -142,7 +139,6 @@ module API
                                                   required,
                                                   has_default,
                                                   writable,
-                                                  visibility,
                                                   attribute_group,
                                                   values_callback,
                                                   nil)
@@ -167,7 +163,6 @@ module API
                                                   required: true,
                                                   has_default: false,
                                                   writable: default_writable_property(property),
-                                                  visibility: nil,
                                                   attribute_group: nil,
                                                   show_if: true)
           getter = ->(*) do
@@ -179,7 +174,6 @@ module API
                                                   required,
                                                   has_default,
                                                   writable,
-                                                  visibility,
                                                   attribute_group,
                                                   values_callback,
                                                   ->(*) {
@@ -241,16 +235,25 @@ module API
 
       include InstanceMethods
 
-      def self.create(represented, self_link = nil, current_user:, form_embedded: false)
+      def self.create(represented, current_user:, self_link: nil, form_embedded: false)
         new(represented,
-            self_link,
+            self_link: self_link,
             current_user: current_user,
             form_embedded: form_embedded)
       end
 
+      def self.representable_definitions
+        representable_config = self.representable_attrs
+
+        # For reasons beyond me, Representable::Config contains the definitions
+        #  * nested in [:definitions] in some envs, e.g. development
+        #  * directly in other envs, e.g. test
+        representable_config.try(:definitions) || representable_config
+      end
+
       def initialize(represented,
-                     self_link = nil,
                      current_user:,
+                     self_link: nil,
                      form_embedded: false)
 
         self.form_embedded = form_embedded
@@ -282,11 +285,11 @@ module API
                                  required,
                                  has_default,
                                  writable,
-                                 visibility,
                                  attribute_group,
                                  min_length,
                                  max_length,
-                                 regular_expression)
+                                 regular_expression,
+                                 options)
         name = call_or_translate(name_source)
         schema = ::API::Decorators::PropertySchemaRepresenter
                  .new(type: call_or_use(type),
@@ -294,11 +297,11 @@ module API
                       required: call_or_use(required),
                       has_default: call_or_use(has_default),
                       writable: call_or_use(writable),
-                      visibility: call_or_use(visibility),
                       attribute_group: call_or_use(attribute_group))
         schema.min_length = min_length
         schema.max_length = max_length
         schema.regular_expression = regular_expression
+        schema.options = options
 
         schema
       end
@@ -308,7 +311,6 @@ module API
                                                    required,
                                                    has_default,
                                                    writable,
-                                                   visibility,
                                                    attribute_group,
                                                    href_callback)
         representer = ::API::Decorators::AllowedValuesByLinkRepresenter
@@ -317,7 +319,6 @@ module API
                            required: call_or_use(required),
                            has_default: call_or_use(has_default),
                            writable: call_or_use(writable),
-                           visibility: call_or_use(visibility),
                            attribute_group: call_or_use(attribute_group))
 
         if form_embedded
@@ -335,7 +336,6 @@ module API
                                                 required,
                                                 has_default,
                                                 writable,
-                                                visibility,
                                                 attribute_group,
                                                 values_callback,
                                                 allowed_values_getter)
@@ -354,13 +354,12 @@ module API
                        required: call_or_use(required),
                        has_default: call_or_use(has_default),
                        writable: call_or_use(writable),
-                       visibility: call_or_use(visibility),
                        attribute_group: call_or_use(attribute_group) }
 
         attributes[:allowed_values_getter] = allowed_values_getter if allowed_values_getter
 
         representer = ::API::Decorators::AllowedValuesByCollectionRepresenter
-                      .new(attributes)
+                      .new(**attributes)
 
         if form_embedded
           representer.allowed_values = instance_exec(&values_callback)

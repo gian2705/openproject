@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -74,10 +74,11 @@ class UserMailer < BaseMailer
     end
   end
 
-  def work_package_watcher_added(work_package, user, watcher_setter)
+  def work_package_watcher_changed(work_package, user, watcher_changer, action)
     User.execute_as user do
       @issue = work_package
-      @watcher_setter = watcher_setter
+      @watcher_changer = watcher_changer
+      @action = action
 
       set_work_package_headers(work_package)
       message_id work_package, user
@@ -159,6 +160,7 @@ class UserMailer < BaseMailer
   def user_signed_up(token)
     return unless token.user
 
+    @user = token.user
     @token = token
     @activation_url = url_for(controller: '/account',
                               action:     :activate,
@@ -210,8 +212,7 @@ class UserMailer < BaseMailer
                              action:     :diff,
                              project_id: wiki_content.project,
                              id:         wiki_content.page.slug,
-                             # using wiki_content.version + 1 because at this point the journal is not saved yet
-                             version:    wiki_content.version + 1)
+                             version:    wiki_content.version)
 
     open_project_headers 'Project'      => @wiki_content.project.identifier,
                          'Wiki-Page-Id' => @wiki_content.page.id,

@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,44 +23,78 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Injectable, Injector} from '@angular/core';
 import {StateService, Transition} from "@uirouter/core";
 import {KeepTabService} from "core-components/wp-single-view-tabs/keep-tab/keep-tab.service";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 interface BackRouteOptions {
   name:string;
   params:{};
   parent:string;
+  baseRoute:string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class BackRoutingService {
-  private _backRoute:BackRouteOptions;
-  private $state:StateService = this.injector.get(StateService);
-  private keepTab:KeepTabService = this.injector.get(KeepTabService);
+  @InjectField() private $state:StateService;
+  @InjectField() private keepTab:KeepTabService;
 
-  constructor(protected injector:Injector) {
+  private _backRoute:BackRouteOptions;
+
+  constructor(readonly injector:Injector) {
+  }
+
+  private goToOtherState(route:string, params:{}):Promise<any> {
+    return this.$state.go(route, params);
+  }
+
+  private goBackToDetailsState(preferListOverSplit:boolean, baseRoute:string):void {
+    if (preferListOverSplit) {
+      this.goToOtherState(baseRoute, this.backRoute.params);
+    } else {
+      this.goToOtherState(baseRoute + this.keepTab.currentDetailsSubState, this.backRoute.params);
+    }
+  }
+
+  private goBackNotToDetailsState():void {
+    if (this.backRoute.parent) {
+      this.goToOtherState(this.backRoute.name, this.backRoute.params).then(() => { this.$state.reload(); });
+    }
+    else {
+      this.goToOtherState(this.backRoute.name, this.backRoute.params);
+    }
+  }
+
+  private goBackToPreviousState(preferListOverSplit:boolean, baseRoute:string):void {
+    if (this.keepTab.isDetailsState(this.backRoute.parent)) {
+      this.goBackToDetailsState(preferListOverSplit, baseRoute);
+    } else {
+      this.goBackNotToDetailsState();
+    }
   }
 
   public goBack(preferListOverSplit:boolean = false) {
     // Default: back to list
     // When coming from a deep link or a create form
-    if (!this.backRoute || this.backRoute.name.includes('new')) {
-      this.$state.go('work-packages.list', this.$state.params);
-    } else {
-      if (this.keepTab.isDetailsState(this.backRoute.parent)) {
-        if(preferListOverSplit) {
-          this.$state.go('work-packages.list', this.$state.params);
-        } else {
-          this.$state.go(this.keepTab.currentDetailsState, this.$state.params);
-        }
+    const baseRoute = this.backRoute?.baseRoute || this.$state.current.data.baseRoute || 'work-packages.partitioned.list';
+    // if we are in the first state
+    if (!this.backRoute && baseRoute.includes('show')) { this.$state.reload(); }
+    else {
+      if (!this.backRoute || this.backRoute.name.includes('new')) {
+        this.$state.go(baseRoute, this.$state.params);
       } else {
-        this.$state.go(this.backRoute.name, this.backRoute.params);
+        this.goBackToPreviousState(preferListOverSplit, baseRoute);
       }
     }
+  }
+
+  public goToBaseState() {
+    const baseRoute = this.$state.current.data.baseRoute || 'work-packages.partitioned.list';
+    this.$state.go(baseRoute, this.$state.params);
   }
 
   public sync(transition:Transition) {
@@ -73,7 +107,10 @@ export class BackRoutingService {
       toState.data &&
       fromState.data.parent !== toState.data.parent) {
       const paramsFromCopy = { ...transition.params('from') };
-      this.backRoute = { name: fromState.name, params: paramsFromCopy, parent: fromState.data.parent };
+      this.backRoute = { name: fromState.name,
+                         params: paramsFromCopy,
+                         parent: fromState.data.parent,
+                         baseRoute: fromState.data.baseRoute };
     }
   }
 

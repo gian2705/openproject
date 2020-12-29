@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,18 +22,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
-require File.expand_path('../../../../spec_helper', __FILE__)
+require 'spec_helper'
 
-describe API::V3::CostsAPIUserPermissionCheck do
-  class CostsAPIUserPermissionCheckTestClass
-    include API::V3::CostsAPIUserPermissionCheck
+describe API::V3::CostsApiUserPermissionCheck do
+  class CostsApiUserPermissionCheckTestClass
+    # mimick representer
+    def view_time_entries_allowed?
+      current_user_allowed_to(:view_time_entries, context: represented.project) ||
+        current_user_allowed_to(:view_own_time_entries, context: represented.project)
+    end
+
+    include API::V3::CostsApiUserPermissionCheck
   end
 
-  let(:user) { mock_model('User') }
-  let(:project) { mock_model('Project') }
-  let(:work_package) { mock_model('WorkPackage', project: project) }
+  let(:user) { FactoryBot.build_stubbed(:user) }
+  let(:project) { FactoryBot.build_stubbed(:project) }
+  let(:work_package) { FactoryBot.build_stubbed(:work_package, project: project) }
 
   before do
     allow(subject)
@@ -37,7 +52,7 @@ describe API::V3::CostsAPIUserPermissionCheck do
       .and_return(work_package)
   end
 
-  subject { CostsAPIUserPermissionCheckTestClass.new }
+  subject { CostsApiUserPermissionCheckTestClass.new }
 
   let(:view_time_entries) { false }
   let(:view_own_time_entries) { false }
@@ -46,18 +61,17 @@ describe API::V3::CostsAPIUserPermissionCheck do
   let(:view_cost_rates) { false }
   let(:view_own_cost_entries) { false }
   let(:view_cost_entries) { false }
-  let(:view_cost_objects) { false }
+  let(:view_budgets) { false }
 
   before do
-    [:view_time_entries,
-     :view_own_time_entries,
-     :view_hourly_rates,
-     :view_own_hourly_rate,
-     :view_cost_rates,
-     :view_own_cost_entries,
-     :view_cost_entries,
-     :view_cost_objects].each do |permission|
-
+    %i[view_time_entries
+       view_own_time_entries
+       view_hourly_rates
+       view_own_hourly_rate
+       view_cost_rates
+       view_own_cost_entries
+       view_cost_entries
+       view_budgets].each do |permission|
       allow(subject)
         .to receive(:current_user_allowed_to)
         .with(permission, context: work_package.project)
@@ -66,7 +80,6 @@ describe API::V3::CostsAPIUserPermissionCheck do
   end
 
   describe '#overall_costs_visible?' do
-
     describe :overall_costs_visible? do
       shared_examples_for 'not visible' do
         it 'is not visible' do
@@ -246,30 +259,6 @@ describe API::V3::CostsAPIUserPermissionCheck do
 
       context 'has view_own_time_entries' do
         let(:view_own_time_entries) { true }
-
-        it_behaves_like 'is visible'
-      end
-    end
-
-    context :cost_object_visible? do
-      shared_examples_for 'not visible' do
-        it 'is not visible' do
-          is_expected.to_not be_cost_object_visible
-        end
-      end
-
-      shared_examples_for 'is visible' do
-        it 'is not visible' do
-          is_expected.to be_cost_object_visible
-        end
-      end
-
-      context 'lacks permissions' do
-        it_behaves_like 'not visible'
-      end
-
-      context 'has view_costs_entries' do
-        let(:view_cost_objects) { true }
 
         it_behaves_like 'is visible'
       end

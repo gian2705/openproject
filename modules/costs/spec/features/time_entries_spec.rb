@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,6 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper.rb')
@@ -27,21 +36,21 @@ describe 'Work Package table cost entries', type: :feature, js: true do
   let(:work_package) { FactoryBot.create :work_package, project: project, parent: parent }
   let(:hourly_rate) { FactoryBot.create :default_hourly_rate, user: user, rate: 1.00 }
 
-  let!(:time_entry1) {
+  let!(:time_entry1) do
     FactoryBot.create :time_entry,
-                       user: user,
-                       work_package: parent,
-                       project: project,
-                       hours: 10
-  }
+                      user: user,
+                      work_package: parent,
+                      project: project,
+                      hours: 10
+  end
 
-  let!(:time_entry2) {
+  let!(:time_entry2) do
     FactoryBot.create :time_entry,
-                       user: user,
-                       work_package: work_package,
-                       project: project,
-                       hours: 2.50
-  }
+                      user: user,
+                      work_package: work_package,
+                      project: project,
+                      hours: 2.50
+  end
 
   let(:wp_table) { ::Pages::WorkPackagesTable.new(project) }
   let!(:query) do
@@ -72,8 +81,8 @@ describe 'Work Package table cost entries', type: :feature, js: true do
     visit project_activities_path project
 
     # Activate budget filter
-    find('#show_time_entries').set true
-    find('#show_cost_objects').set true
+    check('Spent time')
+    check('Budgets')
     click_on 'Apply'
 
     expect(page).to have_selector('.time-entry a', text: '10.00 h')

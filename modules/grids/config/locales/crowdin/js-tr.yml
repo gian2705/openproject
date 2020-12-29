@@ -3,6 +3,7 @@ tr:
     grid:
       add_widget: 'Widget ekleyin'
       remove: 'Widget''ı kaldır'
+      configure: 'Widget''ı yapılandır'
       upsale:
         text: "İş paketi grafik widget'ı gibi bazı widget’lar yalnızca"
         link: 'kurumsal baskı.'
@@ -15,7 +16,7 @@ tr:
         members:
           title: 'Üyeler'
           no_results: 'Görünür üye yok.'
-          view_all_members: 'Tüm üyeleri göster'
+          view_all_members: 'Tüm üyeleri görüntüle'
           add: 'Üye'
           too_many: '%{total} üyelerin %{count} sayısını gösteriliyor.'
         news:
@@ -37,11 +38,14 @@ tr:
         subprojects:
           title: 'Alt Projeler'
           no_results: 'Alt proje yok.'
+        time_entries_current_user:
+          title: 'Geçirdiğim zaman'
+          displayed_days: 'Widget''te görüntülenen günler:'
         time_entries_list:
           title: 'Harcanan zaman (son 7 gün)'
-          no_results: 'Son 7 günde zaman girişi yok.'
+          no_results: 'Son 7 güne zaman girişi yok.'
         work_packages_accountable:
-          title: "Sorumlusu olduğum iş paketleri"
+          title: "Sorumlu olduğum iş paketleri"
         work_packages_assigned:
           title: 'Bana atanan iş paketleri'
         work_packages_created:

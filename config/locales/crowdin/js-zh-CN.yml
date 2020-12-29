@@ -1,6 +1,6 @@
 #-- copyright
-#OpenProject is a project management system.
-#Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License version 3.
 #OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
@@ -37,6 +37,7 @@ zh-CN:
     close_filter_title: "关闭过滤器"
     close_form_title: "关闭表单"
     button_add_watcher: "添加关注者"
+    button_add: "添加"
     button_back: "返回"
     button_back_to_list_view: "返回列表视图"
     button_cancel: "取消"
@@ -54,6 +55,8 @@ zh-CN:
     button_duplicate: "复制"
     button_edit: "编辑"
     button_filter: "筛选器"
+    button_collapse_all: "全部折叠"
+    button_expand_all: "全部展开"
     button_advanced_filter: "高级筛选"
     button_list_view: "列表视图"
     button_show_view: "全屏视图"
@@ -80,6 +83,7 @@ zh-CN:
         inline: '突出显示内联：'
         entire_card_by: '整个卡'
       remove_from_list: '从列表中移除卡'
+    caption_rate_history: "费率历史记录"
     clipboard:
       browser_error: "您的浏览器不支持复制到剪贴板，请手动复制选定的文本。"
       copied_successful: "成功复制到剪贴板!"
@@ -114,6 +118,11 @@ zh-CN:
         manual: '切换到标记源'
         wysiwyg: '切换到 WYSIWYG 编辑器'
       macro:
+        error: '无法展开宏：%{message}'
+        attribute_reference:
+          macro_help_tooltip: '此文本段正由宏动态呈现。'
+          not_found: '无法找到请求的资源'
+          invalid_attribute: "所选属性 '%{name}' 不存在。"
         child_pages:
           button: '链接至子页面'
           include_parent: '包括上级'
@@ -162,6 +171,60 @@ zh-CN:
         edit_query: '编辑查询'
         new_group: '新的组'
         reset_to_defaults: '重置为默认值'
+      enterprise:
+        trial:
+          confirmation: "确认电子邮件地址"
+          confirmation_info: >
+            我们在 %{date}向您的 %{email} 发送了一封电子邮件。请查看您的电子邮件并点击提供的确认链接以开始 14 天的试用。
+          form:
+            general_consent: >
+              我同意<a target="_blank" href="%{link_terms}">服务条款</a>和<a target="_blank" href="%{link_privacy}">隐私政策</a>。
+            invalid_email: "电子邮件地址无效"
+            label_company: "公司"
+            label_first_name: "名字"
+            label_last_name: "姓氏"
+            label_email: "电子邮件"
+            label_domain: "域"
+            label_subscriber: "订阅者"
+            label_maximum_users: "最大活动用户数"
+            label_starts_at: "开始时间："
+            label_expires_at: "到期时间"
+            receive_newsletter: 我想要接收 OpenProject <a target="_blank" href="%{link}">简报</a>。
+            taken_domain: 每个域名只能有一个活跃的试用。
+            taken_email: 每个用户只能创建一个试用。
+          email_not_received: "没有收到电子邮件？您可以使用右侧的链接重新发送电子邮件。"
+          try_another_email: "或者尝试使用另一个电子邮件地址。"
+          next_steps: "后续步骤"
+          resend_link: "重新发送"
+          resend_success: "已重新发送电子邮件。请查看您的电子邮件并点击提供的确认链接。"
+          resend_warning: "无法重新发送电子邮件。"
+          session_timeout: "您的会话超时。请尝试重新加载该页面或重新发送电子邮件。"
+          status_label: "状态："
+          status_confirmed: "已确认"
+          status_waiting: "电子邮件已发送 - 等待确认"
+          test_ee: "免费测试企业版 14 天"
+          quick_overview: "快速了解 OpenProject 企业版的项目管理和团队协作。"
+        upsale:
+          become_hero: "成为英雄！"
+          benefits:
+            description: "有什么好处？"
+            high_security: "安全功能"
+            high_security_text: "单点登录（SAML、OpenID Connect、CAS）、双重身份验证和 LDAP 组自动同步。"
+            installation: "安装支持"
+            installation_text: "经验丰富的软件工程师将指导您在自己的基础结构中完成整个安装和设置过程。"
+            premium_features: "高级功能"
+            premium_features_text: "敏捷面板，自定义主题和徽标，图表，包含自定义操作的智能工作流，全文搜索工作包附件和多选自定义字段。"
+            professional_support: "专业支持"
+            professional_support_text: "从高级支持工程师那里获得可靠的个性化支持，这些工程师拥有在业务关键型环境中运行 OpenProject 的专业知识。"
+          button_start_trial: "开始免费试用"
+          button_book_now: "立即预订"
+          confidence: >
+            我们秉承开源和开放心态，有信心提供经得起考验和充分支持的企业级项目管理软件。
+          link_quote: "获取报价"
+          text: >
+            OpenProject 企业版以社区版为基础。它包括高级功能和专业支持，主要面向拥有 10 个以上用户并使用 OpenProject 管理业务关键型项目的组织。
+          unlimited: "不受限制"
+          you_contribute: "开发者也需要支付账单。使用企业版，您可以为这项开源社区工作提供大力支持。"
     custom_actions:
       date:
         specific: '于'
@@ -171,6 +234,9 @@ zh-CN:
       cannot_save_changes_with_message: "由于%{error} 原因，无法保存您的更改。"
       query_saving: "无法保存此视图。"
       embedded_table_loading: "无法加载嵌入式视图：%{message}"
+    enumeration_activities: "活动 （时间跟踪）"
+    enumeration_doc_categories: "文档类别"
+    enumeration_work_package_priorities: "工作包优先级"
     filter:
       description:
         text_open_filter: "使用 ALT 和方向键打开筛选器。"
@@ -203,8 +269,15 @@ zh-CN:
       blocks:
         new_features:
           text_new_features: "了解新功能和产品更新。"
-          current_new_feature_html: "OpenProject 包含一个新的<b>概览页面</b>，用于<b>显示重要的项目信息</b>并显示该项目是否按计划进行。</br> 您可以插入各种新的状态微件，例如：<ul><li>项目状态、</li><li>工作包状态概览、</li><li>任务进度、</li><li>分配给用户的任务。</li></ul>"
-          learn_about: "详细了解新的状态微件"
+          learn_about: "详细了解新功能"
+          standard:
+            learn_about_link: https://www.openproject.org/openproject-11-1-release
+            current_new_feature_html: >
+              此版本包含多项新功能和改进：<br> <ul class="%{list_styling_class}"> <li><b>改进了 WYSIWYG 编辑器的样式</b>。</li> <li>编辑时可直接显示 <b>@notifications 用户名</b>。</li> <li>通过添加一个 <b>OpenID Connect 提供商</b>扩展了 身份验证配置文件。</li> <li>在甘特图中以单行显示项目<b>完整的里程碑</b>。</li> <li><b>收起工作包列表中各组的所有按钮</b>。</li> <li>通过浏览器打印功能<b>优化了打印</b>，例如 wiki 页面的打印。</li> </ul>
+          bim:
+            learn_about_link: https://www.openproject.org/openproject-11-0-release
+            current_new_feature_html: >
+              此版本包含多项新功能和改进：<br> <ul class="%{list_styling_class}"> <li><b>改进了 WYSIWYG 编辑器的样式</b>。</li> <li>编辑时可直接显示 <b>@notifications 用户名</b>。</li> <li>通过添加一个 <b>OpenID Connect 提供商</b>扩展了 身份验证配置文件。</li> <li>在甘特图中以单行显示项目<b>完整的里程碑</b>。</li> <li><b>收起工作包列表中各组的所有按钮</b>。</li> <li>通过浏览器打印功能<b>优化了打印</b>，例如 wiki 页面的打印。</li> </ul>
     label_activate: "激活"
     label_add_column_after: "之后添加列"
     label_add_column_before: "在之前添加列"
@@ -215,13 +288,14 @@ zh-CN:
     label_add_row_before: "之前添加行"
     label_add_selected_columns: "添加所选的列"
     label_added_by: "添加人"
-    label_added_time_by: "由 %{author} %{age} 添加"
+    label_added_time_by: "由 <a href=%{authorLink}>%{author}</a> 在 %{age} 添加"
     label_ago: "天前"
     label_all: "所有"
     label_all_work_packages: "所有工作包"
     label_and: "和"
     label_ascending: "升序"
     label_author: "作者: %{user}"
+    label_avatar: "头像"
     label_between: "介于"
     label_board: "面板"
     label_board_locked: "锁定"
@@ -235,6 +309,8 @@ zh-CN:
     label_deactivate: "停用"
     label_descending: "降序"
     label_description: "描述"
+    label_details: "详细信息"
+    label_display: "显示"
     label_cancel_comment: "取消注释"
     label_closed_work_packages: "关闭"
     label_collapse: "折叠"
@@ -253,31 +329,41 @@ zh-CN:
     label_expand_all: "全部展开"
     label_expand_project_menu: "展开项目菜单"
     label_export: "导出"
+    label_export_preparing: "导出文件已开始准备并将很快被下载。"
     label_filename: "文件"
     label_filesize: "大小"
+    label_general: "通用"
+    label_global_roles: "全局角色"
     label_greater_or_equal: ">="
     label_group: '组'
     label_group_by: "分组依据"
+    label_group_plural: "组"
     label_hide_attributes: "隐藏显示"
     label_hide_column: "隐藏列"
     label_hide_project_menu: "折叠项目菜单"
     label_in: "在"
     label_in_less_than: "在小于"
     label_in_more_than: "在多于"
+    label_incoming_emails: "传入电子邮件"
+    label_information_plural: "信息"
     label_import: "导入"
     label_latest_activity: "最新活动"
     label_last_updated_on: "最后更新日期"
+    label_learn_more_link: "了解更多信息"
     label_less_or_equal: "<="
     label_less_than_ago: "小于数日前"
     label_loading: "正在加载..."
+    label_mail_notification: "电子邮件通知"
     label_me: "我"
+    label_meeting_agenda: "议程"
+    label_meeting_minutes: "会议记录"
     label_menu_collapse: "折叠"
     label_menu_expand: "展开"
     label_more_than_ago: "更多天前"
     label_next: "下一个"
     label_no_color: "无颜色"
     label_no_data: "没有要显示的数据"
-    label_no_due_date: "没有结束日期"
+    label_no_due_date: "no finish date"
     label_no_start_date: "没有开始日期"
     label_no_value: "无值"
     label_none: "无"
@@ -291,12 +377,16 @@ zh-CN:
     label_previous: "上一个"
     label_per_page: "每页："
     label_please_wait: "请稍等"
+    label_project_plural: "项目"
     label_visibility_settings: "可见性设置"
     label_quote_comment: "引用这个评论"
+    label_recent: "最近"
     label_reset: "重置"
     label_remove_column: "删除列"
     label_remove_columns: "删除选定的列"
     label_remove_row: "删除行"
+    label_report: "报告"
+    label_repository_plural: "代码库"
     label_save_as: "另存为"
     label_select_watcher: "选择一位关注者..."
     label_selected_filter_list: "所选的筛选器"
@@ -307,6 +397,7 @@ zh-CN:
     label_sort_higher: "向上移动"
     label_sort_lower: "向下移动"
     label_sorting: "排序"
+    label_spent_time: "已耗时间"
     label_star_query: "最爱"
     label_press_enter_to_save: "按回车键可以保存。"
     label_public_query: "公开"
@@ -315,15 +406,19 @@ zh-CN:
     label_subject: "主题"
     label_this_week: "这一周"
     label_today: "今天"
+    label_time_entry_plural: "已耗时间"
     label_up: "向上"
+    label_user_plural: "用户"
     label_activity_show_only_comments: "仅显示批注的活动"
     label_activity_show_all: "显示所有项目"
     label_total_progress: "%{percent} %总进度"
     label_total_amount: "总计: %{amount}"
     label_updated_on: "更新于"
     label_value_derived_from_children: "（来自子项的值）"
+    label_children_derived_duration: "工作包的子项派生持续时间"
     label_warning: "警告"
     label_work_package: "工作包"
+    label_work_package_parent: "父工作包"
     label_work_package_plural: "工作包"
     label_watch: "关注"
     label_watch_work_package: "关注工作包"
@@ -357,6 +452,7 @@ zh-CN:
     label_wait: "请等待配置..."
     label_upload_counter: "%{count} 个中的 %{done} 个文件已完成"
     label_validation_error: "由于下列错误，无法保存工作包:"
+    label_version_plural: "版本"
     label_view_has_changed: "此视图有未保存的变更。单击以保存。"
     help_texts:
       show_modal: '显示属性帮助文本项'
@@ -384,7 +480,7 @@ zh-CN:
           drag: '在列表中拖放卡片进行重新排序，或者拖放到另一个列表中。双击将打开详细信息视图。'
         wp:
           toggler: "现在我们来看一下<b>工作包</b>部分，工作包提供了更详细的工作视图。"
-          list: '这是<b>工作包</b>列表，包含项目中的重要工作，例如任务、特征、里程碑和错误等。<br>您可以在这个列表中直接创建或编辑工作包。要查看工作包的详细信息，可以双击该行。'
+          list: '这是<b>工作包</b>列表，包含项目中的重要工作，如任务、里程碑、阶段等。<br>您可以在这个列表中直接创建或编辑工作包。要查看工作包的详细信息，可以双击该行。'
           full_view: '在<b>工作包详细信息</b>中，您可以找到所有相关信息，如描述、状态与优先级、依赖项或评论。'
           back_button: '使用箭头可以导航回工作包列表。'
           create_button: '<b>创建</b>按钮将为您的项目添加一个新工作包。'
@@ -409,6 +505,7 @@ zh-CN:
       context: '项目上下文'
       work_package_belongs_to: '此工作包属于项目%{projectname}。'
       click_to_switch_context: '在该项目中打开此工作包。'
+      confirm_template_load: '切换模板将重新加载页面，您将丢失此表单上的所有输入。是否继续？'
       autocompleter:
         label: '项目自动补全'
     text_are_you_sure: "是否确定？"
@@ -423,23 +520,22 @@ zh-CN:
         upgrade_to_ee_text: "哇！如果您需要使用此功能，说明您非常专业！您是否愿意成为企业版客户来支持 OpenSource 开发人员？"
         more_information: "更多信息"
         nevermind: "我愿意"
-        filter_types:
-          parent: "父级"
-          precedes: "前导"
-          follows: "跟随"
-          relates: "关于"
-          duplicates: "复制"
-          duplicated: "复制于"
-          blocks: "阻止"
-          blocked: "阻止于"
-          partof: "属于"
-          includes: "包括"
-          requires: "要求"
-          required: "要求于"
+      edit:
+        form_configuration: "表单配置"
+        projects: "项目"
+        settings: "设置"
     time_entry:
+      project: '项目'
+      work_package: '工作包'
+      work_package_required: '需要先选择一个工作包。'
       activity: '活动'
       comment: '评论'
+      duration: '持续时间'
+      spent_on: '日期'
       hours: '小时'
+      title: '记录时间'
+    two_factor_authentication:
+      label_two_factor_authentication: '双重身份验证'
     watchers:
       label_loading: 正在加载关注者...
       label_error_loading: 加载关注者时出错
@@ -497,15 +593,10 @@ zh-CN:
       select_tag: '选择标签'
       select_branch: '选择分支'
     field_value_enter_prompt: "为'%{field}'输入值"
-    select2:
-      input_too_short:
-        other: "请再输入{{count}} 个字符"
-      load_more: "正在加载更多的结果..."
-      no_matches: "未找到匹配项"
-      searching: "正在搜索..."
-      selection_too_big:
-        other: "您可以只选择 {{limit}} 个条目"
     project_menu_details: "详细信息"
+    scheduling:
+      manual: '手动计划'
+      automatic: '自动计划'
     sort:
       sorted_asc: '升序排列已应用， '
       sorted_dsc: '降序排列已应用， '
@@ -671,6 +762,7 @@ zh-CN:
         startDate: "开始日期"
         status: "状态"
         subject: "主题"
+        subproject: "子项目"
         title: "标题"
         type: "类型"
         updatedAt: "更新于"
@@ -716,6 +808,9 @@ zh-CN:
           not_found: "无此视图"
           duplicate_query_title: "此视图的名称已存在。仍要更改？"
         text_no_results: "未找到匹配的视图。"
+      scheduling:
+        is_parent: "此工作包的日期会自动从其子项推导出。可激活“手动计划”来设置日期。"
+        is_switched_from_manual_to_automatic: "由于与其他工作包的关系，在从手动计划切换为自动计划后，此工作包的日期可能需要重新计算。"
       table:
         configure_button: '配置工作包表'
         summary: "行为工作包且列为工作包属性的表格。"
@@ -749,14 +844,13 @@ zh-CN:
           automatic: '自动'
           manually: '手动'
           warning: '激活自动排序模式时，您将丢失以前的排序结果。'
-        columns_help_text: "使用上面的输入向表视图添加或删除列。 您可以拖放列以重新排序它们。"
+        columns_help_text: "使用上面的输入向表视图添加列。 您可以拖放列来为它们重新排序。"
         upsale:
           attribute_highlighting: '需要特定的工作包以脱颖而出？'
           relation_columns: '需要查看工作包列表中的关系吗？'
           check_out_link: '签出企业版。'
         relation_filters:
-          first_part: "显示所有工作包"
-          second_part: "当前工作包"
+          filter_work_packages_by_relation_type: '按关系类型筛选工作包'
       tabs:
         overview: 概述
         activity: 活动
@@ -805,6 +899,9 @@ zh-CN:
         has_children: "工作包有 %{childUnits}:"
         confirm_deletion_children: "我确认所列工作包的全部子工作包都将递归移除。"
         deletes_children: "所有子工作包及其子级也将递归删除。"
+      destroy_time_entry:
+        title: "确认删除时间条目"
+        text: "确定要删除以下时间条目？"
     notice_no_results_to_display: "无可供显示的结果。"
     notice_successful_create: "成功创建。"
     notice_successful_delete: "成功删除。"
@@ -840,7 +937,8 @@ zh-CN:
       child_work_packages:
         other: "%{count} 子工作包"
       hour:
-        other: "%{count} 小时"
+        zero: "0 h"
+        other: ""
     zen_mode:
       button_activate: '激活 zen 模式'
       button_deactivate: '取消激活 zen 模式'

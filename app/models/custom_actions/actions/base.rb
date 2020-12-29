@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,7 +25,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 class CustomActions::Actions::Base
@@ -97,16 +97,16 @@ class CustomActions::Actions::Base
   def validate_value_required(errors)
     if required? && values.empty?
       errors.add :actions,
-                 I18n.t(:'activerecord.errors.models.custom_actions.empty', name: human_name),
-                 error_symbol: :empty
+                 :empty,
+                 name: human_name
     end
   end
 
   def validate_only_one_value(errors)
     if !multi_value? && values.length > 1
       errors.add :actions,
-                 I18n.t(:'activerecord.errors.models.custom_actions.only_one_allowed', name: human_name),
-                 error_symbol: :only_one_allowed
+                 :only_one_allowed,
+                 name: human_name
     end
   end
 end

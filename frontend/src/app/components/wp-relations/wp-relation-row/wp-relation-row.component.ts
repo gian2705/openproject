@@ -1,26 +1,25 @@
-import {WorkPackageCacheService} from '../../work-packages/work-package-cache.service';
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {WorkPackageRelationsService} from '../wp-relations.service';
 import {PathHelperService} from 'core-app/modules/common/path-helper/path-helper.service';
 import {RelationResource} from 'core-app/modules/hal/resources/relation-resource';
-import {ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild} from "@angular/core";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
-import {untilComponentDestroyed} from "ng2-rx-componentdestroyed";
 import {HalEventsService} from "core-app/modules/hal/services/hal-events.service";
 import {WorkPackageNotificationService} from "core-app/modules/work_packages/notifications/work-package-notification.service";
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 
 @Component({
   selector: 'wp-relation-row',
   templateUrl: './wp-relation-row.template.html'
 })
-export class WorkPackageRelationRowComponent implements OnInit, OnDestroy {
+export class WorkPackageRelationRowComponent extends UntilDestroyedMixin implements OnInit {
   @Input() public workPackage:WorkPackageResource;
   @Input() public relatedWorkPackage:WorkPackageResource;
   @Input() public groupByWorkPackageType:boolean;
 
-  @ViewChild('relationDescriptionTextarea', { static: false }) readonly relationDescriptionTextarea:ElementRef;
+  @ViewChild('relationDescriptionTextarea') readonly relationDescriptionTextarea:ElementRef;
 
   public relationType:string;
   public showRelationInfo:boolean = false;
@@ -56,13 +55,14 @@ export class WorkPackageRelationRowComponent implements OnInit, OnDestroy {
     }
   };
 
-  constructor(protected wpCacheService:WorkPackageCacheService,
+  constructor(protected apiV3Service:APIV3Service,
               protected notificationService:WorkPackageNotificationService,
               protected wpRelations:WorkPackageRelationsService,
               protected halEvents:HalEventsService,
               protected I18n:I18nService,
               protected cdRef:ChangeDetectorRef,
               protected PathHelper:PathHelperService) {
+    super();
   }
 
   ngOnInit() {
@@ -71,19 +71,18 @@ export class WorkPackageRelationRowComponent implements OnInit, OnDestroy {
     this.userInputs.newRelationText = this.relation.description || '';
     this.availableRelationTypes = RelationResource.LOCALIZED_RELATION_TYPES(false);
     this.selectedRelationType = _.find(this.availableRelationTypes,
-      {'name': this.relation.normalizedType(this.workPackage)})!;
+      { 'name': this.relation.normalizedType(this.workPackage) })!;
 
-    this.wpCacheService
-      .observe(this.relatedWorkPackage.id!)
+    this
+      .apiV3Service
+      .work_packages
+      .id(this.relatedWorkPackage)
+      .requireAndStream()
       .pipe(
-        untilComponentDestroyed(this)
+        this.untilDestroyed()
       ).subscribe((wp) => {
       this.relatedWorkPackage = wp;
     });
-  }
-
-  ngOnDestroy():void {
-    // Nothing to do
   }
 
   /**
@@ -126,7 +125,7 @@ export class WorkPackageRelationRowComponent implements OnInit, OnDestroy {
   public saveDescription() {
     this.wpRelations.updateRelation(
       this.relation,
-      {description: this.userInputs.newRelationText})
+      { description: this.userInputs.newRelationText })
       .then((savedRelation:RelationResource) => {
         this.relation = savedRelation;
         this.relatedWorkPackage.relatedBy = savedRelation;
@@ -180,7 +179,12 @@ export class WorkPackageRelationRowComponent implements OnInit, OnDestroy {
           relationType: this.relation.normalizedType(this.workPackage)
         });
 
-        this.wpCacheService.updateWorkPackage(this.relatedWorkPackage);
+        this
+          .apiV3Service
+          .work_packages
+          .cache
+          .updateWorkPackage(this.relatedWorkPackage);
+
         this.notificationService.showSave(this.relatedWorkPackage);
       })
       .catch((err:any) => this.notificationService.handleRawError(err,

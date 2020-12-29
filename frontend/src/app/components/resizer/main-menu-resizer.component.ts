@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,19 +23,19 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
-import {ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, ElementRef, OnInit} from '@angular/core';
 import {distinctUntilChanged} from 'rxjs/operators';
-import {Subscription} from 'rxjs';
-import {untilComponentDestroyed} from 'ng2-rx-componentdestroyed';
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
 import {ResizeDelta} from "core-app/modules/common/resizer/resizer.component";
 import {MainMenuToggleService} from "core-components/main-menu/main-menu-toggle.service";
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+
+export const mainMenuResizerSelector = 'main-menu-resizer';
 
 @Component({
-  selector: 'main-menu-resizer',
+  selector: mainMenuResizerSelector,
   template: `
     <resizer class="main-menu--resizer"
              [customHandler]="true"
@@ -43,18 +43,20 @@ import {MainMenuToggleService} from "core-components/main-menu/main-menu-toggle.
              (end)="resizeEnd()"
              (start)="resizeStart()"
              (move)="resizeMove($event)">
-      <a href="#"
-         [attr.title]="toggleTitle"
-         class="main-menu--navigation-toggler"
-         (accessibleClick)="toggleService.toggleNavigation($event)">
+      <div class="resizer-toggle-container">
+        <i [attr.title]="toggleTitle"
+            class="main-menu--navigation-toggler"
+            [ngClass]="{'open': toggleService.showNavigation}"
+            (accessibleClick)="toggleService.toggleNavigation($event)"></i>
+
         <i class="icon-resizer-vertical-lines"
            aria-hidden="true"></i>
-      </a>
+      </div>
     </resizer>
   `
 })
 
-export class MainMenuResizerComponent implements OnInit, OnDestroy {
+export class MainMenuResizerComponent extends UntilDestroyedMixin implements OnInit {
   public toggleTitle:string;
   private resizeEvent:string;
   private localStorageKey:string;
@@ -64,30 +66,25 @@ export class MainMenuResizerComponent implements OnInit, OnDestroy {
 
   public moving:boolean = false;
 
-  private subscription:Subscription;
-
   constructor(readonly toggleService:MainMenuToggleService,
               readonly cdRef:ChangeDetectorRef,
               readonly elementRef:ElementRef) {
+    super();
   }
 
   ngOnInit() {
-    this.subscription = this.toggleService.titleData$
+    this.toggleService.titleData$
       .pipe(
         distinctUntilChanged(),
-        untilComponentDestroyed(this)
+        this.untilDestroyed()
       )
       .subscribe(setToggleTitle => {
         this.toggleTitle = setToggleTitle;
         this.cdRef.detectChanges();
       });
 
-    this.resizeEvent     = "main-menu-resize";
+    this.resizeEvent = "main-menu-resize";
     this.localStorageKey = "openProject-mainMenuWidth";
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 
   public resizeStart() {
@@ -95,7 +92,7 @@ export class MainMenuResizerComponent implements OnInit, OnDestroy {
   }
 
   public resizeMove(deltas:ResizeDelta) {
-    this.toggleService.saveWidth(this.elementWidth + deltas.x);
+    this.toggleService.saveWidth(this.elementWidth + deltas.absolute.x);
   }
 
   public resizeEnd() {
@@ -103,5 +100,3 @@ export class MainMenuResizerComponent implements OnInit, OnDestroy {
     window.dispatchEvent(event);
   }
 }
-
-DynamicBootstrapper.register({ selector: 'main-menu-resizer', cls: MainMenuResizerComponent  });

@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,7 +28,7 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Status < ActiveRecord::Base
+class Status < ApplicationRecord
   extend Pagination::Model
 
   default_scope { order_by_position }
@@ -46,6 +46,8 @@ class Status < ActiveRecord::Base
             length: { maximum: 30 }
 
   validates_inclusion_of :default_done_ratio, in: 0..100, allow_nil: true
+
+  validate :default_status_must_not_be_readonly
 
   after_save :unmark_old_default_value, if: :is_default?
 
@@ -73,28 +75,6 @@ class Status < ActiveRecord::Base
     end
 
     WorkPackage.use_status_for_done_ratio?
-  end
-
-  # Returns an array of all statuses the given role can switch to
-  def new_statuses_allowed_to(roles, type, author = false, assignee = false)
-    self.class.new_statuses_allowed(self, roles, type, author, assignee)
-  end
-
-  def self.new_statuses_allowed(status, roles, type, author = false, assignee = false)
-    if roles.present? && type.present?
-      status_id = status.try(:id) || 0
-
-      workflows = Workflow
-                  .from_status(status_id,
-                               type.id,
-                               roles.map(&:id),
-                               author,
-                               assignee)
-
-      Status.where(id: workflows.select(:new_status_id))
-    else
-      Status.where('1 = 0')
-    end
   end
 
   def self.order_by_position
@@ -128,6 +108,12 @@ class Status < ActiveRecord::Base
 
   def check_integrity
     raise "Can't delete status" if WorkPackage.where(status_id: id).exists?
+  end
+
+  def default_status_must_not_be_readonly
+    if is_readonly? && is_default?
+      errors.add(:is_readonly, :readonly_default_exlusive)
+    end
   end
 
   # Deletes associated workflows

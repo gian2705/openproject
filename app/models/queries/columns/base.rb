@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,15 +30,17 @@
 
 class Queries::Columns::Base
   attr_reader :groupable,
-              :sortable,
-              :association
+              :sortable
 
   attr_accessor :name,
                 :sortable_join,
                 :summable,
-                :default_order
+                :default_order,
+                :association
 
-  alias_method :summable?, :summable
+  attr_writer :null_handling,
+              :summable_select,
+              :summable_work_packages_select
 
   def initialize(name, options = {})
     self.name = name
@@ -47,7 +49,10 @@ class Queries::Columns::Base
        sortable_join
        groupable
        summable
+       summable_select
+       summable_work_packages_select
        association
+       null_handling
        default_order).each do |attribute|
       send("#{attribute}=", options[attribute])
     end
@@ -61,16 +66,16 @@ class Queries::Columns::Base
     raise NotImplementedError
   end
 
+  def null_handling(_asc)
+    @null_handling
+  end
+
   def groupable=(value)
     @groupable = name_or_value_or_false(value)
   end
 
   def sortable=(value)
     @sortable =  name_or_value_or_false(value)
-  end
-
-  def association=(value)
-    @association = value
   end
 
   # Returns true if the column is sortable, otherwise false
@@ -83,8 +88,28 @@ class Queries::Columns::Base
     !!groupable
   end
 
-  def value(issue)
-    issue.send name
+  def summable?
+    summable || @summable_select || @summable_work_packages_select
+  end
+
+  def summable_select
+    @summable_select || name
+  end
+
+  def summable_work_packages_select
+    if @summable_work_packages_select == false
+      nil
+    elsif @summable_work_packages_select
+      @summable_work_packages_select
+    elsif summable&.respond_to?(:call)
+      nil
+    else
+      name
+    end
+  end
+
+  def value(model)
+    model.send name
   end
 
   def self.instances(_context = nil)

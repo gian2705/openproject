@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -35,7 +35,9 @@ describe 'API v3 Project available parents resource', type: :request, content_ty
 
   let!(:current_user) do
     FactoryBot.create(:user, member_in_project: project, member_with_permissions: permissions).tap do |u|
-      u.global_roles << FactoryBot.create(:global_role, permissions: global_permissions)
+      FactoryBot.create(:global_member,
+                        principal: u,
+                        roles: [FactoryBot.create(:global_role, permissions: global_permissions)])
     end
   end
   let!(:project_with_add_suproject_permission) do

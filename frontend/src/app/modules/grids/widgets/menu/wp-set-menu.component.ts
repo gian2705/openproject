@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,10 +23,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
-import {Injector, EventEmitter, Output} from '@angular/core';
+import { Injector, EventEmitter, Output, Directive } from '@angular/core';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import {OpModalService} from "core-components/op-modals/op-modal.service";
 import {GridRemoveWidgetService} from "core-app/modules/grids/grid/remove-widget.service";
@@ -36,6 +36,7 @@ import {WidgetAbstractMenuComponent} from "core-app/modules/grids/widgets/menu/w
 import {WpGraphConfigurationModalComponent} from "core-app/modules/work-package-graphs/configuration-modal/wp-graph-configuration.modal";
 import {GridAreaService} from "core-app/modules/grids/grid/area.service";
 
+@Directive()
 export abstract class WidgetWpSetMenuComponent extends WidgetAbstractMenuComponent {
   protected configurationComponent:ComponentType<OpModalComponent>;
 

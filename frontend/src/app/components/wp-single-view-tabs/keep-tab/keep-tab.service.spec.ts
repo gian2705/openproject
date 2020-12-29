@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,11 +23,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {KeepTabService} from './keep-tab.service';
-import {StateService, Transition} from '@uirouter/core';
 
 describe('keepTab service', () => {
   let callback:(transition:any) => void;
@@ -53,7 +52,7 @@ describe('keepTab service', () => {
 
     defaults = {
       showTab: 'work-packages.show.activity',
-      detailsTab: 'work-packages.list.details.overview'
+      detailsTab: 'work-packages.partitioned.list.details.overview'
     };
   });
 
@@ -86,7 +85,7 @@ describe('keepTab service', () => {
     });
 
     it('should also update the value of currentDetailsTab', () => {
-      expect(keepTab.currentDetailsState).toEqual('work-packages.list.details.relations');
+      expect(keepTab.currentDetailsState).toEqual('work-packages.partitioned.list.details.relations');
     });
 
     it('should propagate the previous change', () => {
@@ -95,7 +94,7 @@ describe('keepTab service', () => {
       var expected = {
         active: 'relations',
         show: 'work-packages.show.relations',
-        details: 'work-packages.list.details.relations'
+        details: 'work-packages.partitioned.list.details.relations'
       }
 
       keepTab.observable.subscribe(cb);
@@ -103,14 +102,14 @@ describe('keepTab service', () => {
     });
 
     it('should correctly change when switching back', () => {
-      currentPathPrefix = 'work-packages.list.details.*';
+      currentPathPrefix = '**.details.*';
 
-      $state.current.name = 'work-packages.list.details.overview';
+      $state.current.name = 'work-packages.partitioned.list.details.overview';
       keepTab.updateTabs();
 
       expect(keepTab.currentShowState).toEqual('work-packages.show.activity');
       expect(keepTab.currentShowTab).toEqual('activity');
-      expect(keepTab.currentDetailsState).toEqual('work-packages.list.details.overview');
+      expect(keepTab.currentDetailsState).toEqual('work-packages.partitioned.list.details.overview');
       expect(keepTab.currentDetailsTab).toEqual('overview');
     });
   });
@@ -126,22 +125,22 @@ describe('keepTab service', () => {
     });
 
     it('should set the tab to overview', () => {
-      expect(keepTab.currentDetailsState).toEqual('work-packages.list.details.overview');
+      expect(keepTab.currentDetailsState).toEqual('work-packages.partitioned.list.details.overview');
     });
   });
 
   describe('when opening a details route', () => {
     beforeEach(() => {
       spyOn($state, 'includes').and.callFake((path:string) => {
-        return path === 'work-packages.list.details.*';
+        return path === '**.details.*';
       });
 
-      $state.current.name = 'work-packages.list.details.activity';
+      $state.current.name = 'work-packages.partitioned.list.details.activity';
       keepTab.updateTabs();
     });
 
     it('should update the currentShowTab value', () => {
-      expect(keepTab.currentDetailsState).toEqual('work-packages.list.details.activity');
+      expect(keepTab.currentDetailsState).toEqual('work-packages.partitioned.list.details.activity');
       expect(keepTab.currentDetailsTab).toEqual('activity');
     });
 
@@ -155,7 +154,7 @@ describe('keepTab service', () => {
 
       var expected = {
         active: 'activity',
-        details: 'work-packages.list.details.activity',
+        details: 'work-packages.partitioned.list.details.activity',
         show: 'work-packages.show.activity'
       };
 

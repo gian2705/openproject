@@ -24,7 +24,6 @@ module OpenProject::Avatars
 
     register 'openproject-avatars',
              author_url: 'https://www.openproject.com',
-             global_assets: { css: 'avatars/openproject_avatars' },
              settings: {
                default: {
                  enable_gravatars: true,
@@ -53,6 +52,7 @@ module OpenProject::Avatars
     add_tab_entry :user,
                   name: 'avatar',
                   partial: 'avatars/users/avatar_tab',
+                  path: ->(params) { tab_edit_user_path(params[:user], tab: :avatar) },
                   label: :label_avatar,
                   only_if: ->(*) { ::OpenProject::Avatars::AvatarManager.avatars_enabled? }
 
@@ -60,7 +60,9 @@ module OpenProject::Avatars
       # This is required to be an initializer,
       # since the helpers are included as soon as the ApplicationController
       # gets autoloaded, which is BEFORE config.to_prepare.
-      require_relative 'patches/avatar_helper_patch'
+      Rails.autoloaders.main.ignore(config.root.join('lib/open_project/avatars/patches/avatar_helper_patch.rb'))
+
+      require_relative './patches/avatar_helper_patch'
     end
 
     patches %i[User]

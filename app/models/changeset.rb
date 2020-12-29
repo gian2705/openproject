@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,18 +27,27 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Changeset < ActiveRecord::Base
+class Changeset < ApplicationRecord
   belongs_to :repository
   belongs_to :user
   has_many :file_changes, class_name: 'Change', dependent: :delete_all
   has_and_belongs_to_many :work_packages
 
-  acts_as_journalized
+  acts_as_journalized timestamp: :committed_on
 
-  acts_as_event title: Proc.new { |o| "#{l(:label_revision)} #{o.format_identifier}" + (o.short_comments.blank? ? '' : (': ' + o.short_comments)) },
+  acts_as_event title: Proc.new { |o|
+                  "#{I18n.t(:label_revision)} #{o.format_identifier}" + (o.short_comments.blank? ? '' : (': ' + o.short_comments))
+                },
                 description: :long_comments,
                 datetime: :committed_on,
-                url: Proc.new { |o| { controller: '/repositories', action: 'revision', project_id: o.repository.project_id, rev: o.identifier } },
+                url: Proc.new { |o|
+                  {
+                    controller: '/repositories',
+                    action: 'revision',
+                    project_id: o.repository.project_id,
+                    rev: o.identifier
+                  }
+                },
                 author: Proc.new { |o| o.author }
 
   acts_as_searchable columns: 'comments',
@@ -240,6 +249,11 @@ class Changeset < ActiveRecord::Base
   end
 
   def log_time(work_package, hours)
+    unless user.present?
+      Rails.logger.warn("TimeEntry could not be created by changeset #{id}: #{committer} does not map to user")
+      return
+    end
+
     Changesets::LogTimeService
       .new(user: user, changeset: self)
       .call(work_package, hours)

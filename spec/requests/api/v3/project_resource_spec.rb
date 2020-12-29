@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -36,11 +36,13 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
   let(:current_user) do
     FactoryBot.create(:user, member_in_project: project, member_through_role: role)
   end
+  let(:admin) { FactoryBot.create(:admin) }
   let(:project) do
-    FactoryBot.create(:project, public: false, status: project_status)
+    FactoryBot.create(:project, public: false, status: project_status, active: project_active)
   end
+  let(:project_active) { true }
   let(:project_status) do
-    FactoryBot.create(:project_status)
+    FactoryBot.build(:project_status, project: nil)
   end
   let(:other_project) do
     FactoryBot.create(:project, public: false)
@@ -150,6 +152,29 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
             .at_path('_links/parent/href')
         end
       end
+
+      context 'with the project being archived/inactive' do
+        let(:project_active) { false }
+
+        context 'with the user being admin' do
+          let(:current_user) { admin }
+
+          it 'responds with 200 OK' do
+            expect(subject.status).to eq(200)
+          end
+
+          it 'responds with the correct project' do
+            expect(subject.body).to include_json('Project'.to_json).at_path('_type')
+            expect(subject.body).to be_json_eql(project.identifier.to_json).at_path('identifier')
+          end
+        end
+
+        context 'with the user being no admin' do
+          it 'responds with 404' do
+            expect(subject.status).to eq(404)
+          end
+        end
+      end
     end
 
     context 'not logged in user' do
@@ -175,7 +200,7 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
     end
 
     it 'succeeds' do
-      expect(last_response.status)
+      expect(response.status)
         .to eql(200)
     end
 
@@ -244,9 +269,32 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
         end
 
         it 'returns the projects not matching the value' do
-          expect(response.body)
+          expect(last_response.body)
             .to be_json_eql(other_project.id.to_json)
             .at_path('_embedded/elements/0/id')
+        end
+      end
+    end
+
+    context 'with the project being archived/inactive' do
+      let(:project_active) { false }
+      let(:projects) { [project] }
+
+      context 'with the user being admin' do
+        let(:current_user) { admin }
+
+        it 'responds with 200 OK' do
+          expect(last_response.status).to eq(200)
+        end
+
+        it_behaves_like 'API V3 collection response', 1, 1, 'Project'
+      end
+
+      context 'with the user being no admin' do
+        it_behaves_like 'API V3 collection response', 0, 0, 'Project'
+
+        it 'responds with 200' do
+          expect(last_response.status).to eq(200)
         end
       end
     end
@@ -255,7 +303,9 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
   describe '#post /projects' do
     let(:current_user) do
       FactoryBot.create(:user).tap do |u|
-        u.global_roles << global_role
+        FactoryBot.create(:global_member,
+                          principal: u,
+                          roles: [global_role])
       end
     end
     let(:global_role) do
@@ -313,7 +363,7 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
           .to be_json_eql(
             {
               "format": "markdown",
-              "html": "<p>Some explanation.</p>",
+              "html": "<p class=\"op-uc-p\">Some explanation.</p>",
               "raw": "Some explanation."
             }.to_json
           )
@@ -324,7 +374,7 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
         expect(Project.count)
           .to eql(1)
 
-        expect(Project::Status.count)
+        expect(Projects::Status.count)
           .to eql(1)
       end
     end
@@ -517,12 +567,12 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
 
         expect(last_response.body)
           .to be_json_eql(
-                {
-                  "format": "markdown",
-                  "html": "<p>Some explanation.</p>",
-                  "raw": "Some explanation."
-                }.to_json
-              )
+            {
+              "format": "markdown",
+              "html": "<p class=\"op-uc-p\">Some explanation.</p>",
+              "raw": "Some explanation."
+            }.to_json
+          )
           .at_path("statusExplanation")
       end
     end
@@ -546,7 +596,7 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
           .to be_json_eql(
             {
               "format": "markdown",
-              "html": "<p>Some explanation.</p>",
+              "html": "<p class=\"op-uc-p\">Some explanation.</p>",
               "raw": "Some explanation."
             }.to_json
           )
@@ -621,11 +671,66 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
                 .at_path('message')
       end
     end
+
+    context 'deactivating (archiving) the project' do
+      context 'for an admin' do
+        let(:current_user) do
+          FactoryBot.create(:admin)
+        end
+        let(:project) do
+          FactoryBot.create(:project).tap do |p|
+            p.children << child_project
+          end
+        end
+        let(:child_project) do
+          FactoryBot.create(:project)
+        end
+
+        let(:body) do
+          {
+            active: false
+          }
+        end
+
+        it 'responds with 200 OK' do
+          expect(last_response.status)
+            .to eql(200)
+        end
+
+        it 'archives the project' do
+          expect(project.reload.active)
+            .to be_falsey
+        end
+
+        it 'archives the child project' do
+          expect(child_project.reload.active)
+            .to be_falsey
+        end
+      end
+
+      context 'for a non admin' do
+        let(:body) do
+          {
+            active: false
+          }
+        end
+
+        it 'responds with 403' do
+          expect(last_response.status)
+            .to eql(403)
+        end
+
+        it 'does not alter the project' do
+          expect(project.reload.active)
+            .to be_truthy
+        end
+      end
+    end
   end
 
   describe '#delete /api/v3/projects/:id' do
     let(:path) { api_v3_paths.project(project.id) }
-    let(:setup) { }
+    let(:setup) {}
 
     before do
       login_as current_user
@@ -707,7 +812,7 @@ describe 'API v3 Project resource', type: :request, content_type: :json do
 
       context 'for a project which has a version foreign work packages refer to' do
         let(:version) { FactoryBot.create(:version, project: project) }
-        let(:work_package) { FactoryBot.create(:work_package, fixed_version: version) }
+        let(:work_package) { FactoryBot.create(:work_package, version: version) }
 
         let(:setup) { work_package }
 

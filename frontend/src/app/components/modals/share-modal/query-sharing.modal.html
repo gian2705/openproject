@@ -3,6 +3,8 @@
        data-indicator-name="modal"
        tabindex="0">
     <div class="op-modal--modal-header">
+      <h3 [textContent]="text.label_visibility_settings"></h3>
+
       <a class="op-modal--modal-close-button">
         <i
             class="icon-close"
@@ -11,8 +13,6 @@
         </i>
       </a>
     </div>
-
-    <h3 [textContent]="text.label_visibility_settings"></h3>
 
     <query-sharing-form
         [isSave]="false"
@@ -26,7 +26,7 @@
               (click)="saveQuery($event)"
               [textContent]="text.button_save">
       </button>
-      <button class="button"
+      <button class="button -with-icon icon-cancel"
               [textContent]="text.button_cancel"
               [disabled]="isBusy"
               (click)="closeMe($event)">

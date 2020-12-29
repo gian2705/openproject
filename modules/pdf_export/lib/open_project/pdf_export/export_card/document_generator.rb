@@ -1,10 +1,13 @@
 #-- copyright
-# OpenProject PDF Export Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,12 +23,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.md for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'prawn'
 
-module OpenProject::PdfExport::ExportCard
+module OpenProject::PDFExport::ExportCard
   require "open_project/pdf_export/export_card/model_display/work_package_display"
   class DocumentGenerator
 
@@ -55,7 +58,7 @@ module OpenProject::PdfExport::ExportCard
         :bottom_margin => 0,
         :page_size => page_size)
 
-      view = ::WorkPackage::PdfExport::View.new(I18n.locale)
+      view = ::WorkPackage::PDFExport::View.new(I18n.locale)
       view.register_fonts! @pdf
       @pdf.set_font @pdf.font('NotoSans')
 
@@ -103,7 +106,7 @@ module OpenProject::PdfExport::ExportCard
 
     def patch_models
       # Note: Can't seem to patch the models when initializing for reasons which I don't understand
-      WorkPackage.send(:include, WorkPackageDisplay)
+      WorkPackage.send(:include, OpenProject::PDFExport::ExportCard::ModelDisplay::WorkPackageDisplay)
     end
   end
 end

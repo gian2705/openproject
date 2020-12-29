@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -36,10 +36,10 @@ class CopyProjectsController < ApplicationController
     call = project_copy(@copy_project)
 
     if call.success?
-      enqueue_copy_job
+      job = enqueue_copy_job
 
       copy_started_notice
-      redirect_to origin
+      redirect_to job_status_path job.job_id
     else
       @errors = call.errors
       render action: copy_action
@@ -47,7 +47,10 @@ class CopyProjectsController < ApplicationController
   end
 
   def copy_project
-    @copy_project = Project.copy_attributes(@project)
+    @copy_project = Projects::CopyService
+      .new(user: current_user, source: @project)
+      .call(target_project_params: {}, attributes_only: true)
+      .result
 
     if @copy_project
       project_copy(@copy_project, EmptyContract)
@@ -77,7 +80,7 @@ class CopyProjectsController < ApplicationController
   end
 
   def origin
-    params[:coming_from] == 'admin' ? projects_path : settings_project_path(@project.id)
+    params[:coming_from] == 'admin' ? projects_path : settings_generic_project_path(@project.id)
   end
 
   def enqueue_copy_job

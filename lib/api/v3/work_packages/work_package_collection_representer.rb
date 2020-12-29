@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -35,7 +35,7 @@ module API
         element_decorator ::API::V3::WorkPackages::WorkPackageRepresenter
 
         def initialize(models,
-                       self_link,
+                       self_link:,
                        query: {},
                        project: nil,
                        groups:,
@@ -50,7 +50,7 @@ module API
           @embed_schemas = embed_schemas
 
           super(models,
-                self_link,
+                self_link: self_link,
                 query: query,
                 page: page,
                 per_page: per_page,
@@ -120,7 +120,7 @@ module API
           if project.present? &&
              (current_user.try(:admin?) || current_user_allowed_to(:edit_project, context: project))
             {
-              href: settings_project_path(project.identifier, tab: 'custom_fields'),
+              href: settings_custom_fields_project_path(project.identifier),
               type: 'text/html',
               title: I18n.t('label_custom_field_plural')
             }
@@ -181,7 +181,7 @@ module API
           end
 
           Schema::WorkPackageSchemaCollectionRepresenter.new(schemas,
-                                                             schemas_path,
+                                                             self_link: schemas_path,
                                                              current_user: current_user)
         end
 

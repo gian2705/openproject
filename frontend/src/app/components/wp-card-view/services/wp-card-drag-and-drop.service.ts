@@ -1,17 +1,16 @@
-import {Inject, Injectable, Injector} from '@angular/core';
+import {Injectable, Injector, Optional} from '@angular/core';
 import {WorkPackageResource} from "core-app/modules/hal/resources/work-package-resource";
 import {WorkPackageViewOrderService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-order.service";
 import {States} from "core-components/states.service";
 import {WorkPackageCreateService} from "core-components/wp-new/wp-create.service";
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
 import {CurrentProjectService} from "core-components/projects/current-project.service";
 import {WorkPackageInlineCreateService} from "core-components/wp-inline-create/wp-inline-create.service";
 import {DragAndDropService} from "core-app/modules/common/drag-and-drop/drag-and-drop.service";
 import {DragAndDropHelpers} from "core-app/modules/common/drag-and-drop/drag-and-drop.helpers";
 import {WorkPackageCardViewComponent} from "core-components/wp-card-view/wp-card-view.component";
 import {WorkPackageChangeset} from "core-components/wp-edit/work-package-changeset";
-import {WorkPackageCacheService} from "core-components/work-packages/work-package-cache.service";
 import {WorkPackageNotificationService} from "core-app/modules/work_packages/notifications/work-package-notification.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Injectable()
 export class WorkPackageCardDragAndDropService {
@@ -24,15 +23,15 @@ export class WorkPackageCardDragAndDropService {
   /** A reference to the component in use, to have access to the current input variables */
   public cardView:WorkPackageCardViewComponent;
 
-  public readonly dragService = this.injector.get(DragAndDropService, null);
 
   public constructor(readonly states:States,
                      readonly injector:Injector,
                      readonly reorderService:WorkPackageViewOrderService,
                      readonly wpCreate:WorkPackageCreateService,
                      readonly notificationService:WorkPackageNotificationService,
-                     readonly wpCacheService:WorkPackageCacheService,
+                     readonly apiV3Service:APIV3Service,
                      readonly currentProject:CurrentProjectService,
+                     @Optional() readonly dragService:DragAndDropService,
                      readonly wpInlineCreate:WorkPackageInlineCreateService) {
 
   }
@@ -83,7 +82,12 @@ export class WorkPackageCardDragAndDropService {
         const wpId:string = card.dataset.workPackageId!;
         const toIndex = DragAndDropHelpers.findIndex(card);
 
-        const workPackage = await this.wpCacheService.require(wpId);
+        const workPackage = await this
+          .apiV3Service
+          .work_packages
+          .id(wpId)
+          .get()
+          .toPromise();
         const result = await this.addWorkPackageToQuery(workPackage, toIndex);
 
         if (card.parentElement) {
@@ -139,7 +143,14 @@ export class WorkPackageCardDragAndDropService {
     newOrder = _.uniq(newOrder);
 
     Promise
-      .all(newOrder.map(id => this.wpCacheService.require(id)))
+      .all(newOrder.map(id =>
+        this
+          .apiV3Service
+          .work_packages
+          .id(id)
+          .get()
+          .toPromise()
+      ))
       .then((workPackages:WorkPackageResource[]) => {
         this.workPackages = workPackages;
         this.cardView.cdRef.detectChanges();

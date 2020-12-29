@@ -1,11 +1,13 @@
 bg:
+  grids:
+    label_widget_in_grid: "Приспособление, съдържащо се в мрежата %{grid_name}"
   activerecord:
     attributes:
       grids/grid:
-        page: "Page"
-        row_count: "Number of rows"
-        column_count: "Number of columns"
-        widgets: "Widgets"
+        page: "Страница"
+        row_count: "Брой редове"
+        column_count: "Брой колони"
+        widgets: "Джаджи"
     errors:
       models:
         grids/grid:

@@ -1,6 +1,6 @@
 #-- copyright
-#OpenProject is a project management system.
-#Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License version 3.
 #OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
@@ -38,6 +38,7 @@ ja:
     close_filter_title: "フィルタを閉じる"
     close_form_title: "フォームを閉じる"
     button_add_watcher: "ウォッチャーを追加"
+    button_add: "追加"
     button_back: "戻る"
     button_back_to_list_view: "リスト表示に戻る"
     button_cancel: "キャンセル"
@@ -55,6 +56,8 @@ ja:
     button_duplicate: "複製"
     button_edit: "編集"
     button_filter: "フィルタ"
+    button_collapse_all: "全てを折りたたむ"
+    button_expand_all: "全てを展開"
     button_advanced_filter: "詳細フィルター"
     button_list_view: "一覧表示"
     button_show_view: "全画面表示"
@@ -81,6 +84,7 @@ ja:
         inline: 'インラインを強調表示：'
         entire_card_by: 'カード全体で'
       remove_from_list: 'リストからカードを削除'
+    caption_rate_history: "進捗履歴"
     clipboard:
       browser_error: "お使いのブラウザーでは、クリップボードへのコピーをサポートしていません。手動で選択したテキストをコピーしてください。"
       copied_successful: "正常にクリップボードにコピーしました!"
@@ -115,6 +119,11 @@ ja:
         manual: 'Markdownソースに切り替える'
         wysiwyg: 'WYSIWYGエディタに切り替えます'
       macro:
+        error: 'Cannot expand macro: %{message}'
+        attribute_reference:
+          macro_help_tooltip: 'This text segment is being dynamically rendered by a macro.'
+          not_found: 'Requested resource could not be found'
+          invalid_attribute: "The selected attribute '%{name}' does not exist."
         child_pages:
           button: '子ページへのリンク'
           include_parent: '親を含める'
@@ -163,6 +172,60 @@ ja:
         edit_query: 'クエリの編集'
         new_group: '新規グループ'
         reset_to_defaults: 'デフォルトに戻す'
+      enterprise:
+        trial:
+          confirmation: "Confirmation of email address"
+          confirmation_info: >
+            We sent you an email on %{date} to %{email}. Please check your inbox and click the confirmation link provided to start your 14 days trial.
+          form:
+            general_consent: >
+              I agree with the <a target="_blank" href="%{link_terms}">terms of service</a> and the <a target="_blank" href="%{link_privacy}">privacy policy</a>.
+            invalid_email: "Invalid email address"
+            label_company: "Company"
+            label_first_name: "名前"
+            label_last_name: "苗字"
+            label_email: "電子メールアドレス"
+            label_domain: "Domain"
+            label_subscriber: "購入者"
+            label_maximum_users: "アクティブなユーザーの最大数"
+            label_starts_at: "Starts at"
+            label_expires_at: "有効期限"
+            receive_newsletter: I want to receive the OpenProject <a target="_blank" href="%{link}">newsletter</a>.
+            taken_domain: There can only be one active trial per domain.
+            taken_email: Each user can only create one trial.
+          email_not_received: "You did not receive an email? You can resend the email with the link on the right."
+          try_another_email: "Or try it with another email address."
+          next_steps: "Next steps"
+          resend_link: "再送信"
+          resend_success: "Email has been resent. Please check your emails and click the confirmation link provided."
+          resend_warning: "Could not resend email."
+          session_timeout: "Your session timed out. Please try to reload the page or resend email."
+          status_label: "Status:"
+          status_confirmed: "confirmed"
+          status_waiting: "email sent - waiting for confirmation"
+          test_ee: "Test the Enterprise Edition 14 days for free"
+          quick_overview: "Get a quick overview of project management and team collaboration with OpenProject Enterprise Edition."
+        upsale:
+          become_hero: "ヒーローになる!"
+          benefits:
+            description: "メリットは何ですか？"
+            high_security: "Security features"
+            high_security_text: "Single sign on (SAML, OpenID Connect, CAS), two-factor authentication and automatic sync of LDAP groups."
+            installation: "Installation support"
+            installation_text: "Experienced software engineers guide you through the complete installation and setup process in your own infrastructure."
+            premium_features: "Premium features"
+            premium_features_text: "Agile boards, custom theme and logo, graphs, intelligent workflows with custom actions, full text search for work package attachments and multi-select custom fields."
+            professional_support: "プロフェッショナルサポート"
+            professional_support_text: "Get reliable, high-touch support from senior support engineers with expert knowledge about running OpenProject in business-critical environments."
+          button_start_trial: "Start free trial"
+          button_book_now: "Book now"
+          confidence: >
+            We deliver the confidence of a tested and supported enterprise-class project management software - with Open Source and an open mind.
+          link_quote: "Get a quote"
+          text: >
+            The OpenProject Enterprise Edition builds on top of the Community Edition. It includes premium features and professional support mainly aimed at organizations with more than 10 users that manage business critical projects with OpenProject.
+          unlimited: "Unlimited"
+          you_contribute: "Developers need to pay their bills, too. With the Enterprise Edition, you substantially contribute to this Open Source community effort."
     custom_actions:
       date:
         specific: 'オン'
@@ -172,6 +235,9 @@ ja:
       cannot_save_changes_with_message: "次のエラーのために変更を保存できません: %{error}"
       query_saving: "ビューを保存できませんでした。"
       embedded_table_loading: "埋め込みビューを読み込めませんでした: %{message}"
+    enumeration_activities: "作業分類 (時間の追跡)"
+    enumeration_doc_categories: "ドキュメントのカテゴリ"
+    enumeration_work_package_priorities: "作業項目の優先度"
     filter:
       description:
         text_open_filter: "'ALT' と矢印キーでこのフィルタを開きます。"
@@ -204,8 +270,15 @@ ja:
       blocks:
         new_features:
           text_new_features: "新しい機能と製品の更新について表示する"
-          current_new_feature_html: "OpenProject には、<b>重要なプロジェクト情報を表示</b> して、プロジェクトが順調に進んでいるかどうかを表示する、新しい <b>概要ページ</b> が含まれています。 </br> <ul><li>プロジェクトのステータス</li> <li>作業項目のステータスの概要</li> <li>タスクの進捗状況</li> <li>ユーザーに割り当てられたタスク</li></ul> など、さまざまな新しいステータスウィジェットを挿入できます。"
-          learn_about: "新しいステータスウィジェットの詳細"
+          learn_about: "新機能の詳細はこちら"
+          standard:
+            learn_about_link: https://www.openproject.org/openproject-11-1-release
+            current_new_feature_html: >
+              The release contains various new features and improvements: <br> <ul class="%{list_styling_class}"> <li><b>Improved stylings</b>  of the WYSIWYG editor.</li> <li>Direct display of <b>user name for @notifications</b> while editing.</li> <li>Extended authentication profile with an <b>OpenID Connect provider.</b></li> <li>Display project <b>milestones aggregated</b> in single row in Gantt chart.</li> <li><b>Collapse all button for groups</b> in the work packages list.</li> <li><b>Optimization for printing,</b> e.g. wiki pages, via the browser print function.</li> </ul>
+          bim:
+            learn_about_link: https://www.openproject.org/openproject-11-0-release
+            current_new_feature_html: >
+              The release contains various new features and improvements: <br> <ul class="%{list_styling_class}"> <li><b>Improved stylings</b>  of the WYSIWYG editor.</li> <li>Direct display of <b>user name for @notifications</b> while editing.</li> <li>Extended authentication profile with an <b>OpenID Connect provider.</b></li> <li>Display project <b>milestones aggregated</b> in single row in Gantt chart.</li> <li><b>Collapse all button for groups</b> in the work packages list.</li> <li><b>Optimization for printing,</b> e.g. wiki pages, via the browser print function.</li> </ul>
     label_activate: "有効にする"
     label_add_column_after: "後に列を追加"
     label_add_column_before: "前に列を追加"
@@ -216,13 +289,14 @@ ja:
     label_add_row_before: "前に行を追加"
     label_add_selected_columns: "選択した列を追加"
     label_added_by: "追加した人"
-    label_added_time_by: "%{author} %{age}によって追加されました。"
+    label_added_time_by: "Added by <a href=%{authorLink}>%{author}</a> at %{age}"
     label_ago: "○日前"
     label_all: "全て"
     label_all_work_packages: "全ての作業項目"
     label_and: "及び"
     label_ascending: "昇順"
     label_author: "作者: %{user}"
+    label_avatar: "アバター"
     label_between: "次の範囲内"
     label_board: "ボード"
     label_board_locked: "ロックされている"
@@ -236,6 +310,8 @@ ja:
     label_deactivate: "無効"
     label_descending: "降順"
     label_description: "説明"
+    label_details: "詳細"
+    label_display: "表示"
     label_cancel_comment: "コメントをキャンセル"
     label_closed_work_packages: "完了"
     label_collapse: "折りたたむ"
@@ -254,31 +330,41 @@ ja:
     label_expand_all: "全てを展開"
     label_expand_project_menu: "プロジェクトメニューを展開"
     label_export: "外部出力"
+    label_export_preparing: "The export is being prepared and will be downloaded shortly."
     label_filename: "ファイル"
     label_filesize: "サイズ"
+    label_general: "概要"
+    label_global_roles: "グローバルロール"
     label_greater_or_equal: ">="
     label_group: 'グループ'
     label_group_by: "グループ化"
+    label_group_plural: "グループ"
     label_hide_attributes: "非表示にする"
     label_hide_column: "列を非表示"
     label_hide_project_menu: "プロジェクトメニューを折りたたむ"
     label_in: "今日から○日後"
     label_in_less_than: "今日から○日後以前"
     label_in_more_than: "今日から○日後以降"
+    label_incoming_emails: "受信メール"
+    label_information_plural: "情報"
     label_import: "インポート"
     label_latest_activity: "最新の活動"
     label_last_updated_on: "最終更新日："
+    label_learn_more_link: "もっと詳しく"
     label_less_or_equal: "以下"
     label_less_than_ago: "今日より○日前以降"
     label_loading: "読み込み中..."
+    label_mail_notification: "電子メールの通知"
     label_me: "自分"
+    label_meeting_agenda: "アジェンダ"
+    label_meeting_minutes: "議事録"
     label_menu_collapse: "折りたたむ"
     label_menu_expand: "展開する"
     label_more_than_ago: "今日より○日前以前"
     label_next: "次へ"
     label_no_color: "色なし"
     label_no_data: "表示できるデータがありません。"
-    label_no_due_date: "完了日なし"
+    label_no_due_date: "no finish date"
     label_no_start_date: "開始日なし"
     label_no_value: "値なし"
     label_none: "なし"
@@ -292,12 +378,16 @@ ja:
     label_previous: "前へ"
     label_per_page: "1 ページあたり"
     label_please_wait: "しばらくお待ちください"
+    label_project_plural: "プロジェクト"
     label_visibility_settings: "表示の設定"
     label_quote_comment: "このコメントを引用"
+    label_recent: "最新"
     label_reset: "リセット"
     label_remove_column: "列を削除"
     label_remove_columns: "選択した列を削除"
     label_remove_row: "行を削除"
+    label_report: "レポート"
+    label_repository_plural: "リポジトリ"
     label_save_as: "名前をつけて保存"
     label_select_watcher: "ウォッチャーを選択..."
     label_selected_filter_list: "選択されたフィルタ"
@@ -308,6 +398,7 @@ ja:
     label_sort_higher: "上へ"
     label_sort_lower: "下へ移動"
     label_sorting: "ソート中"
+    label_spent_time: "作業時間の記録"
     label_star_query: "支持された"
     label_press_enter_to_save: "Enterを押して保存します。"
     label_public_query: "公開"
@@ -315,16 +406,20 @@ ja:
     label_sum_for: "合計"
     label_subject: "題名"
     label_this_week: "今週"
-    label_today: "今日"
+    label_today: "Today"
+    label_time_entry_plural: "作業時間の記録"
     label_up: "アップ"
+    label_user_plural: "ユーザ"
     label_activity_show_only_comments: "コメントのみのアクティビティを表示"
     label_activity_show_all: "すべてのアクティビティを表示"
     label_total_progress: "%{percent}% 進行状況"
     label_total_amount: "合計: %{amount}"
     label_updated_on: "更新日時"
     label_value_derived_from_children: "(子から派生した値)"
+    label_children_derived_duration: "Work package's children derived duration"
     label_warning: "注意"
     label_work_package: "ワーク パッケージ"
+    label_work_package_parent: "Parent work package"
     label_work_package_plural: "作業項目"
     label_watch: "ウォッチする"
     label_watch_work_package: "作業項目をウォッチ"
@@ -358,6 +453,7 @@ ja:
     label_wait: "構成をお待ちください..."
     label_upload_counter: "%{count}ファイルの中に%{done}が完了"
     label_validation_error: "次のエラーのために作業項目を保存できませんでした:"
+    label_version_plural: "バージョン"
     label_view_has_changed: "このビューには未保存の変更があります。 クリックすると保存します。"
     help_texts:
       show_modal: 'テキスト入力属性のヘルプを表示'
@@ -385,7 +481,7 @@ ja:
           drag: 'リスト内のカードをドラッグアンドドロップして並べ替えたり、別のリストに入れます。 ダブルクリックすると詳細ビューが開きます。'
         wp:
           toggler: "次に、<b>作業パッケージ</b>セクションを見て、作業の詳細を確認してください。"
-          list: 'これは、タスク、機能、マイルストーン、バグなど、プロジェクト内の重要な作業をまとめた<b>作業項目</b>リストです。 <br>このリスト内で作業パッケージを直接作成または編集できます。 詳細を見るには行をダブルクリックします。'
+          list: 'This is the <b>Work package</b> list with the important work within your project, such as tasks, milestones, phases, and more. <br> You can create or edit a work package directly within this list. To see its details you can double click on a row.'
           full_view: '<b>作業項目の詳細</b>には、説明、ステータス、優先度、アクティビティ、依存関係、コメントなどの関連情報がすべて表示されます。'
           back_button: '矢印を使用すると作業項目リストに戻ることができます。'
           create_button: '<b>作成</b>ボタンをクリックすると、プロジェクトに新しい作業項目が追加されます。'
@@ -410,6 +506,7 @@ ja:
       context: 'プロジェクトのコンテキスト'
       work_package_belongs_to: 'このワークパッケージは、プロジェクト %{projectname} に属しています。'
       click_to_switch_context: 'このワークパッケージをそのプロジェクトで開きます。'
+      confirm_template_load: 'Switching the template will reload the page and you will lose all input to this form. Continue?'
       autocompleter:
         label: 'プロジェクト名の入力補完'
     text_are_you_sure: "よろしいですか？"
@@ -426,23 +523,22 @@ ja:
         upgrade_to_ee_text: "この機能が必要な場合、あなたは超プロです! Enterprise Edition クライアントになることによって私達のオープン ソース開発者を支援していただけませんか?"
         more_information: "詳細情報"
         nevermind: "無視"
-        filter_types:
-          parent: "の子である"
-          precedes: "先行"
-          follows: "フォロー"
-          relates: "に関連する"
-          duplicates: "複製中"
-          duplicated: "次の項目が重複"
-          blocks: "ブロッキング"
-          blocked: "ブロックされている"
-          partof: "の一部であること"
-          includes: "含む"
-          requires: "要求する"
-          required: "に必要"
+      edit:
+        form_configuration: "フォーム設定"
+        projects: "プロジェクト"
+        settings: "設定"
     time_entry:
+      project: 'プロジェクト'
+      work_package: 'ワーク パッケージ'
+      work_package_required: 'Requires selecting a work package first.'
       activity: '活動'
       comment: 'コメント'
+      duration: '期間'
+      spent_on: '日付'
       hours: ' 時間'
+      title: '時間を記録'
+    two_factor_authentication:
+      label_two_factor_authentication: '2要素認証'
     watchers:
       label_loading: ウォッチャーを読み込み中...
       label_error_loading: ウォッチャーを読み込み中にエラーが発生しました。
@@ -500,15 +596,10 @@ ja:
       select_tag: 'タグを選択する'
       select_branch: '分岐を選択する'
     field_value_enter_prompt: "'%{field}'の値を入力"
-    select2:
-      input_too_short:
-        other: "後{{count}}以上の文字を入力してください。"
-      load_more: "より多くの結果を読み込み中…"
-      no_matches: "一致するものが見つかりません。"
-      searching: "検索中..."
-      selection_too_big:
-        other: "{{limit}}つ項目のみを選択できます。"
     project_menu_details: "詳細"
+    scheduling:
+      manual: 'Manual scheduling'
+      automatic: 'Automatic scheduling'
     sort:
       sorted_asc: '昇順の並べ替えを適用しました。 '
       sorted_dsc: '降順の並べ替えを適用しました。 '
@@ -674,6 +765,7 @@ ja:
         startDate: "開始日"
         status: "ステータス"
         subject: "題名"
+        subproject: "子プロジェクト"
         title: "タイトル"
         type: "種別"
         updatedAt: "更新日時"
@@ -719,6 +811,9 @@ ja:
           not_found: "そのようなビューはありません"
           duplicate_query_title: "このビューの名前は既に存在します。 とにかく変更しますか？"
         text_no_results: "一致するビューは見つかりませんでした。"
+      scheduling:
+        is_parent: "The dates of this work package are automatically deduced from its children. Activate 'Manual scheduling' to set the dates."
+        is_switched_from_manual_to_automatic: "The dates of this work package may need to be recalculated after switching from manual to automatic scheduling due to relationships with other work packages."
       table:
         configure_button: 'ワークパッケージテーブルを設定する'
         summary: "作業項目の行と、作業項目の属性の列から成る表。"
@@ -752,14 +847,13 @@ ja:
           automatic: '自動'
           manually: '手動'
           warning: '自動並び替えモードをアクティブにすると、以前のソートが失われます。'
-        columns_help_text: "テーブルビューに列を追加または削除するには上記の入力を使用します。列をドラッグ＆ドロップして並べ替えることができます。"
+        columns_help_text: "Use the input above to add columns to your table view. You can drag and drop the columns to reorder them."
         upsale:
           attribute_highlighting: '全体から目立つように特定の作業項目が必要ですか？'
           relation_columns: 'ワークパッケージリストに関係を表示する必要がありますか?'
           check_out_link: 'エンタープライズ版をチェックしてください。'
         relation_filters:
-          first_part: "すべての作業項目を表示"
-          second_part: "現在の作業項目"
+          filter_work_packages_by_relation_type: 'Filter work packages by relation type'
       tabs:
         overview: 概要
         activity: 活動
@@ -808,6 +902,9 @@ ja:
         has_children: "ワークパッケージは %{childUnits} あります。"
         confirm_deletion_children: "列挙された作業項目のすべての子孫が再帰的に削除されることを承認します。"
         deletes_children: "すべての子作業項目とその子孫も再帰的に削除されます。"
+      destroy_time_entry:
+        title: "Confirm deletion of time entry"
+        text: "Are you sure you want to delete the following time entry?"
     notice_no_results_to_display: "表示結果はありません。"
     notice_successful_create: "正常に作成しました。"
     notice_successful_delete: "正常に削除しました。"
@@ -843,7 +940,8 @@ ja:
       child_work_packages:
         other: "%{count} の子ワークパッケージ"
       hour:
-        other: "%{count} 時間"
+        zero: "0h"
+        other: ""
     zen_mode:
       button_activate: 'マナーモードをアクティブにする'
       button_deactivate: 'マナーモードを非アクティブにする'

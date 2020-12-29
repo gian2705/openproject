@@ -1,9 +1,15 @@
 #-- copyright
-#OpenProject Reporting Plugin
-#Copyright (C) 2010 - 2014 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License version 3.
+#OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+#Copyright (C) 2006-2017 Jean-Philippe Lang
+#Copyright (C) 2010-2013 the ChiliProject Team
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
-#version 3.
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
 #This program is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -11,13 +17,14 @@
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#See docs/COPYRIGHT.rdoc for more details.
 #++
-#---
 id:
   button_save_as: "Simpan sebagai..."
   comments: "Komentar"
-  cost_reports_title: "Pelaporan biaya"
+  cost_reports_title: "Time and costs"
   label_cost_report: "Laporan biaya"
+  label_cost_report_plural: "Pelaporan biaya"
   description_drill_down: "Lihat detail"
   description_filter_selection: "Seleksi"
   description_multi_select: "Tampilkan multiselect"
@@ -53,6 +60,17 @@ id:
   label_units: "Unit"
   label_week_reporting: "Minggu (spent)"
   label_year_reporting: "Tahun (Spent)"
+  label_count: "Count"
+  label_filter: "Filter"
+  label_filter_add: "Add Filter"
+  label_filter_plural: "Filter"
+  label_group_by: "Pengelompokan"
+  label_group_by_add: "Add Group-by Attribute"
+  label_inactive: "«inactive»"
+  label_no: "No"
+  label_none: "(no data)"
+  label_report: "Laporan"
+  label_yes: "Yes"
   load_query_question: "Proses laporan memiliki %{size} cell dan akan memakan waktu yang relatif lama. Apakah anda ingin melanjutkan?"
   permission_save_cost_reports: "Simpan laporan biaya untuk umum"
   permission_save_private_cost_reports: "Simpan laporan biaya untuk diri sendiri"
@@ -62,3 +80,7 @@ id:
   units: "Unit"
   validation_failure_date: "validasi tanggal gagal"
   validation_failure_integer: "validasi bilangan bulat gagal"
+  reporting:
+    group_by:
+      selected_columns: "Selected columns"
+      selected_rows: "Selected rows"

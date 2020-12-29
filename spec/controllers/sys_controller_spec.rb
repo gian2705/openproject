@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -652,7 +652,7 @@ describe SysController, type: :controller do
             let(:last_updated) { 2.days.ago }
 
             it 'updates the storage' do
-              expect(::Scm::StorageUpdaterJob).to receive(:perform_later)
+              expect(::SCM::StorageUpdaterJob).to receive(:perform_later)
               request_storage
             end
           end
@@ -661,7 +661,7 @@ describe SysController, type: :controller do
             let(:last_updated) { 10.minutes.ago }
 
             it 'does not update to storage' do
-              expect(::Scm::StorageUpdaterJob).not_to receive(:perform_later)
+              expect(::SCM::StorageUpdaterJob).not_to receive(:perform_later)
               request_storage
             end
           end
@@ -671,7 +671,7 @@ describe SysController, type: :controller do
             let(:last_updated) { 10.minutes.ago }
 
             it 'does update to storage' do
-              expect(::Scm::StorageUpdaterJob).to receive(:perform_later)
+              expect(::SCM::StorageUpdaterJob).to receive(:perform_later)
               request_storage
             end
           end

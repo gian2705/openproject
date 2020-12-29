@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -28,14 +28,14 @@ See docs/COPYRIGHT.rdoc for more details.
 ++#%>
 
 <% content_for :header_tags do %>
-  <%= javascript_include_tag 'repository_navigation' %>
+  <meta name="required_script" content="repository_navigation" />
 <% end %>
 
 <persistent-toggle data-identifier="repository.checkout_instructions"></persistent-toggle>
-<%= toolbar title: l('repositories.named_repository',
+<%= toolbar title: t('repositories.named_repository',
                      vendor_name: @repository.class.vendor_name) do %>
   <% if @instructions && @instructions.available? %>
-  <li class="toolbar-item toolbar-input-group">
+  <li class="toolbar-item toolbar-input-group hidden-for-mobile">
     <div class="toolbar-input-group--affix -prepend">
       <span><%= @instructions.checkout_command %></span>
     </div>
@@ -48,15 +48,15 @@ See docs/COPYRIGHT.rdoc for more details.
                        clipboard-target="#repository-checkout-url">
     </copy-to-clipboard>
     <button class="repository-checkout-copy-button toolbar-input--affix toolbar-input-group--affix -append"
-            title="<%= l(:label_copy_to_clipboard) %>">
+            title="<%= t(:label_copy_to_clipboard) %>">
       <%= op_icon('icon-copy') %>
-      <span class="hidden-for-sighted"><%= l(:label_copy_to_clipboard) %></span>
+      <span class="hidden-for-sighted"><%= t(:label_copy_to_clipboard) %></span>
     </button>
   </li>
   <li class="toolbar-item -icon-only">
     <a id="repository--checkout-instructions-toggle"
        class="persistent-toggle--click-handler button"
-       title="<%= l('repositories.checkout.show_instructions') %>">
+       title="<%= t('repositories.checkout.show_instructions') %>">
       <%= op_icon('button--icon icon-info1') %>
     </a>
   </li>
@@ -64,7 +64,7 @@ See docs/COPYRIGHT.rdoc for more details.
   <% if !empty && User.current.allowed_to?(:browse_repository, @project) %>
   <li class="toolbar-item -icon-only">
     <%= link_to stats_project_repository_path(@project),
-        class: 'button', title: l(:label_statistics) do %>
+        class: 'button', title: t(:label_statistics) do %>
       <%= op_icon('button--icon icon-chart1') %>
     <% end %>
   </li>
@@ -73,8 +73,8 @@ See docs/COPYRIGHT.rdoc for more details.
                 { repository: @repository, project: @project, repository_empty: empty }) %>
   <% if User.current.allowed_to?(:manage_repository, @project) %>
     <li class="toolbar-item -icon-only">
-      <%= link_to settings_project_path(@project, tab: 'repository'),
-          class: 'button', title: l(:label_settings) do %>
+      <%= link_to settings_repository_project_path(@project),
+          class: 'button', title: t(:label_setting_plural) do %>
         <%= op_icon('button--icon icon-settings') %>
       <% end %>
     </li>

@@ -2,8 +2,8 @@
 
 #-- copyright
 
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -26,17 +26,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 module DemoData
   class AttributeHelpTextSeeder < Seeder
     def initialize; end
 
     def seed_data!
-      print '    ↳ Creating attribute help texts'
-
-      seed_attribute_help_texts
-
-      puts
+      print_status '    ↳ Creating attribute help texts' do
+        seed_attribute_help_texts
+      end
     end
 
     private
@@ -45,7 +43,7 @@ module DemoData
       help_texts = demo_data_for('attribute_help_texts')
       if help_texts.present?
         help_texts.each do |help_text_attr|
-          print '.'
+          print_status '.'
           create_attribute_help_text help_text_attr
         end
       end

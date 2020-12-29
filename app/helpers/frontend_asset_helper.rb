@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,7 +31,7 @@ module FrontendAssetHelper
   CLI_DEFAULT_PROXY = 'http://localhost:4200'.freeze
 
   def self.assets_proxied?
-    !Rails.env.production? && cli_proxy?
+    !ENV['OPENPROJECT_DISABLE_DEV_ASSET_PROXY'].present? && !Rails.env.production? && cli_proxy?
   end
 
   def self.cli_proxy
@@ -54,7 +54,7 @@ module FrontendAssetHelper
       if FrontendAssetHelper.assets_proxied?
         concat javascript_include_tag variable_asset_path("styles.js")
       else
-        concat stylesheet_link_tag variable_asset_path("styles.css")
+        concat stylesheet_link_tag variable_asset_path("styles.css"), media: :all
       end
     end
   end

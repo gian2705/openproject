@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -83,10 +83,10 @@ module API
             end
           end
 
-          def initialize(schema, self_link, context)
+          def initialize(schema, self_link:, **context)
             @base_schema_link = context.delete(:base_schema_link) || nil
             @show_lock_version = !context.delete(:hide_lock_version)
-            super(schema, self_link, context)
+            super(schema, self_link: self_link, **context)
           end
 
           link :baseSchema do
@@ -119,12 +119,27 @@ module API
                  type: 'Formattable',
                  required: false
 
+          schema :schedule_manually,
+                 type: 'Boolean',
+                 required: false,
+                 has_default: true
+
           schema :start_date,
                  type: 'Date',
                  required: false,
                  show_if: ->(*) { !represented.milestone? }
 
           schema :due_date,
+                 type: 'Date',
+                 required: false,
+                 show_if: ->(*) { !represented.milestone? }
+
+          schema :derived_start_date,
+                 type: 'Date',
+                 required: false,
+                 show_if: ->(*) { !represented.milestone? }
+
+          schema :derived_due_date,
                  type: 'Date',
                  required: false,
                  show_if: ->(*) { !represented.milestone? }
@@ -138,10 +153,17 @@ module API
                  type: 'Duration',
                  required: false
 
+          schema :derived_estimated_time,
+                 type: 'Duration',
+                 required: false
+
           schema :spent_time,
                  type: 'Duration',
                  required: false,
-                 show_if: ->(*) { represented.project && represented.project.module_enabled?('time_tracking') }
+                 show_if: ->(*) {
+                   current_user_allowed_to(:view_time_entries, context: represented.project) ||
+                     current_user_allowed_to(:view_own_time_entries, context: represented.project)
+                 }
 
           schema :percentage_done,
                  type: 'Integer',
@@ -248,8 +270,22 @@ module API
                                              title: priority.name
                                            }
                                          },
-                                         required: false,
+                                         required: true,
                                          has_default: true
+
+          schema_with_allowed_collection :budget,
+                                         type: 'Budget',
+                                         required: false,
+                                         value_representer: ::API::V3::Budgets::BudgetRepresenter,
+                                         link_factory: ->(budget) {
+                                           {
+                                             href: api_v3_paths.budget(budget.id),
+                                             title: budget.subject
+                                           }
+                                         },
+                                         show_if: ->(*) {
+                                           current_user_allowed_to(:view_budgets, context: represented.project)
+                                         }
 
           def attribute_groups
             (represented.type&.attribute_groups || []).map do |group|

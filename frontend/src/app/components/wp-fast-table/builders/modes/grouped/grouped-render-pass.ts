@@ -9,9 +9,13 @@ import {groupClassNameFor, GroupHeaderBuilder} from './group-header-builder';
 import {groupByProperty, groupedRowClassName} from './grouped-rows-helpers';
 import {GroupObject} from 'core-app/modules/hal/resources/wp-collection-resource';
 import {collapsedRowClass} from "core-components/wp-fast-table/builders/modes/grouped/grouped-classes.constants";
-import {getLocaleCurrencyName} from "@angular/common";
+import {GroupSumsBuilder} from "core-components/wp-fast-table/builders/modes/grouped/group-sums-builder";
+
+export const groupRowClass = '-group-row';
 
 export class GroupedRenderPass extends PlainRenderPass {
+
+  private sumsBuilder = new GroupSumsBuilder(this.injector, this.workPackageTable);
 
   constructor(public readonly injector:Injector,
               public workPackageTable:WorkPackageTable,
@@ -27,15 +31,22 @@ export class GroupedRenderPass extends PlainRenderPass {
    */
   protected doRender() {
     let currentGroup:GroupObject | null = null;
-    this.workPackageTable.originalRows.forEach((wpId:string) => {
+    const length = this.workPackageTable.originalRows.length;
+    this.workPackageTable.originalRows.forEach((wpId:string, index:number) => {
       let row = this.workPackageTable.originalRowIndex[wpId];
       let nextGroup = this.matchingGroup(row.object);
+      let groupsChanged = currentGroup !== nextGroup;
 
-      if (nextGroup && currentGroup !== nextGroup) {
-        nextGroup.renderedCount = 0;
+      // Render the sums row
+      if (currentGroup && groupsChanged) {
+        this.renderSumsRow(currentGroup);
+      }
+
+      // Render the next group row
+      if (nextGroup && groupsChanged) {
         const groupClass = groupClassNameFor(nextGroup);
         let rowElement = this.headerBuilder.buildGroupRow(nextGroup, this.colspan);
-        this.appendNonWorkPackageRow(rowElement, groupClass);
+        this.appendNonWorkPackageRow(rowElement, groupClass, [groupRowClass]);
         currentGroup = nextGroup;
       }
 
@@ -43,10 +54,10 @@ export class GroupedRenderPass extends PlainRenderPass {
       this.buildSingleRow(row);
     });
 
-    // Update the counts to what we actually rendered
-    this.groups.forEach((group) => {
-      this.headerBuilder.setActualCount(group, this.tableBody);
-    });
+    // Render the last sums row
+    if (currentGroup) {
+      this.renderSumsRow(currentGroup);
+    }
   }
 
   /**
@@ -108,22 +119,41 @@ export class GroupedRenderPass extends PlainRenderPass {
    * Enhance a row from the rowBuilder with group information.
    */
   private buildSingleRow(row:WorkPackageTableRow):void {
-    const group = row.group!;
-    const hidden = group.collapsed;
+    const group = row.group;
 
+    if (!group) {
+      console.warn("All rows should have a group, but this one doesn't %O", row);
+    }
+
+    let hidden = false;
     let additionalClasses:string[] = [];
 
     let [tr, _] = this.rowBuilder.buildEmpty(row.object);
-    additionalClasses.push(groupedRowClassName(group.index));
 
-    if (hidden) {
-      additionalClasses.push(collapsedRowClass);
+    if (group) {
+      additionalClasses.push(groupedRowClassName(group.index));
+      hidden = !!group.collapsed;
+
+      if (hidden) {
+        additionalClasses.push(collapsedRowClass);
+      }
     }
-
 
     row.element = tr;
     tr.classList.add(...additionalClasses);
     this.appendRow(row.object, tr, additionalClasses, hidden);
-    group.renderedCount += 1;
+  }
+
+  /**
+   * Render the sums row for the current group
+   */
+  private renderSumsRow(group:GroupObject) {
+    if (!group.sums) {
+      return;
+    }
+
+    const groupClass = groupClassNameFor(group);
+    let rowElement = this.sumsBuilder.buildSumsRow(group);
+    this.appendNonWorkPackageRow(rowElement, groupClass);
   }
 }

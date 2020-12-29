@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -46,7 +46,7 @@ describe ::API::V3::Queries::Schemas::QueryFilterInstanceSchemaRepresenter, clea
   let(:custom_field) { FactoryBot.build_stubbed(:list_wp_custom_field) }
   let(:instance) do
     described_class.new(filter,
-                        self_link,
+                        self_link: self_link,
                         current_user: user,
                         form_embedded: form_embedded)
   end
@@ -105,8 +105,6 @@ describe ::API::V3::Queries::Schemas::QueryFilterInstanceSchemaRepresenter, clea
           let(:writable) { false }
           let(:has_default) { true }
         end
-
-        it_behaves_like 'has no visibility property'
       end
 
       describe 'filter' do
@@ -118,8 +116,6 @@ describe ::API::V3::Queries::Schemas::QueryFilterInstanceSchemaRepresenter, clea
           let(:required) { true }
           let(:writable) { true }
         end
-
-        it_behaves_like 'has no visibility property'
 
         it_behaves_like 'does not link to allowed values'
 
@@ -149,8 +145,6 @@ describe ::API::V3::Queries::Schemas::QueryFilterInstanceSchemaRepresenter, clea
           let(:required) { true }
           let(:writable) { true }
         end
-
-        it_behaves_like 'has no visibility property'
 
         it_behaves_like 'does not link to allowed values'
 

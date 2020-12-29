@@ -68,6 +68,34 @@ describe 'activity comments', js: true, with_mail: false do
 
           expect(page).to have_selector('.user-comment > .message', count: 3)
           wp_page.expect_comment text: 'this is my second comment!1'
+
+          expect(comment_field.editing?).to be false
+          comment_field.activate!
+          expect(comment_field.editing?).to be true
+
+          comment_field.click_and_type_slowly 'this is my third comment!1'
+          comment_field.submit_by_click
+
+          # Only shows three most recent
+          expect(page).to have_selector('.user-comment > .message', count: 3)
+          wp_page.expect_comment text: 'this is my third comment!1'
+
+          wp_page.switch_to_tab tab: 'Activity'
+          # Now showing all comments
+          expect(page).to have_selector('.user-comment > .message', count: 4, wait: 10)
+
+          expect(comment_field.editing?).to be false
+          comment_field.activate!
+          expect(comment_field.editing?).to be true
+
+          comment_field.click_and_type_slowly 'this is my fifth comment!1'
+          comment_field.submit_by_click
+
+          expect(page).to have_selector('.user-comment > .message', count: 4)
+          wp_page.expect_comment text: 'this is my fifth comment!1'
+
+          # Expect no activity details
+          expect(page).to have_no_selector('.work-package-details-activities-messages li')
         end
       end
 
@@ -168,7 +196,7 @@ describe 'activity comments', js: true, with_mail: false do
         # Add our comment
         expect(comment_field.input_element).to have_selector('blockquote')
         quote = comment_field.input_element[:innerHTML]
-        expect(quote).to eq '<p>Anonymous wrote:</p><blockquote><p>the first comment in this WP</p></blockquote>'
+        expect(quote).to eq '<p class="op-uc-p">Anonymous wrote:</p><blockquote class="op-uc-blockquote"><p class="op-uc-p">the first comment in this WP</p></blockquote>'
 
         # Extend the comment
         comment_field.input_element.click

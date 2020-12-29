@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -86,6 +86,7 @@ module API
 
       link :user do
         next unless current_user.logged?
+
         {
           href: api_v3_paths.user(current_user.id),
           title: current_user.name
@@ -94,6 +95,7 @@ module API
 
       link :userPreferences do
         next unless current_user.logged?
+
         {
           href: api_v3_paths.my_preferences
         }
@@ -109,7 +111,9 @@ module API
                getter: ->(*) { Setting.app_title }
 
       property :core_version,
-               getter: ->(*) { OpenProject::VERSION.to_semver }
+               exec_context: :decorator,
+               getter: ->(*) { OpenProject::VERSION.to_semver },
+               if: ->(*) { current_user.admin? }
 
       def _type
         'Root'

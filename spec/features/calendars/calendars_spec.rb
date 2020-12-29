@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -80,13 +80,13 @@ describe 'Work package calendars', type: :feature, js: true do
 
     # should open the calendar with the current month displayed
     expect(page)
-      .to have_selector '.fc-event-container', text: current_work_package.subject
+      .to have_selector '.fc-event-title', text: current_work_package.subject
     expect(page)
-      .to have_selector '.fc-event-container', text: another_current_work_package.subject
+      .to have_selector '.fc-event-title', text: another_current_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: future_work_package.subject
+      .to have_no_selector '.fc-event-title', text: future_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: another_future_work_package.subject
+      .to have_no_selector '.fc-event-title', text: another_future_work_package.subject
 
     filters.expect_filter_count 1
 
@@ -99,77 +99,77 @@ describe 'Work package calendars', type: :feature, js: true do
 
     # non matching work packages are no longer displayed
     expect(page)
-      .to have_no_selector '.fc-event-container', text: current_work_package.subject
+      .to have_no_selector '.fc-event-title', text: current_work_package.subject
     expect(page)
-      .to have_selector '.fc-event-container', text: another_current_work_package.subject
+      .to have_selector '.fc-event-title', text: another_current_work_package.subject
 
     # The filter for the time frame added implicitly should not be visible
     filters.expect_filter_count 2
 
     # navigate to the next month
-    find('.fc-left button.fc-next-button').click
+    find('.fc-next-button').click
 
     expect(page)
-      .to have_no_selector '.fc-event-container', text: current_work_package.subject
+      .to have_no_selector '.fc-event-title', text: current_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: another_current_work_package.subject
+      .to have_no_selector '.fc-event-title', text: another_current_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: future_work_package.subject
+      .to have_no_selector '.fc-event-title', text: future_work_package.subject
     expect(page)
-      .to have_selector '.fc-event-container', text: another_future_work_package.subject
+      .to have_selector '.fc-event-title', text: another_future_work_package.subject
 
     # removing the filter will show the event again
     filters.remove_filter 'subject'
 
     expect(page)
-      .to have_no_selector '.fc-event-container', text: current_work_package.subject
+      .to have_no_selector '.fc-event-title', text: current_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: another_current_work_package.subject
+      .to have_no_selector '.fc-event-title', text: another_current_work_package.subject
     expect(page)
-      .to have_selector '.fc-event-container', text: future_work_package.subject
+      .to have_selector '.fc-event-title', text: future_work_package.subject
     expect(page)
-      .to have_selector '.fc-event-container', text: another_future_work_package.subject
+      .to have_selector '.fc-event-title', text: another_future_work_package.subject
 
     future_url = current_url
 
     # navigate back a month
-    find('.fc-left button.fc-prev-button').click
+    find('.fc-prev-button').click
 
     expect(page)
-      .to have_selector '.fc-event-container', text: current_work_package.subject
+      .to have_selector '.fc-event-title', text: current_work_package.subject
     expect(page)
-      .to have_selector '.fc-event-container', text: another_current_work_package.subject
+      .to have_selector '.fc-event-title', text: another_current_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: future_work_package.subject
+      .to have_no_selector '.fc-event-title', text: future_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: another_future_work_package.subject
+      .to have_no_selector '.fc-event-title', text: another_future_work_package.subject
 
     # open the page via the url should show the next month again
     visit future_url
 
     expect(page)
-      .to have_no_selector '.fc-event-container', text: current_work_package.subject
+      .to have_no_selector '.fc-event-title', text: current_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: another_current_work_package.subject
+      .to have_no_selector '.fc-event-title', text: another_current_work_package.subject
     expect(page)
-      .to have_selector '.fc-event-container', text: future_work_package.subject
+      .to have_selector '.fc-event-title', text: future_work_package.subject
     expect(page)
-      .to have_selector '.fc-event-container', text: another_future_work_package.subject
+      .to have_selector '.fc-event-title', text: another_future_work_package.subject
 
     # go back a month by using the browser back functionality
     page.execute_script('window.history.back()')
 
     expect(page)
-      .to have_selector '.fc-event-container', text: current_work_package.subject
+      .to have_selector '.fc-event-title', text: current_work_package.subject
     expect(page)
-      .to have_selector '.fc-event-container', text: another_current_work_package.subject
+      .to have_selector '.fc-event-title', text: another_current_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: future_work_package.subject
+      .to have_no_selector '.fc-event-title', text: future_work_package.subject
     expect(page)
-      .to have_no_selector '.fc-event-container', text: another_future_work_package.subject
+      .to have_no_selector '.fc-event-title', text: another_future_work_package.subject
 
     # click goes to work package show page
-    page.find('.fc-event-container', text: current_work_package.subject).click
+    page.find('.fc-event-title', text: current_work_package.subject).click
 
     expect(page)
       .to have_selector('.subject-header', text: current_work_package.subject)
@@ -180,10 +180,10 @@ describe 'Work package calendars', type: :feature, js: true do
 
     # click goes to work package show page
     expect(page)
-      .to have_selector('.fc-event-container', text: current_work_package.subject, wait: 20)
+      .to have_selector('.fc-event-title', text: current_work_package.subject, wait: 20)
 
     # click goes to work package show page again
-    page.find('.fc-event-container', text: current_work_package.subject).click
+    page.find('.fc-event-title', text: current_work_package.subject).click
 
     expect(page)
       .to have_selector('.subject-header', text: current_work_package.subject)
@@ -192,6 +192,6 @@ describe 'Work package calendars', type: :feature, js: true do
     page.find('.work-packages-back-button').click
 
     expect(page)
-      .to have_selector '.fc-event-container', text: current_work_package.subject, wait: 20
+      .to have_selector '.fc-event-title', text: current_work_package.subject, wait: 20
   end
 end

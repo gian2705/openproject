@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -26,7 +27,7 @@
 #
 # See docs/COPYRIGHT.rdoc for more details.
 #++
-require 'legacy_spec_helper'
+require_relative '../../../legacy_spec_helper'
 
 describe Redmine::Plugin do
   before do
@@ -65,7 +66,7 @@ describe Redmine::Plugin do
 
   it 'should requires openproject' do
     test = self
-    version = Redmine::VERSION.to_semver
+    version = OpenProject::VERSION.to_semver
 
     @klass.register :foo do
       test.assert requires_openproject('>= 0.1')
@@ -82,7 +83,7 @@ describe Redmine::Plugin do
         requires_openproject('< 0.9', '>= 98.0.0')
       end
 
-      test.assert requires_openproject("~> #{Redmine::VERSION.to_semver.gsub(/\d+\z/, '0')}")
+      test.assert requires_openproject("~> #{OpenProject::VERSION.to_semver.gsub(/\d+\z/, '0')}")
     end
   end
 

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -26,7 +26,9 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class AttributeHelpText < ActiveRecord::Base
+class AttributeHelpText < ApplicationRecord
+  acts_as_attachable viewable_by_all_users: true
+
   def self.available_types
     subclasses.map { |child| child.name.demodulize }
   end
@@ -60,7 +62,7 @@ class AttributeHelpText < ActiveRecord::Base
   end
 
   def attribute_scope
-    raise NotImplementedError
+    self.class.to_s.demodulize
   end
 
   def type_caption
@@ -77,3 +79,4 @@ class AttributeHelpText < ActiveRecord::Base
 end
 
 require_dependency 'attribute_help_text/work_package'
+require_dependency 'attribute_help_text/project'

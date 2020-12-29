@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,14 +25,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module OpenProject::TextFormatting::Matchers
   module LinkHandlers
     class ColonSeparator < Base
       def self.allowed_prefixes
-        %w(commit source export version project user attachment)
+        %w(commit source export version project user attachment document meeting)
       end
 
       ##
@@ -107,12 +107,12 @@ module OpenProject::TextFormatting::Matchers
           anchor = $5
           link_to h("#{matcher.project_prefix}#{matcher.prefix}:#{oid}"),
                   named_route(:entry_revision_project_repository,
-                                   action: 'entry',
-                                   project_id: project.identifier,
-                                   repo_path: path.to_s,
-                                   rev: rev,
-                                   anchor: anchor,
-                                   format: (matcher.prefix == 'export' ? 'raw' : nil)),
+                              action: 'entry',
+                              project_id: project.identifier,
+                              repo_path: path.to_s,
+                              rev: rev,
+                              anchor: anchor,
+                              format: (matcher.prefix == 'export' ? 'raw' : nil)),
                   class: (matcher.prefix == 'export' ? 'source download' : 'source')
         end
       end
@@ -139,6 +139,36 @@ module OpenProject::TextFormatting::Matchers
       def render_user
         if (user = User.find_by(login: oid))
           link_to_user(user, only_path: context[:only_path], class: 'user-mention')
+        end
+      end
+
+      def render_document
+        scope = project ? project.documents : Document
+        document = scope
+          .visible
+          .where(['LOWER(title) = :s', { s: oid.downcase }])
+          .first
+
+        if document
+          link_to document.title,
+                  { only_path: context[:only_path],
+                    controller: '/documents',
+                    action: 'show',
+                    id: document.id },
+                  class: 'document'
+        end
+      end
+
+      def render_meeting
+        scope = project ? project.meetings : Meeting
+        meeting = scope
+          .where(['LOWER(title) = :s', { s: oid.downcase }])
+          .first
+
+        if meeting && meeting.visible?(User.current)
+          link_to meeting.title,
+                  { only_path: context[:only_path], controller: '/meetings', action: 'show', id: meeting.id },
+                  class: 'meeting'
         end
       end
     end

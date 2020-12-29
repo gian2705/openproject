@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -50,13 +50,11 @@ class WorkPackageCustomField < CustomField
   }
 
   def self.summable
-    ids = Setting.work_package_list_summable_columns.map do |column_name|
-      if match = /cf_(\d+)/.match(column_name)
-        match[1]
-      end
-    end.compact
+    where(field_format: %w[int float])
+  end
 
-    where(id: ids)
+  def summable?
+    %w[int float].include?(field_format)
   end
 
   def type_name

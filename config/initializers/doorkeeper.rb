@@ -114,14 +114,6 @@ Doorkeeper.configure do
   #
   # access_token_methods :from_bearer_authorization, :from_access_token_param, :from_bearer_param
 
-  # Change the native redirect uri for client apps
-  # When clients register with the following redirect uri, they won't be redirected to any server and
-  # the authorizationcode will be displayed within the provider
-  # The value can be any string. Use nil to disable this feature. When disabled, clients must provide a valid URL
-  # (Similar behaviour: https://developers.google.com/accounts/docs/OAuth2InstalledApp#choosingredirecturi)
-  #
-  native_redirect_uri 'urn:ietf:wg:oauth:2.0:oob'
-
   # Forces the usage of the HTTPS protocol in non-native redirect uris (enabled
   # by default in non-development environments). OAuth2 delegates security in
   # communication to the HTTPS protocol so it is wise to keep this enabled.
@@ -132,7 +124,7 @@ Doorkeeper.configure do
   #
   # force_ssl_in_redirect_uri !Rails.env.development?
   #
-  # force_ssl_in_redirect_uri { |uri| uri.host != 'localhost' }
+  force_ssl_in_redirect_uri { |uri| uri.host != 'localhost' }
 
   # Specify what redirect URI's you want to block during Application creation.
   # Any redirect URI is whitelisted by default.
@@ -211,6 +203,11 @@ end
 
 OpenProject::Application.configure do |application|
   application.config.to_prepare do
-    # ::Doorkeeper::AuthorizationsController.layout "only_logo"
+    # Requiring some classes of Doorkeeper ourselves which for whatever reasons are
+    # no longer loaded for us now that we use zeitwerk
+    require 'doorkeeper/application_metal_controller'
+    require 'doorkeeper/application_controller'
+    require 'doorkeeper/tokens_controller'
+    require 'doorkeeper/authorizations_controller'
   end
 end

@@ -1,16 +1,13 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject Documents Plugin
-#
-# Former OpenProject Core functionality extracted into a plugin.
-#
-# Copyright (C) 2009-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
 # OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
@@ -27,7 +24,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 class DocumentsController < ApplicationController
@@ -44,7 +41,7 @@ class DocumentsController < ApplicationController
     @grouped =
       case @group_by
       when 'date'
-        documents.group_by {|d| d.updated_on.to_date }
+        documents.group_by {|d| d.updated_at.to_date }
       when 'title'
         documents.group_by {|d| d.title.first.upcase}
       when 'author'
@@ -71,8 +68,7 @@ class DocumentsController < ApplicationController
     @document.attach_files(permitted_params.attachments.to_h)
 
     if @document.save
-      render_attachment_warning_if_needed(@document)
-      flash[:notice] = l(:notice_successful_create)
+      flash[:notice] = I18n.t(:notice_successful_create)
       redirect_to project_documents_path(@project)
     else
       render action: 'new'
@@ -88,8 +84,7 @@ class DocumentsController < ApplicationController
     @document.attach_files(permitted_params.attachments.to_h)
 
     if @document.save
-      render_attachment_warning_if_needed(@document)
-      flash[:notice] = l(:notice_successful_update)
+      flash[:notice] = I18n.t(:notice_successful_update)
       redirect_to action: 'show', id: @document
     else
       render action: 'edit'
@@ -106,9 +101,8 @@ class DocumentsController < ApplicationController
     attachments = @document.attachments.select(&:new_record?)
 
     @document.save
-    render_attachment_warning_if_needed(@document)
-
     saved_attachments = attachments.select(&:persisted?)
+
     if saved_attachments.present? && Setting.notified_events.include?('document_added')
       users = saved_attachments.first.container.recipients
       users.each do |user|

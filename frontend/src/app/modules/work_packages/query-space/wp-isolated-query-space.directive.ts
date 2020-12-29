@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Directive, ElementRef, Injector} from '@angular/core';
@@ -56,7 +56,6 @@ import {WpChildrenInlineCreateService} from "core-components/wp-relations/embedd
 import {WpRelationInlineCreateService} from "core-components/wp-relations/embedded/relations/wp-relation-inline-create.service";
 import {WorkPackagesListChecksumService} from "core-components/wp-list/wp-list-checksum.service";
 import {debugLog} from "core-app/helpers/debug_output";
-import {PortalCleanupService} from "core-app/modules/fields/display/display-portal/portal-cleanup.service";
 import {TableDragActionsRegistryService} from "core-components/wp-table/drag-and-drop/actions/table-drag-actions-registry.service";
 import {WorkPackageViewOrderService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-order.service";
 import {CausedUpdatesService} from "core-app/modules/boards/board/caused-updates/caused-updates.service";
@@ -65,6 +64,8 @@ import {WorkPackageViewDisplayRepresentationService} from "core-app/modules/work
 import {WorkPackageViewHierarchyIdentationService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-hierarchy-indentation.service";
 import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
 import {WorkPackageNotificationService} from "core-app/modules/work_packages/notifications/work-package-notification.service";
+import {TimeEntryCreateService} from "core-app/modules/time_entries/create/create.service";
+import {WorkPackageViewCollapsedGroupsService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-collapsed-groups.service";
 
 /**
  * Directive to open a work package query 'space', an isolated injector hierarchy
@@ -89,6 +90,7 @@ import {WorkPackageNotificationService} from "core-app/modules/work_packages/not
     WorkPackageViewRelationColumnsService,
     WorkPackageViewPaginationService,
     WorkPackageViewGroupByService,
+    WorkPackageViewCollapsedGroupsService,
     WorkPackageViewHierarchiesService,
     WorkPackageViewSortByService,
     WorkPackageViewColumnsService,
@@ -118,10 +120,10 @@ import {WorkPackageNotificationService} from "core-app/modules/work_packages/not
     WorkPackageCardViewService,
 
     HalResourceEditingService,
+    TimeEntryCreateService,
     WorkPackageCreateService,
 
     WorkPackageStatesInitializationService,
-    PortalCleanupService,
 
     // Table Drag & Drop actions
     TableDragActionsRegistryService,

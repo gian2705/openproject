@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -26,6 +26,8 @@
 #
 # See docs/COPYRIGHT.rdoc for more details.
 #++
+
+require Rails.root.join('config/constants/open_project/activity')
 
 module Redmine #:nodoc:
   class PluginError < StandardError
@@ -90,7 +92,7 @@ module Redmine #:nodoc:
         end
       end
     end
-    def_field :name, :description, :url, :author, :author_url, :version, :settings, :bundled
+    def_field :description, :url, :author, :author_url, :version, :settings, :bundled
     attr_reader :id
 
     # Plugin constructor
@@ -98,8 +100,6 @@ module Redmine #:nodoc:
       id = id.to_sym
       p = new(id)
       p.instance_eval(&block)
-      # Set a default name if it was not provided during registration
-      p.name(id.to_s.humanize) if p.name.nil?
 
       registered_plugins[id] = p
 
@@ -125,9 +125,23 @@ module Redmine #:nodoc:
       if RedminePluginLocator.instance.has_plugin? e.plugin_id
         # The required plugin is going to be loaded later, defer loading this plugin
         (deferred_plugins[e.plugin_id] ||= []) << [id, block]
-        return p
+        p
       else
         raise
+      end
+    end
+
+    def name(*args)
+      name = args.empty? ? instance_variable_get("@name") : instance_variable_set("@name", *args)
+
+      case name
+      when Symbol
+        ::I18n.t(name)
+      when NilClass
+        # Default name if it was not provided during registration
+        id.to_s.humanize
+      else
+        name
       end
     end
 
@@ -195,25 +209,6 @@ module Redmine #:nodoc:
       true
     end
 
-    ##
-    # Registers an assets (javascript, css file) to be injected into every page
-    # params: Hash containing associations with
-    #   type: (symbol): either :js or :css
-    #   path: (string): path to asset to include, or array with multiple asset paths
-    def global_assets(assets_hash = {})
-      assets_hash.each { |k, v| registered_global_assets[k] = Array(v) }
-    end
-
-    ##
-    # Returns a list of assets for the given type
-    # those assets shall be included into every OpenProject page
-    # params:
-    #   type (symbol): either :css, or :js
-    def registered_global_assets
-      @registered_global_assets ||= Hash.new([])
-    end
-
-    # Sets a requirement on a Redmine plugin version
     # Raises a PluginRequirementError exception if the requirement is not met
     #
     # Examples
@@ -266,9 +261,6 @@ module Redmine #:nodoc:
     def delete_menu_item(menu_name, item)
       hide_menu_item(menu_name, item)
     end
-
-    # N.B.: I could not find any usages of :delete_menu_item in my locally available plugins
-    deprecate delete_menu_item: 'Use :hide_menu_item instead'
 
     # Allows to hide an existing +item+ in a menu.
     #
@@ -350,7 +342,6 @@ module Redmine #:nodoc:
     #
     # Retrieving events:
     # Associated model(s) must implement the find_events class method.
-    # ActiveRecord models can use acts_as_activity_provider as a way to implement this class method.
     #
     # The following call should return all the scrum events visible by current user that occurred in the 5 last days:
     #   Meeting.find_events('scrums', User.current, 5.days.ago, Date.today)
@@ -358,7 +349,8 @@ module Redmine #:nodoc:
     #
     # Note that :view_scrums permission is required to view these events in the activity view.
     def activity_provider(*args)
-      Redmine::Activity.register(*args)
+      ActiveSupport::Deprecation.warn('Use ActsAsOpEngine#activity_provider instead.')
+      OpenProject::Activity.register(*args)
     end
 
     # Registers a wiki formatter.

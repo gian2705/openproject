@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,17 +23,18 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {ConfirmDialogService} from './../confirm-dialog/confirm-dialog.service';
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
-import {Component, Directive, ElementRef, OnInit} from "@angular/core";
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
+import {Component, ElementRef, OnInit} from "@angular/core";
+
+export const confirmFormSubmitSelector = 'confirm-form-submit';
 
 @Component({
   template: '',
-  selector: 'confirm-form-submit'
+  selector: confirmFormSubmitSelector
 })
 export class ConfirmFormSubmitController implements OnInit {
 
@@ -85,6 +86,3 @@ export class ConfirmFormSubmitController implements OnInit {
       .catch(() => this.confirmed = false);
   }
 }
-
-// Register the element style for bootstrapping
-DynamicBootstrapper.register({ selector: 'confirm-form-submit', cls: ConfirmFormSubmitController });

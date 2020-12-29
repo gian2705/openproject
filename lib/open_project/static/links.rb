@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,7 +31,6 @@ module OpenProject
   module Static
     module Links
       class << self
-
         def help_link_overridden?
           OpenProject::Configuration.force_help_link.present?
         end
@@ -78,8 +77,28 @@ module OpenProject
               href: 'https://www.openproject.org/enterprise-edition',
               label: 'homescreen.links.upgrade_enterprise_edition'
             },
+            upsale_benefits_features: {
+              href: 'https://www.openproject.org/enterprise-edition/#premium-features',
+              label: 'noscript_learn_more'
+            },
+            upsale_benefits_installation: {
+              href: 'https://www.openproject.org/enterprise-edition/#installation',
+              label: 'noscript_learn_more'
+            },
+            upsale_benefits_security: {
+              href: 'https://www.openproject.org/enterprise-edition/#security-features',
+              label: 'noscript_learn_more'
+            },
+            upsale_benefits_support: {
+              href: 'https://www.openproject.org/enterprise-edition/#professional-support',
+              label: 'noscript_learn_more'
+            },
+            upsale_get_quote: {
+              href: 'https://www.openproject.org/upgrade-enterprise-edition/',
+              label: 'admin.enterprise.get_quote'
+            },
             user_guides: {
-              href: 'https://www.openproject.org/help/',
+              href: 'https://docs.openproject.org/user-guide/',
               label: 'homescreen.links.user_guides'
             },
             upgrade_guides: {
@@ -94,12 +113,16 @@ module OpenProject
               href: 'https://www.openproject.org/operations/configuration/',
               label: 'links.configuration_guide'
             },
+            contact: {
+              href: 'https://www.openproject.org/contact-us/',
+              label: 'links.get_in_touch'
+            },
             glossary: {
               href: 'https://www.openproject.org/help/glossary/',
               label: 'homescreen.links.glossary'
             },
             shortcuts: {
-              href: 'https://www.openproject.org/help/keyboard-shortcuts-access-keys/',
+              href: 'https://docs.openproject.org/user-guide/keyboard-shortcuts-access-keys/',
               label: 'homescreen.links.shortcuts'
             },
             forums: {
@@ -123,7 +146,7 @@ module OpenProject
               label: 'homescreen.links.blog'
             },
             release_notes: {
-              href: 'https://www.openproject.org/release-notes/',
+              href: 'https://docs.openproject.org/release-notes/',
               label: :label_release_notes
             },
             data_privacy: {
@@ -131,7 +154,7 @@ module OpenProject
               label: :label_privacy_policy
             },
             report_bug: {
-              href: 'https://www.openproject.org/development/report-a-bug/',
+              href: 'https://docs.openproject.org/development/report-a-bug/',
               label: :label_report_bug
             },
             roadmap: {
@@ -143,11 +166,11 @@ module OpenProject
               label: :label_add_edit_translations
             },
             api_docs: {
-              href: 'https://www.openproject.org/api',
+              href: 'https://docs.openproject.org/api',
               label: :label_api_documentation
             },
             text_formatting: {
-              href: 'https://www.openproject.org/help/wiki/',
+              href: 'https://docs.openproject.org/user-guide/wiki/',
               label: :setting_text_formatting
             },
             oauth_authorization_code_flow: {
@@ -161,8 +184,26 @@ module OpenProject
             ldap_encryption_documentation: {
               href: 'https://www.rubydoc.info/gems/net-ldap/Net/LDAP#constructor_details',
             },
+            origin_mdn_documentation: {
+              href: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin'
+            },
             security_badge_documentation: {
-              href: 'https://github.com/opf/openproject/blob/dev/docs/configuration/configuration.md#security-badge'
+              href: 'https://docs.openproject.org/system-admin-guide/information/#security-badge'
+            },
+            chargebee: {
+              href: 'https://js.chargebee.com/v2/chargebee.js',
+            },
+            webinar_videos: {
+              href: 'https://www.youtube.com/watch?v=ebc3lcSmncA&t=8s',
+            },
+            get_started_videos: {
+              href: 'https://www.youtube.com/playlist?list=PLGzJ4gG7hPb8WWOWmeXqlfMfhdXReu-RJ',
+            },
+            openproject_docs: {
+              href: 'https://docs.openproject.org',
+            },
+            contact_us: {
+              href: 'https://www.openproject.org/contact-us',
             }
           }
         end

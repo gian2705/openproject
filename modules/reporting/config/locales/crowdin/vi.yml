@@ -1,9 +1,15 @@
 #-- copyright
-#OpenProject Reporting Plugin
-#Copyright (C) 2010 - 2014 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License version 3.
+#OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+#Copyright (C) 2006-2017 Jean-Philippe Lang
+#Copyright (C) 2010-2013 the ChiliProject Team
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
-#version 3.
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
 #This program is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -11,13 +17,14 @@
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#See docs/COPYRIGHT.rdoc for more details.
 #++
-#---
 vi:
   button_save_as: "Save report as..."
   comments: "Nhận xét"
-  cost_reports_title: "Cost reports"
+  cost_reports_title: "Time and costs"
   label_cost_report: "Cost report"
+  label_cost_report_plural: "Cost reports"
   description_drill_down: "Show details"
   description_filter_selection: "Selection"
   description_multi_select: "Show multiselect"
@@ -49,10 +56,21 @@ vi:
   label_rows: "Rows"
   label_saving: "Saving ..."
   label_spent_on_reporting: "Date (Spent)"
-  label_sum: "Sum"
+  label_sum: "Tổng"
   label_units: "Units"
   label_week_reporting: "Week (Spent)"
   label_year_reporting: "Year (Spent)"
+  label_count: "Count"
+  label_filter: "Bộ lọc"
+  label_filter_add: "Add Filter"
+  label_filter_plural: "Bộ lọc"
+  label_group_by: "Nhóm theo"
+  label_group_by_add: "Add Group-by Attribute"
+  label_inactive: "«inactive»"
+  label_no: "Không"
+  label_none: "(no data)"
+  label_report: "Báo cáo"
+  label_yes: "Có"
   load_query_question: "Report will have %{size} table cells and may take some time to render. Do you still want to try rendering it?"
   permission_save_cost_reports: "Save public cost reports"
   permission_save_private_cost_reports: "Save private cost reports"
@@ -62,3 +80,7 @@ vi:
   units: "Units"
   validation_failure_date: "is not a valid date"
   validation_failure_integer: "is not a valid integer"
+  reporting:
+    group_by:
+      selected_columns: "Selected columns"
+      selected_rows: "Selected rows"

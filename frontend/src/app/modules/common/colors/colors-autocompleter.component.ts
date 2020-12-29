@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,13 +23,14 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Component, ElementRef, OnInit} from '@angular/core';
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
 import {Highlighting} from "core-components/wp-fast-table/builders/highlighting/highlighting.functions";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
+
+export const colorsAutocompleterSelector = 'colors-autocompleter';
 
 @Component({
   template: `
@@ -49,7 +50,7 @@ import {I18nService} from "core-app/modules/common/i18n/i18n.service";
       </ng-template>
     </ng-select>
   `,
-  selector: 'colors-autocompleter'
+  selector: colorsAutocompleterSelector
 })
 export class ColorsAutocompleter implements OnInit {
   public options:any[];
@@ -104,5 +105,4 @@ export class ColorsAutocompleter implements OnInit {
 
 }
 
-DynamicBootstrapper.register({ selector: 'colors-autocompleter', cls: ColorsAutocompleter });
 

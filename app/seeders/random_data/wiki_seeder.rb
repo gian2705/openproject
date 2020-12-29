@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,17 +24,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 module RandomData
   class WikiSeeder
     def self.seed!(project)
       user = User.admin.first
 
       puts ''
-      print ' ↳ Creating wikis'
+      print_status ' ↳ Creating wikis'
 
       rand(5).times do
-        print '.'
+        print_status '.'
         wiki_page = WikiPage.create(
           wiki:  project.wiki,
           title: Faker::Lorem.words(5).join(' ')
@@ -42,7 +42,7 @@ module RandomData
 
         ## create some wiki contents
         rand(5).times do
-          print '.'
+          print_status '.'
           wiki_content = WikiContent.create(
             page:    wiki_page,
             author:  user,

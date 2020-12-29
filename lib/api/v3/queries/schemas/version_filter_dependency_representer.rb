@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -34,13 +34,12 @@ module API
       module Schemas
         class VersionFilterDependencyRepresenter <
           FilterDependencyRepresenter
-
           def json_cache_key
             super + (filter.project.present? ? [filter.project.id] : [])
           end
 
           def href_callback
-            order = "sortBy=#{to_query [%i(name asc)]}"
+            order = "sortBy=#{to_query [%i(semver_name asc)]}"
 
             if filter.project.nil?
               filter_params = [{ sharing: { operator: '=', values: ['system'] } }]

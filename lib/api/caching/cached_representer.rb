@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -139,7 +139,7 @@ module API
         # to remove the cache_if option which would otherwise
         # be visible in the output
         def prepare_link_for(href, options)
-          super(href, options.except(:cache_if))
+          super(href, options.except(:cache_if, :uncacheable))
         end
 
         # Overriding Roar::Hypbermedia#combile_links_for
@@ -227,7 +227,7 @@ module API
         end
 
         def cached_representer(config)
-          self._cached_representer_config = DEFAULT_CONFIGURATION.merge(config)
+          self._cached_representer_config = cached_representer_configuration.deep_merge(config)
         end
 
         def link(name, options = {}, &block)

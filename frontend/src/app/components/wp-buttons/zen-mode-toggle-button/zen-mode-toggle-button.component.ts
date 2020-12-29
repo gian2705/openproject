@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,16 +23,17 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {AbstractWorkPackageButtonComponent} from '../wp-buttons.module';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
 
-const screenfull:any = require('screenfull/dist/screenfull.js');
+import * as sfimport from "screenfull";
+import {Screenfull} from "screenfull";
 
+const screenfull:Screenfull = sfimport as any;
 export const zenModeComponentSelector = 'zen-mode-toggle-button';
 
 @Component({
@@ -57,6 +58,7 @@ export class ZenModeButtonComponent extends AbstractWorkPackageButtonComponent {
     this.activateLabel = I18n.t('js.zen_mode.button_activate');
     this.deactivateLabel = I18n.t('js.zen_mode.button_deactivate');
     let self = this;
+
 
     if (screenfull.enabled) {
       screenfull.onchange(function() {
@@ -111,5 +113,3 @@ export class ZenModeButtonComponent extends AbstractWorkPackageButtonComponent {
     return false;
   }
 }
-
-DynamicBootstrapper.register({ selector: zenModeComponentSelector, cls: ZenModeButtonComponent });

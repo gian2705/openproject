@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -55,9 +55,11 @@ class Queries::WorkPackages::Filter::RoleFilter < Queries::WorkPackages::Filter:
   end
 
   def value_objects
-    value_ints = values.map(&:to_i)
+    available_roles = roles.index_by(&:id)
 
-    roles.select { |r| value_ints.include?(r.id) }
+    values
+      .map { |role_id| available_roles[role_id.to_i] }
+      .compact
   end
 
   def where

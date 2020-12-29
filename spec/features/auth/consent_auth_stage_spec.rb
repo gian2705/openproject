@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'spec_helper'
@@ -69,6 +69,19 @@ describe 'Authentication Stages', type: :feature do
       login_with user.login, user_password
       expect(page).to have_no_selector('.account-consent')
       expect_logged_in
+    end
+
+    it 'keeps the autologin request (Regression #33696)',
+       with_settings: { autologin: '1' } do
+      expect(Setting.autologin?).to eq true
+
+      login_with user.login, user_password, autologin: true
+      expect(page).to have_no_selector('.account-consent')
+
+      expect_logged_in
+      cookies = Capybara.current_session.driver.request.cookies
+      expect(cookies).to have_key '_open_project_session'
+      expect(cookies).to have_key 'autologin'
     end
   end
 
@@ -190,6 +203,28 @@ describe 'Authentication Stages', type: :feature do
 
       expect(page).to have_selector('.flash.notice')
       expect_logged_in
+    end
+
+    it 'keeps the autologin request (Regression #33696)',
+       with_settings: { autologin: '1' } do
+      expect(Setting.autologin?).to eq true
+
+      login_with user.login, user_password, autologin: true
+
+      expect(page).to have_selector('.account-consent')
+      expect(page).to have_selector('h2', text: 'Consent')
+
+      # Confirm consent
+      check 'consent_check'
+      click_on I18n.t(:button_continue)
+
+      expect_logged_in
+
+      manager = page.driver.browser.manage
+      autologin_cookie = manager.cookie_named('autologin')
+      expect(autologin_cookie[:name]).to eq 'autologin'
+      # Cookie always expires in 1 year, check is made with the token expiry date
+      expect(autologin_cookie[:expires].to_date).to eq (Date.today + 1.year)
     end
 
     context 'with contact mail address', with_settings: { consent_decline_mail: 'foo@example.org' } do

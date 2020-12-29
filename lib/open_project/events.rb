@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -38,5 +38,11 @@ module OpenProject
   # @see OpenProject::Notifications
   module Events
     AGGREGATED_WORK_PACKAGE_JOURNAL_READY = "aggregated_work_package_journal_ready".freeze
+    AGGREGATED_WIKI_JOURNAL_READY = "aggregated_wiki_journal_ready".freeze
+    NEW_TIME_ENTRY_CREATED = "new_time_entry_created".freeze
+
+    PROJECT_CREATED = "project_created".freeze
+    PROJECT_UPDATED = "project_updated".freeze
+    PROJECT_RENAMED = "project_renamed".freeze
   end
 end

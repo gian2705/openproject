@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,7 +32,6 @@ require_relative '../support/shared/become_member'
 describe Group, type: :model do
   include BecomeMember
 
-  let(:group) { FactoryBot.build(:group) }
   let(:user) { FactoryBot.build(:user) }
   let(:status) { FactoryBot.create(:status) }
   let(:role) { FactoryBot.create :role, permissions: [:view_work_packages] }
@@ -65,12 +64,7 @@ describe Group, type: :model do
   end
 
   let(:users) { FactoryBot.create_list :user, 100 }
-
-  before do
-    users.each do |user|
-      group.add_member! user
-    end
-  end
+  let(:group) { FactoryBot.build(:group, members: users) }
 
   describe '#destroy' do
     describe 'work packages assigned to the group' do

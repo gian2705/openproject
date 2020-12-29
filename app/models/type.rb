@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,13 +27,15 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class ::Type < ActiveRecord::Base
+class ::Type < ApplicationRecord
   extend Pagination::Model
 
   # Work Package attributes for this type
   # and constraints to specifc attributes (by plugins).
   include ::Type::Attributes
   include ::Type::AttributeGroups
+
+  include ::Scopes::Scoped
 
   before_destroy :check_integrity
 
@@ -52,17 +54,19 @@ class ::Type < ActiveRecord::Base
                           association_foreign_key: 'custom_field_id'
 
   belongs_to :color,
-             class_name:  'Color',
+             class_name: 'Color',
              foreign_key: 'color_id'
 
   acts_as_list
 
   validates :name,
             presence: true,
-            uniqueness: { case_sensitive: true },
+            uniqueness: { case_sensitive: false },
             length: { maximum: 255 }
 
   validates_inclusion_of :is_default, :is_milestone, in: [true, false]
+
+  scope_classes Types::Scopes::Milestone
 
   default_scope { order('position ASC') }
 
@@ -113,21 +117,9 @@ class ::Type < ActiveRecord::Base
     object.types.include?(self)
   end
 
-  def valid_transition?(status_id_a, status_id_b, roles)
-    transition_exists?(status_id_a, status_id_b, roles.map(&:id))
-  end
-
   private
 
   def check_integrity
     raise "Can't delete type" if WorkPackage.where(type_id: id).any?
-  end
-
-  def transition_exists?(status_id_a, status_id_b, role_ids)
-    workflows
-      .where(old_status_id: status_id_a,
-             new_status_id: status_id_b,
-             role_id: role_ids)
-      .any?
   end
 end

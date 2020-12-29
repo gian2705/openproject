@@ -1,6 +1,6 @@
 #-- copyright
-#OpenProject is a project management system.
-#Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License version 3.
 #OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
@@ -28,21 +28,40 @@ zh-CN:
     plugins:
       no_results_title_text: 目前没有插件可用。
     custom_styles:
+      color_theme: "颜色主题"
+      color_theme_custom: "（自定义）"
+      colors:
+        alternative-color: "备用"
+        content-link-color: "链接字体"
+        primary-color: "主要"
+        primary-color-dark: "主要（深色）"
+        header-bg-color: "标题背景"
+        header-item-bg-hover-color: "悬停时的标题背景"
+        header-item-font-color: "标题字体"
+        header-item-font-hover-color: "悬停时的标题字体"
+        header-border-bottom-color: "标题边框"
+        main-menu-bg-color: "主菜单背景"
+        main-menu-bg-selected-background: "选择时的主菜单"
+        main-menu-bg-hover-background: "悬停时的主菜单"
+        main-menu-font-color: "主菜单字体"
+        main-menu-selected-font-color: "选择时的主菜单字体"
+        main-menu-hover-font-color: "悬停时的主菜单字体"
+        main-menu-border-color: "主菜单边框"
       custom_colors: "自定义颜色"
       customize: "使用您自己的徽标自定义 OpenProject 安装。注：此徽标可公开查看。"
       enterprise_notice: "作为对为开发 OpenProject 提供财力支持的订阅者的特别“感谢”，这项小功能仅限企业版支持订阅者使用。"
       manage_colors: "编辑颜色选择选项"
       instructions:
-        alternative_color: "浓重的主题色，通常用于屏幕上最重要的按钮。"
-        content_link_color: "大多数链接的特定颜色。"
-        primary_color: "主颜色。"
-        primary_color_dark: "通常深色的主颜色用于悬浮效果。"
-        header_bg_color: "标题的背景色。"
-        header_item_bg_hover_color: "鼠标悬停时可点击的标题的背景色。"
-        header_item_font_color: "可点击标题的特定颜色。"
-        header_item_font_hover_color: "鼠标悬停时可点击标题的特定颜色。"
-        header_border_bottom_color: "页眉下方法细线。如果你不想看到，将其留白。"
-        main_menu_bg_color: "左菜单的背景色。"
+        alternative-color: "强烈的颜色，通常用于屏幕上最重要的按钮。"
+        content-link-color: "大多数链接的特定颜色。"
+        primary-color: "主颜色。"
+        primary-color-dark: "通常深色的主颜色用于悬浮效果。"
+        header-item-bg-hover-color: "鼠标悬停时可点击的标题的背景色。"
+        header-item-font-color: "可点击标题的特定颜色。"
+        header-item-font-hover-color: "鼠标悬停时可点击标题的特定颜色。"
+        header-border-bottom-color: "页眉下方法细线。如果你不想看到，将其留白。"
+        main-menu-bg-color: "左菜单的背景色。"
+      theme_warning: 更改主题将覆盖您的自定义样式。设计将会丢失。您确定要继续吗？
     enterprise:
       upgrade_to_ee: "升级到企业版"
       add_token: "上传企业版支持令牌"
@@ -51,11 +70,15 @@ zh-CN:
       paste: "粘贴您的企业版支持令牌"
       required_for_feature: "此功能仅限具有活动企业版支持令牌的订阅者使用。"
       enterprise_link: "如需了解详细信息，请单击此处。"
+      start_trial: '开始免费试用'
+      book_now: '立即预订'
+      get_quote: '获取报价'
   announcements:
     show_until: 显示截至日期
     is_active: 当前已显示
     is_inactive: 当前未显示
   attribute_help_texts:
+    note_public: '您添加到此字段的任何文本和图像对所有登录的用户都是公开可见的！'
     text_overview: '在此视图中, 您可以为属性视图创建自定义帮助文本。定义后, 可以通过单击属性旁边的帮助图标来显示帮助文本。'
     label_plural: '属性帮助文本'
     show_preview: '预览文本'
@@ -65,8 +88,49 @@ zh-CN:
     index:
       no_results_content_title: 目前是非身份验证模式。
       no_results_content_text: 创建一个新的身份验证模式
+  background_jobs:
+    status:
+      error_requeue: "作业发生错误，但正在重试。错误为：%{message}"
+      cancelled_due_to: "由于错误，作业已被取消：%{message}"
   ldap_auth_sources:
+    technical_warning_html: |
+      此 LDAP 表单需要您具备 LDAP / Active Directory 设置的技术知识。
+      <br/>
+      <a href="https://www.openproject.org/help/administration/manage-ldap-authentication/">请访问我们的文档了解详细说明</a>。
+    attribute_texts:
+      name: LDAP 连接的任意名称
+      host: LDAP 主机名或 IP 地址
+      login_map: LDAP 中用于识别唯一用户登录名的属性键。通常是 `uid` 或 `samAccountName`。
+      generic_map: LDAP 中用于映射到 OpenProject `%{attribute}` 属性的属性键
+      admin_map_html: "可选：LDAP 中将 OpenProject 用户标记为管理员的属性键（<strong>如存在</strong>）。如有疑问，请留空。"
+      system_user_dn_html: |
+        输入系统用户用于只读访问的 DN。
+        <br/>
+        示例：uid=openproject,ou=system,dc=example,dc=com
+      system_user_password: 输入系统用户的绑定密码
+      base_dn: |
+        输入 LDAP 中您希望 OpenProject 查找用户和组的子树的基本 DN。
+        OpenProject 将仅在此子树中筛选提供的用户名。
+        示例：ou=users,dc=example,dc=com
+      filter_string: |
+        添加一个可选的 RFC4515 筛选器以应用于为 LDAP 中的筛选用户返回的结果。
+        这可以用于限制 OpenProject 为身份验证和组同步找到的用户集。
+      filter_string_concat: |
+        OpenProject 将始终筛选用户提供的登录属性来识别记录。如果您在这里提供筛选器，它将与 AND 串联。默认情况下，将使用“全部捕获”(objectClass=*) 作为筛选器。
+      onthefly_register: |
+        如果选中此框，OpenProject 将在新用户首次向 OpenProject 验证身份时从其 LDAP 条目创建这些用户。
+        不选中此框则会仅允许 OpenProject 中的现有帐户通过 LDAP 验证身份！
+      onthefly_group_sync: |
+        如果您为此 LDAP 连接启用组同步，还会在 OpenProject 中为同步的组自动创建用户。如果不启用，只有 OpenProject 中的现有帐户会被添加到组中。
     connection_encryption: '连接加密'
+    system_account: '系统帐户'
+    system_account_legend: |
+      OpenProject 需要通过系统帐户获取只读权限来查找您的 LDAP 树中的用户和组。
+      请在下一部分中为该系统用户指定绑定凭据。
+    ldap_details: 'LDAP 详细信息'
+    user_settings: '属性映射'
+    user_settings_legend: |
+      以下字段与在 OpenProject 中从 LDAP 条目创建用户的方式有关并决定用于定义 OpenProject 用户属性的 LDAP 属性（属性映射）。
     tls_mode:
       plain: '无'
       simple_tls: 'simple_tls'
@@ -110,8 +174,6 @@ zh-CN:
       no_results_content_text: 创建新的自定义字段
   concatenation:
     single: '或'
-  deprecations:
-    time_entries: "此时间条目视图已由“成本报告”模块取代。现在，此视图仅支持将时间条目信息导出到 csv。要进行交互式筛选，请在项目设置中激活“成本报告”模块。"
   global_search:
     overwritten_tabs:
       wiki_pages: "Wiki"
@@ -136,6 +198,9 @@ zh-CN:
       completed: "项目 %{name} 删除完成"
       completed_text: "删除项目“%{name}”的请求已完成。"
     index:
+      open_as_gantt: '以甘特视图打开'
+      open_as_gantt_title: "此按钮用于生成甘特视图，该视图可以过滤此页面上可见项目的工作包。"
+      open_as_gantt_title_admin: "您可以在“项目设置”下的“管理”中修改视图设置（如选择的工作包类型）。"
       no_results_title_text: 目前没有项目。
       no_results_content_text: 创建一个新的项目
     settings:
@@ -169,6 +234,9 @@ zh-CN:
       no_results_title_text: 目前没有消息报告。
       no_results_content_text: 添加新闻项
   users:
+    groups:
+      member_in_these_groups: '此用户当前是以下组的成员：'
+      no_results_title_text: 此用户当前不是任何组的成员。
     memberships:
       no_results_title_text: 该用户当前不是项目的成员。
   prioritiies:
@@ -211,6 +279,7 @@ zh-CN:
     overview:
       no_results_title_text: 目前没有工作包分配给此版本。
   wiki:
+    page_not_editable_index: 请求的页面（尚）不存在。您已被重定向到所有 wiki 页面的索引。
     no_results_title_text: 目前没有 wiki 页面。
     index:
       no_results_content_text: 添加一个新的 wiki 页面
@@ -293,7 +362,7 @@ zh-CN:
         attr_mail: "电子邮件属性"
         base_dn: "基本 DN"
         host: "主机"
-        onthefly: "运行中用户创建"
+        onthefly: "自动创建用户"
         port: "端口"
       changeset:
         repository: "代码库"
@@ -346,7 +415,8 @@ zh-CN:
         types: "类型"
         versions: "版本"
         work_packages: "工作包"
-      project/status:
+        templated: '模板项目'
+      projects/status:
         code: '状态'
         explanation: '状态描述'
         codes:
@@ -411,12 +481,13 @@ zh-CN:
         done_ratio: "进度 (%)"
         end_insertion: "结束插入"
         end_deletion: "结束删除"
-        fixed_version: "版本"
+        version: "版本"
         parent: "父"
         parent_issue: "父"
         parent_work_package: "父"
         priority: "优先级"
         progress: "进度 (%)"
+        schedule_manually: "手动计划"
         spent_hours: "已耗时间"
         spent_time: "已耗时间"
         subproject: "子项目"
@@ -442,10 +513,10 @@ zh-CN:
         cant_link_a_work_package_with_a_descendant: "工作包无法链接到它的子任务之一。"
         circular_dependency: "这种关系将创建循环依赖项。"
         confirmation: "不匹配 %{attribute}。"
-        could_not_be_copied: "不能 (完全) 复制。"
+        could_not_be_copied: "无法（完全）复制 %{dependency}。"
         does_not_exist: "不存在。"
-        error_unauthorized: "may not be accessed."
-        error_readonly: "is not writable."
+        error_unauthorized: "无法访问。"
+        error_readonly: "曾尝试被写入，但不可写。"
         empty: "不能为空。"
         even: "必须是偶数。"
         exclusion: "是保留关键字。"
@@ -459,6 +530,7 @@ zh-CN:
         invalid_url: '不是有效的 URL。'
         invalid_url_scheme: '不是受支持的协议（允许：%{allowed_schemes}）。'
         less_than_or_equal_to: "必须小于或等于 %{count}。"
+        not_current_user: "不是当前用户。"
         not_a_date: "不是有效的日期。"
         not_a_datetime: "不是有效的日期时间。"
         not_a_number: "不是一个数字。"
@@ -486,6 +558,7 @@ zh-CN:
           not_an_integer: "(%{name}) 不是整数。"
           smaller_than_or_equal_to: "（%{name}）必须小于或等于 %{count}。"
           greater_than_or_equal_to: "（%{name}）必须大于或等于 %{count}。"
+          format: "%{message}"
         doorkeeper/application:
           attributes:
             redirect_uri:
@@ -520,11 +593,25 @@ zh-CN:
               error_not_found: "未找到"
             public:
               error_unauthorized: "- 用户没有创建公公查询的权限。"
+            group_by:
+              invalid: "无法按照 %{value} 分组"
+              format: "%{message}"
+            column_names:
+              invalid: "无效的查询列：%{value}"
+              format: "%{message}"
+            sort_criteria:
+              invalid: "无法按照列 %{value} 排序"
+              format: "%{message}"
           group_by_hierarchies_exclusive: "与按照“%{group_by}”分组的群组互相排斥。您无法将它们都激活。"
           filters:
             custom_fields:
               inexistent: "过滤器没有自定义字段"
               invalid: "自定义字段无效"
+        queries/filters/base:
+          attributes:
+            values:
+              inclusion: "过滤器有无效值。"
+              format: "%{message}"
         relation:
           typed_dag:
             circular_dependency: "关系会创建关系的循环。"
@@ -542,8 +629,13 @@ zh-CN:
           must_not_be_ssh: "不能是 SSH url。"
           no_directory: "不是一个目录。"
         role:
-          permissions:
-            dependency_missing: "还需要包括“%{dependency}”，因为已选择“%{permission}”。"
+          attributes:
+            permissions:
+              dependency_missing: "还需要包括“%{dependency}”，因为已选择“%{permission}”。"
+        time_entry:
+          attributes:
+            hours:
+              day_limit: "过高，因为每天最多可以记录 24 小时。"
         work_package:
           is_not_a_valid_target_for_time_entries: "工作包 #%{id} 不是重新分配时间条目的有效目标。"
           attributes:
@@ -602,6 +694,8 @@ zh-CN:
               unassignable: "无法分配至项目。"
         version:
           undeletable_work_packages_attached: "无法删除该版本，因为它连接了工作包。"
+        status:
+          readonly_default_exlusive: "无法激活（对于标记为默认的状态）。"
       template:
         body: "请检查以下字段："
         header:
@@ -651,12 +745,14 @@ zh-CN:
     content: "内容"
     color: "颜色"
     created_at: "创建"
-    created_on: "创建"
     custom_options: "可能的值"
     custom_values: "自定义字段"
     date: "日期"
     default_columns: "默认的列"
     description: "描述"
+    derived_due_date: "派生的完成日期"
+    derived_estimated_time: "派生的估计时间"
+    derived_start_date: "派生的开始日期"
     display_sums: "显示汇总"
     due_date: "完成日期"
     estimated_hours: "估计的时间"
@@ -690,10 +786,12 @@ zh-CN:
     type: "类型"
     updated_at: "更新于"
     updated_on: "更新于"
+    uploader: "上载程序"
     user: "用户"
     version: "版本"
     work_package: "工作包"
   button_add: "添加"
+  button_add_comment: "添加评论"
   button_add_member: 添加成员
   button_add_watcher: "添加关注者"
   button_annotate: "批注"
@@ -727,7 +825,6 @@ zh-CN:
   button_generate: "生成"
   button_list: "列表"
   button_lock: "锁定"
-  button_log_time: "记录时间"
   button_login: "登录"
   button_move: "移动"
   button_move_and_follow: "移动和跟踪"
@@ -805,6 +902,7 @@ zh-CN:
       - "10月"
       - "11月"
       - "12月"
+    abbr_week: 'Wk'
     day_names:
       - "星期日"
       - "星期一"
@@ -910,6 +1008,7 @@ zh-CN:
   default_role_anonymous: "匿名"
   default_role_developer: "开发者"
   default_role_project_admin: "项目管理员"
+  default_role_project_creator: "项目创建人"
   default_role_non_member: "非成员"
   default_role_reader: "只读"
   default_role_member: "成员"
@@ -932,8 +1031,6 @@ zh-CN:
   description_compare_to: "比较截止于"
   description_current_position: "您现在的位置："
   description_date_from: "输入开始日期"
-  description_date_range_interval: "通过选择开始日期和结束日期来选择范围"
-  description_date_range_list: "从列表中选择范围"
   description_date_to: "输入结束日期"
   description_enter_number: "输入数字"
   description_enter_text: "输入文本"
@@ -962,10 +1059,9 @@ zh-CN:
         add_groups: "添加新属性群组"
         rename_groups: "重命名属性群组"
       project_filters:
-        description_html: "Filtering and sorting on custom fields is an enterprise edition feature."
-  enumeration_activities: "活动 （时间跟踪）"
+        description_html: "对自定义字段进行筛选和排序是企业版功能。"
+  enumeration_activities: "时间跟踪活动"
   enumeration_work_package_priorities: "工作包优先级"
-  enumeration_system_activity: "系统活动"
   enumeration_reported_project_statuses: "报告的项目状态"
   error_auth_source_sso_failed: "用户 \"%{value}\" 的单次登录 (SSO) 失败"
   error_can_not_archive_project: "此项目无法存档：%{errors}"
@@ -983,12 +1079,10 @@ zh-CN:
   error_cookie_missing: 'OpenProject cookie 丢失。请确保已启用 cookie，因为如果不启用，此应用程序将无法正常运行。'
   error_custom_option_not_found: "选项不存在。"
   error_enterprise_activation_user_limit: "无法激活您的帐户 (已达到用户限制)。请与管理员联系以获取访问权限。"
+  error_enterprise_token_invalid_domain: "企业版未激活。您的企业版令牌的域 (%{actual}) 与系统的主机名不匹配 (%{expected})。"
   error_failed_to_delete_entry: '无法删除此条目。'
   error_in_dependent: "尝试更改依赖对象时出错：%{dependent_class} #%{related_id} - %{related_subject}：%{error}"
   error_invalid_selected_value: "选中的值无效。"
-  error_invalid_group_by: "无法按照 %{value} 分组"
-  error_invalid_query_column: "无效的查询列：%{value}"
-  error_invalid_sort_criterion: "无法按照列 %{value} 排序"
   error_journal_attribute_not_present: "日志不包含 %{attribute} 属性。"
   error_pdf_export_too_many_columns: "选择 PDF 导出的列太多。请减少列数。"
   error_pdf_failed_to_export: "无法保存被导出的 PDF 文件：%{error}"
@@ -1001,6 +1095,7 @@ zh-CN:
   error_no_default_work_package_status: "没有定义默认的工作包状态。请检查您的配置 （转到\"管理-> 工作包状态\"）。"
   error_no_type_in_project: "没有类型与此项目关联。请检查的项目设置。"
   error_omniauth_registration_timed_out: "通过外部身份验证提供程序注册超时。请再试一次。"
+  error_omniauth_invalid_auth: "从身份提供程序返回的身份验证信息无效。请联系您的管理员获取更多帮助。"
   error_scm_command_failed: "当试图访问该代码库时出现错误: %{value}"
   error_scm_not_found: "在代码库中未找到的条目或修正版本。"
   error_unable_delete_status: "不能删除工作包的状态，因为它由至少一个工作包使用。"
@@ -1028,6 +1123,8 @@ zh-CN:
     work_package_edit: '编辑工作包'
     work_package_note: '添加工作包注释'
   export:
+    your_work_packages_export: "您的工作包导出"
+    succeeded: "导出已成功完成。"
     format:
       atom: "原子"
       csv: "CSV"
@@ -1035,6 +1132,8 @@ zh-CN:
       pdf_with_descriptions: "带描述的PDF"
       pdf_with_descriptions_and_attachments: "带有描述和附件的 PDF 文件"
       pdf_with_attachments: "带有附件的 PDF 文件"
+    image:
+      omitted: "图像未导出。"
   extraction:
     available:
       pdftotext: "Pdftotext 可用 (可选)"
@@ -1065,13 +1164,8 @@ zh-CN:
     blocks:
       community: "OpenProject 社区"
       upsale:
-        become_hero: "成为英雄！"
         title: "升级到企业版"
-        description: "有什么好处？"
         more_info: "更多信息"
-        additional_features: "其他强大的高级功能"
-        professional_support: "由 OpenProject 专家提供专业支持"
-        you_contribute: "开发人员也需要支付账单。使用企业版，您可以为此 Open-Source 社区工作提供大力的财力支持。"
     links:
       upgrade_enterprise_edition: "升级到企业版"
       postgres_migration: "将您的安装迁移到 PostgreSQL"
@@ -1082,8 +1176,13 @@ zh-CN:
       blog: "OpenProject 博客"
       forums: "社区论坛"
       newsletter: "安全警报/通信"
+  image_conversion:
+    imagemagick: 'Imagemagick'
+  journals:
+    changes_retracted: "更改已撤回。"
   links:
     configuration_guide: '配置指南'
+    get_in_touch: "遇到问题了？与我们联系。"
   instructions_after_registration: "只要您的帐户已被激活您可以点击 %{signin} 登录。"
   instructions_after_logout: "你可以点击 %{signin} 重新登录。"
   instructions_after_error: "你可以尝试点击 %{signin} 重新登录。如果错误仍然存在，请向您的管理员寻求帮助。"
@@ -1215,7 +1314,6 @@ zh-CN:
   label_date_and_time: "日期和时间"
   label_date_from: "从"
   label_date_from_to: "从 %{start} 到 %{end}"
-  label_date_range: "日期范围"
   label_date_to: "到"
   label_day_plural: "天"
   label_default: "默认"
@@ -1223,6 +1321,7 @@ zh-CN:
   label_delete_project: "删除项目"
   label_deleted: "已删除"
   label_deleted_custom_field: "（删除自定义字段）"
+  label_deleted_custom_option: "（删除的选项）"
   label_descending: "降序"
   label_details: "详细信息"
   label_development_roadmap: "发展蓝图"
@@ -1240,6 +1339,7 @@ zh-CN:
   label_duplicate: "重复"
   label_duplicates: "复制"
   label_edit: "编辑"
+  label_edit_x: "编辑：%{x}"
   label_enable_multi_select: "切换多选"
   label_enabled_project_custom_fields: '启用自定义字段'
   label_enabled_project_modules: '启用的模块'
@@ -1360,7 +1460,6 @@ zh-CN:
   label_modified: "修改"
   label_module_plural: "模块"
   label_modules: "模块"
-  label_month: "月"
   label_months_from: "月份从"
   label_more: "更多"
   label_more_than_ago: "更多天前"
@@ -1373,6 +1472,7 @@ zh-CN:
   label_new: "新增"
   label_new_features: "新功能"
   label_new_statuses_allowed: "允许的新状态"
+  label_news_singular: "新闻"
   label_news_added: "添加新闻"
   label_news_comment_added: "评论添加到新闻"
   label_news_latest: "最新消息"
@@ -1387,6 +1487,7 @@ zh-CN:
   label_no_parent_page: "无上级页面"
   label_nothing_display: "不显示"
   label_nobody: "没人"
+  label_not_found: '未找到'
   label_none: "无"
   label_none_parentheses: "(无)"
   label_not_contains: "不包含"
@@ -1401,7 +1502,6 @@ zh-CN:
   label_options: "选项"
   label_other: "其他"
   label_overall_activity: "总体活动"
-  label_overall_spent_time: "花的总时间"
   label_overview: "概述"
   label_page_title: "页面标题"
   label_part_of: "一部分"
@@ -1494,7 +1594,7 @@ zh-CN:
   label_search: "搜索"
   label_send_information: "将帐户信息发送给用户"
   label_send_test_email: "发送测试电子邮件"
-  label_settings: "设置"
+  label_setting_plural: "设置"
   label_system_settings: "系统设置"
   label_show_completed_versions: "显示已完成的版本"
   label_sort: "排序"
@@ -1530,8 +1630,7 @@ zh-CN:
   label_this_week: "这一周"
   label_this_year: "这一年"
   label_time_entry_plural: "已耗时间"
-  label_time_sheet_menu: "时间表"
-  label_time_tracking: "时间跟踪"
+  label_projects_menu: "项目"
   label_today: "今天"
   label_top_menu: "顶部的菜单"
   label_topic_plural: "主题"
@@ -1615,40 +1714,23 @@ zh-CN:
   label_workflow_plural: "工作流"
   label_workflow_summary: "摘要"
   label_x_closed_work_packages_abbr:
-    other: "%{count} 个已关闭"
+    zero: "0 个已关闭"
+    other: ""
   label_x_comments:
-    other: "%{count} 条评论"
+    zero: "没有注释"
+    other: ""
   label_x_open_work_packages_abbr:
-    other: "%{count} 个待处理"
+    zero: "0 个已打开"
+    other: ""
   label_x_projects:
-    other: "%{count} 个项目"
-  label_year: "年"
+    zero: "没有项目"
+    other: ""
   label_yesterday: "昨天"
-  label_keyboard_function: "功能"
-  label_keyboard_shortcut: "快捷方式"
-  label_keyboard_accesskey: "访问键"
-  label_keyboard_shortcut_help_heading: "可用的键盘快捷键"
-  label_keyboard_shortcut_within_project: "项目相关的快捷方式:"
-  label_keyboard_shortcut_global_shortcuts: "全局快捷方式："
-  label_keyboard_shortcut_some_pages_only: "特殊的快捷方式："
-  label_keyboard_shortcut_search_global: "全局搜索"
-  label_keyboard_shortcut_search_project: "查找项目"
-  label_keyboard_shortcut_go_my_page: "转到我的页面"
-  label_keyboard_shortcut_show_help: "显示此帮助消息"
-  label_keyboard_shortcut_go_overview: "转到项目概述"
-  label_keyboard_shortcut_go_work_package: "转到项目工作包"
-  label_keyboard_shortcut_go_wiki: "转到项目 wiki"
-  label_keyboard_shortcut_go_activity: "转到项目活动"
-  label_keyboard_shortcut_go_calendar: "转到项目日历"
-  label_keyboard_shortcut_go_news: "转到项目新闻"
-  label_keyboard_shortcut_go_timelines: "转到时间线"
-  label_keyboard_shortcut_new_work_package: "创建新的工作包"
-  label_keyboard_shortcut_details_package: "显示工作包的详细信息窗口"
-  label_keyboard_shortcut_go_edit: "转到要编辑当前项 （仅在详细信息页)"
-  label_keyboard_shortcut_open_more_menu: "打开更多菜单 （在详细信息页)"
-  label_keyboard_shortcut_go_preview: "转到预览当前编辑 （仅在编辑页)"
-  label_keyboard_shortcut_focus_previous_item: "聚焦前面的列表元素 （只有某些列表)"
-  label_keyboard_shortcut_focus_next_item: "聚焦下一个的列表元素 （只有某些列表)"
+  label_role_type: "类型"
+  label_member_role: "项目角色"
+  label_global_role: "全局角色"
+  label_not_changeable: "（不变）"
+  label_global: "全局"
   auth_source:
     using_abstract_auth_source: "无法使用抽象的验证源。"
     ldap_error: "LDAP 错误：%{error_message}"
@@ -1678,7 +1760,15 @@ zh-CN:
   mail_body_account_information: "您的帐户信息"
   mail_body_account_information_external: "你可以使用 %{value} 帐号登录。"
   mail_body_lost_password: "若要更改你的密码，请单击下面的链接："
-  mail_body_register: "若要激活您的帐户，请单击下面的链接："
+  mail_body_register: "欢迎使用 OpenProject。请点击此链接激活您的帐户："
+  mail_body_register_header_title: "项目成员邀请电子邮件"
+  mail_body_register_user: "%{name}，您好："
+  mail_body_register_links_html: |
+    请随时浏览我们的 youtube 频道 (%{youtube_link})，在这里我们提供了网络研讨会 (%{webinar_link}) 和“入门”视频 (%{get_started_link})，让您在 OpenProject 中尽可能轻松地迈出第一步。
+    <br />
+    如果您有任何其他问题，请参阅我们的文档 (%{documentation_link}) 或与我们联系 (%{contact_us_link})。
+  mail_body_register_closing: "您的 OpenProject 团队"
+  mail_body_register_ending: "保持联系！谨致问候，"
   mail_body_reminder: "%{count} 个分配给您的工作包将在 %{days} 天后到期："
   mail_body_group_reminder: "%{count} 个分配给组“%{group}”的工作包将在 %{days} 天后到期："
   mail_body_wiki_content_added: "'%{id}' wiki页面已经由%{author} 添加。"
@@ -1754,7 +1844,6 @@ zh-CN:
   notice_successful_delete: "成功删除。"
   notice_successful_update: "成功更新。"
   notice_to_many_principals_to_display: "搜索结果数量过多。\n请键入新成员 (或群组) 的名字来缩小搜索范围。"
-  notice_unable_delete_time_entry: "不能删除时间记录条目。"
   notice_user_missing_authentication_method: 用户尚未选择密码或另一种方式登录。
   notice_user_invitation_resent: 邀请已发送到 %{email}。
   present_access_key_value: "你的 %{key_name} 是: %{value}"
@@ -1832,7 +1921,7 @@ zh-CN:
   permission_manage_project_activities: "管理项目活动"
   permission_manage_public_queries: "管理公共查询"
   permission_manage_repository: "管理代码库"
-  permission_manage_subtasks: "管理子任务"
+  permission_manage_subtasks: "管理工作包层次结构"
   permission_manage_versions: "管理版本"
   permission_manage_wiki: "管理 wiki"
   permission_manage_wiki_menu: "管理 wiki 菜单"
@@ -1867,16 +1956,21 @@ zh-CN:
       warning_one: 项目的成员将重新迁移至项目的存储库。
       warning_two: 该项目的现有链接将不再有效。
       title: 更改项目的标识符
+    template:
+      copying: >
+        您的项目正在从选定的模板项目进行创建。一旦项目可用，您将会收到邮件通知。
+      use_template: '使用模板'
+      make_template: '设置为模板'
+      remove_from_templates: '从模板中移除'
     archive:
       are_you_sure: "是否确定想要存档项目 '%{name}'？"
+      archived: "已存档"
   project_module_activity: "活动"
   project_module_forums: "论坛"
   project_module_calendar: "日历"
   project_module_work_package_tracking: "工作包跟踪"
   project_module_news: "新闻"
   project_module_repository: "代码库"
-  project_module_time_tracking: "时间跟踪"
-  project_module_timelines: "时间线"
   project_module_wiki: "Wiki"
   query:
     attribute_and_direction: "%{attribute} (%{direction})"
@@ -1887,7 +1981,8 @@ zh-CN:
     assigned_to_role: "指定人角色"
     member_of_group: "指定人用户组"
     assignee_or_group: "受让人或所属组"
-    subproject_id: "子项目"
+    subproject_id: "包括子项目"
+    only_subproject_id: "仅子项目"
     name_or_identifier: "名称或标识符"
   repositories:
     at_identifier: '在 %{identifier}'
@@ -1990,7 +2085,14 @@ zh-CN:
     url: "版本的 URL"
     warnings:
       cannot_annotate: "此文件不能进行注释。"
+  scheduling:
+    activated: '已激活'
+    deactivated: '已取消激活'
   search_input_placeholder: "搜索"
+  setting_apiv3_cors_enabled: "启用 CORS"
+  setting_apiv3_cors_origins: "API V3 跨源资源共享 (CORS) 允许的源"
+  setting_apiv3_cors_origins_text_html: >
+    如果启用了 CORS ，这些是允许访问 OpenProject API 的源。<br/>请查看<a href="%{origin_link}" target="_blank">有关“源”标题的文档</a>，了解如何指定预期值。
   setting_email_delivery_method: "电子邮件发送方法"
   setting_sendmail_location: "Sendmail 的执行位置"
   setting_smtp_enable_starttls_auto: "如果可用，自动使用 STARTTLS"
@@ -2035,6 +2137,7 @@ zh-CN:
   setting_emails_header: "电子邮件标头"
   setting_email_login: "使用电子邮件作为登录名"
   setting_enabled_scm: "启用 SCM"
+  setting_enabled_projects_columns: "在项目列表中可见"
   setting_feeds_enabled: "启用Feeds"
   setting_feeds_limit: "Feed内容限制"
   setting_file_max_size_displayed: "内联显示的文本文件的最大文件大小"
@@ -2045,7 +2148,6 @@ zh-CN:
   setting_work_package_done_ratio_status: "使用工作包状态"
   setting_work_package_done_ratio_disabled: "禁用 （隐藏进度）"
   setting_work_package_list_default_columns: "默认显示"
-  setting_work_package_list_summable_columns: "可汇总"
   setting_work_package_properties: "工作包属性"
   setting_work_package_startdate_is_adddate: "使用当前日期作为新工作包的开始日期"
   setting_work_packages_export_limit: "工作包导出限制"
@@ -2066,6 +2168,8 @@ zh-CN:
   setting_per_page_options: "每页对象选项"
   setting_plain_text_mail: "纯文本邮件 (没有 HTML)"
   setting_protocol: "协议"
+  setting_project_gantt_query: "项目组合甘特视图"
+  setting_project_gantt_query_text: "您可以从项目概览页面修改用于显示甘特图的查询。"
   setting_security_badge_displayed: "显示安全徽章"
   setting_registration_footer: "注册页脚"
   setting_repositories_automatic_managed_vendor: "自动存储库供应商类型"
@@ -2095,7 +2199,6 @@ zh-CN:
   setting_welcome_text: "欢迎块文本"
   setting_welcome_title: "欢迎区块标题"
   setting_welcome_on_homescreen: "在主屏幕上显示欢迎信息"
-  setting_wiki_compression: "Wiki 历史压缩"
   setting_work_package_group_assignment: "允许分配到组"
   setting_work_package_list_default_highlighting_mode: "默认突出显示模式"
   setting_work_package_list_default_highlighted_attributes: "默认内联突出显示属性"
@@ -2105,6 +2208,9 @@ zh-CN:
     passwords: "密码"
     session: "会话"
     brute_force_prevention: "自动化的用户阻止"
+    projects:
+      section_new_projects: "新项目的设置"
+      section_project_overview: "项目概览列表的设置"
     user:
       default_preferences: "默认偏好设置"
       deletion: "删除"
@@ -2159,7 +2265,7 @@ zh-CN:
   text_destroy_with_associated: "有额外的对象关联到要删除的工作包。这些对象是以下类型："
   text_destroy_what_to_do: "你想做什么？"
   text_diff_truncated: "...这个比较被截断，因为它超出了可显示的最大大小。"
-  text_email_delivery_not_configured: "电子邮件未配置，通知已禁用。\n请修改 SMTP 服务器配置文件 config/configuration.yml 并重新启动应用程序以启用本功能。"
+  text_email_delivery_not_configured: "电子邮件传送未配置，通知已禁用。\n配置您的 SMTP 服务器将其启用。"
   text_enumeration_category_reassign_to: "重新分配以此值："
   text_enumeration_destroy_question: "%{count} 个对象被分配到该值。"
   text_file_repository_writable: "附件目录可写"
@@ -2172,7 +2278,8 @@ zh-CN:
   text_work_package_category_destroy_question: "一些工作包 (%{count}) 被分配到这个类别。你想做什么？"
   text_work_package_category_reassign_to: "重新分配工作包到此类别"
   text_work_package_updated: "工作包 %{id} 已经被 %{author} 更新。"
-  text_work_package_watcher_added: "你已被 %{watcher_setter} 添加作为工作包 %{id} 的一个关注者。"
+  text_work_package_watcher_added: "%{watcher_changer} 已将您添加为工作包 %{id} 的一个关注者。"
+  text_work_package_watcher_removed: "%{watcher_changer} 已将您从工作包 %{id} 的关注者中移除。"
   text_work_packages_destroy_confirmation: "确实要删除所选的工作包吗?"
   text_work_packages_ref_in_commit_messages: "引用和修复工作包中提交消息"
   text_journal_added: "%{label} %{value} 已添加"
@@ -2185,6 +2292,7 @@ zh-CN:
   text_journal_deleted_with_diff: "%{label} 已删除 (%{link})"
   text_journal_set_to: "%{label} 设置为 %{value}"
   text_journal_set_with_diff: "%{label} 设置 (%{link})"
+  text_journal_label_value: "%{label} %{value}"
   text_latest_note: "最新的注释是: %{note}"
   text_length_between: "长度介于 %{min} 和 %{max} 个字符。"
   text_line_separated: "允许有多个值 （每行一个值）。"
@@ -2432,6 +2540,7 @@ zh-CN:
       mail_self_notified: "我想要自己的更改通知"
     status_user_and_brute_force: "%{user} 和 %{brute_force}"
     status_change: "状态更改"
+    text_change_disabled_for_provider_login: "名称由您的登录提供商设置，因此无法更改。"
     unlock: "解锁​​​​"
     unlock_and_reset_failed_logins: "解锁和重置失败的帐户"
   version_status_closed: "关闭"
@@ -2449,6 +2558,17 @@ zh-CN:
     达到用户限制。 您无法再激活任何用户。 请<a href="%{upgrade_url}">升级您的计划</a>或阻止会员以允许其他用户。
   warning_user_limit_reached_instructions: >
     您达到了用户限制（%{current}/%{max}活跃用户）。 请联系sales@openproject.com以升级您的Enterprise Edition计划并添加其他用户。
+  0: >
+
+  warning_bar:
+    protocol_mismatch:
+      title: '协议设置不匹配'
+      text_html: >
+        您的应用程序正在运行，并且协议设置为 <code>%{set_protocol}</code>，但请求的协议是 <code>%{actual_protocol}</code>。这将导致错误！转到<a href="%{setting_path}">系统设置</a>并更改“协议”设置以纠正。
+    hostname_mismatch:
+      title: '主机名设置不匹配'
+      text_html: >
+        您的应用程序正在运行，并且主机名设置为 <code>%{set_hostname}</code>，但请求是 <code>%{actual_hostname}</code>。这将导致错误！转到<a href="%{setting_path}">系统设置</a>并更改“主机名”设置以纠正。
   menu_item: "菜单项"
   menu_item_setting: "可见性"
   wiki_menu_item_for: "wiki页面” %{title} “的菜单项"
@@ -2457,6 +2577,7 @@ zh-CN:
     您正在删除唯一的主wiki菜单项。您现在需要选择一个wiki页面生成新的主项目。若要删除wiki，wiki模块可以由管理员停用。
   wiki_menu_item_delete_not_permitted: 不能删除唯一 wiki 页面的 wiki 菜单项。
   query_menu_item_for: "查询\"%{title}\"的菜单项"
+  #TODO: merge with work_packages top level key
   work_package:
     updated_automatically_by_child_changes: |
       _自动更新由于改变子工作包 %{child} 内的值_
@@ -2501,12 +2622,16 @@ zh-CN:
         estimated_hours: "不能在父工作包中设置预估的小时数。"
         invalid_user_assigned_to_work_package: "所选的用户不允许为此工作包的 '%{property}'。"
         start_date: "不能在父工作包中设置开始日期。"
-      writing_read_only_attributes: "你不能写入只读属性。"
+      eprops:
+        invalid_gzip: "是无效的 gzip：%{message}"
+        invalid_json: "是无效的 json：%{message}"
     resources:
       schema: '方案'
   doorkeeper:
     pre_authorization:
       status: '预授权'
+    auth_url: '身份验证 URL'
+    access_token_url: '访问令牌 URL'
     errors:
       messages:
         #Common error messages
@@ -2549,6 +2674,7 @@ zh-CN:
         redirect_uri_html: >
           授权的用户可以重定向到的允许 URL。每行一个条目。<br/>如果您注册的是桌面应用程序，请使用以下 URL。
         confidential: "检查在客户端密钥可以保密的地方是否使用应用程序。原生移动应用和单页应用被假定为非机密。"
+        scopes: "选择您希望应用程序授予权限的范围。如果不选择任何范围，将假定 api_v3。"
         client_credential_user_id: "在客户端使用此应用程序时要冒充的可选用户 ID。留空可以仅允许公开访问"
         register_intro: "如果您正在为 OpenProject 开发 OAuth API 客户端应用程序，则可以使用此表单注册，供所有用户使用。"
         default_scopes: ""
@@ -2563,8 +2689,8 @@ zh-CN:
       wants_to_access_html: >
         此应用程序请求访问您的 OpenProject 帐户。<br/> <strong>它请求了以下权限：</strong>
     scopes:
-      api_v3: "完全 API 访问"
-      api_v3_text: "应用程序将获得完整的 OpenProject API 读写访问权限，可以代表您执行操作。"
+      api_v3: "API v3 完全访问权限"
+      api_v3_text: "应用程序将获得 OpenProject API v3 的完全读写访问权限来代表您执行操作。"
     grants:
       created_date: "批准日期"
       scopes: "权限"

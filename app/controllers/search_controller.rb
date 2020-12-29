@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,11 +28,10 @@
 #++
 
 class SearchController < ApplicationController
-  include Concerns::Layout
+  include Layout
 
   before_action :find_optional_project,
-                :prepare_tokens,
-                :quick_wp_id_redirect
+                :prepare_tokens
 
   LIMIT = 10
 
@@ -61,12 +60,6 @@ class SearchController < ApplicationController
 
     unless @tokens.any?
       @question = ''
-    end
-  end
-
-  def quick_wp_id_redirect
-    scan_work_package_reference @question do |id|
-      redirect_to work_package_path(id: id) if WorkPackage.visible.find_by(id: id)
     end
   end
 
@@ -106,10 +99,6 @@ class SearchController < ApplicationController
     tokens.slice! 5..-1 if tokens.size > 5
 
     tokens
-  end
-
-  def scan_work_package_reference(query, &blk)
-    query.match(/\A#?(\d+)\z/) && ((blk&.call($1.to_i)) || true)
   end
 
   def search_params
@@ -189,7 +178,7 @@ class SearchController < ApplicationController
   end
 
   def provision_gon
-    available_search_types = Redmine::Search.available_search_types.dup.push('all')
+    available_search_types = search_types.dup.push('all')
 
     gon.global_search = {
       search_term: @question,

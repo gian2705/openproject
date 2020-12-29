@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -46,7 +46,7 @@ module Attachments
 
         return unless attachment_ids
 
-        work_package.attachments_replacements = Attachment.where(id: attachment_ids)
+        model.attachments_replacements = Attachment.where(id: attachment_ids)
       end
     end
   end

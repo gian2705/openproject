@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -70,4 +70,10 @@ OpenProject::CustomFieldFormat.map do |fields|
                                                      edit_as: 'list',
                                                      order: 9,
                                                      formatter: 'CustomValue::VersionStrategy')
+  # This is an internal formatter used as a fallback in case a value is not found.
+  # Setting the label to nil in order to avoid it becoming available for selection as a custom value format.
+  fields.register OpenProject::CustomFieldFormat.new('empty',
+                                                     label: nil,
+                                                     order: 10,
+                                                     formatter: 'CustomValue::EmptyStrategy')
 end

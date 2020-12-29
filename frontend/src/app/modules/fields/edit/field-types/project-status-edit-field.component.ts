@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
@@ -31,15 +31,15 @@ import {Component, OnInit, ViewChild} from "@angular/core";
 import {EditFieldComponent} from "core-app/modules/fields/edit/edit-field.component";
 import {NgSelectComponent} from "@ng-select/ng-select";
 import {projectStatusCodeCssClass, projectStatusI18n} from "core-app/modules/fields/helpers/project-status-helper";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 @Component({
   templateUrl: './project-status-edit-field.component.html',
   styleUrls: ['./project-status-edit-field.component.sass']
 })
 export class ProjectStatusEditFieldComponent extends EditFieldComponent implements OnInit {
-  @ViewChild(NgSelectComponent, { static: true }) public ngSelectComponent:NgSelectComponent;
-
-  readonly I18n:I18nService = this.injector.get(I18nService);
+  @ViewChild(NgSelectComponent, {static: true}) public ngSelectComponent:NgSelectComponent;
+  @InjectField() I18n:I18nService;
 
   private _availableStatusCodes:string[] = ['not set', 'off track', 'at risk', 'on track'];
   public currentStatusCode:string = 'not set';
@@ -76,7 +76,7 @@ export class ProjectStatusEditFieldComponent extends EditFieldComponent implemen
     // https://github.com/ng-select/ng-select/issues/1259
     setTimeout(() => {
       const component = (this.ngSelectComponent) as any;
-      if (component.dropdownPanel) {
+      if (component && component.dropdownPanel) {
         component.dropdownPanel._updatePosition();
       }
 

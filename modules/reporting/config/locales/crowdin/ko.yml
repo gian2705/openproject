@@ -1,9 +1,15 @@
 #-- copyright
-#OpenProject Reporting Plugin
-#Copyright (C) 2010 - 2014 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License version 3.
+#OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+#Copyright (C) 2006-2017 Jean-Philippe Lang
+#Copyright (C) 2010-2013 the ChiliProject Team
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
-#version 3.
+#as published by the Free Software Foundation; either version 2
+#of the License, or (at your option) any later version.
 #This program is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -11,13 +17,14 @@
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#See docs/COPYRIGHT.rdoc for more details.
 #++
-#---
 ko:
   button_save_as: "다른 이름으로 보고서로 저장..."
   comments: "코멘트"
-  cost_reports_title: "비용 보고서"
+  cost_reports_title: "시간 및 비용"
   label_cost_report: "비용 보고서"
+  label_cost_report_plural: "비용 보고서"
   description_drill_down: "세부 정보 표시"
   description_filter_selection: "선택"
   description_multi_select: "다중 선택 표시"
@@ -53,6 +60,17 @@ ko:
   label_units: "단위"
   label_week_reporting: "주(소비)"
   label_year_reporting: "년(소비)"
+  label_count: "카운트"
+  label_filter: "필터"
+  label_filter_add: "필터 추가"
+  label_filter_plural: "필터"
+  label_group_by: "그룹화 기준"
+  label_group_by_add: "그룹화 기준 특성 추가"
+  label_inactive: "«비활성»"
+  label_no: "아니요"
+  label_none: "(데이터 없음)"
+  label_report: "보고서"
+  label_yes: "예"
   load_query_question: "보고서에는 %{size}개 테이블 셀이 있고 렌더링하는 데 시간이 걸릴 수 있습니다. 렌더링하시겠습니까?"
   permission_save_cost_reports: "공용 비용 보고서 저장"
   permission_save_private_cost_reports: "비공개 비용 보고서 저장"
@@ -62,3 +80,7 @@ ko:
   units: "단위"
   validation_failure_date: "은(는) 유효한 날짜가 아닙니다."
   validation_failure_integer: "은(는) 유효한 정수가 아닙니다."
+  reporting:
+    group_by:
+      selected_columns: "선택된 열"
+      selected_rows: "선택된 행"

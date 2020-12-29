@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module OpenProject::Backlogs::Burndown
@@ -100,7 +93,7 @@ module OpenProject::Backlogs::Burndown
         work_package_journals
       JOIN journals AS id_journals
       ON work_package_journals.journal_id = id_journals.id
-        AND #{fixed_version_query}
+        AND #{version_query}
         AND #{project_id_query}
         AND #{type_id_query}
         #{and_status_query}
@@ -146,7 +139,7 @@ module OpenProject::Backlogs::Burndown
               JOIN
                 work_package_journals
               ON journals.id = work_package_journals.journal_id
-                AND #{fixed_version_query}
+                AND #{version_query}
                 AND #{project_id_query}
                 AND #{type_id_query}
                 #{and_status_query})
@@ -189,8 +182,8 @@ module OpenProject::Backlogs::Burndown
       end
     end
 
-    def fixed_version_query
-      @fixed_version_query ||= "(#{Journal::WorkPackageJournal.table_name}.fixed_version_id = #{sprint.id})"
+    def version_query
+      @version_query ||= "(#{Journal::WorkPackageJournal.table_name}.version_id = #{sprint.id})"
     end
 
     def project_id_query

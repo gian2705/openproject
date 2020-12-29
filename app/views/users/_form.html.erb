@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -29,7 +29,9 @@ See docs/COPYRIGHT.rdoc for more details.
 
 <%= error_messages_for 'user' %>
 
-<%= javascript_include_tag 'admin_users' %>
+<% content_for :header_tags do %>
+  <meta name="required_script" content="admin_users" />
+<% end %>
 
 <!--[form:user]-->
 <section class="form--section">
@@ -69,7 +71,7 @@ See docs/COPYRIGHT.rdoc for more details.
     <% unless @auth_sources.empty? || OpenProject::Configuration.disable_password_login? %>
       <div class="form--field">
         <%= f.select :auth_source_id,
-                     ([[l(:label_internal), ""]] + @auth_sources.collect { |a| [a.name, a.id] }),
+                     ([[t(:label_internal), ""]] + @auth_sources.collect { |a| [a.name, a.id] }),
                      label: :'activerecord.attributes.user.auth_source',
                      container_class: '-middle' %>
       </div>

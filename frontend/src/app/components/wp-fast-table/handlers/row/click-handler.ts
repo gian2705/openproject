@@ -4,23 +4,24 @@ import {WorkPackageViewFocusService} from 'core-app/modules/work_packages/routin
 import {debugLog} from '../../../../helpers/debug_output';
 import {States} from '../../../states.service';
 import {KeepTabService} from '../../../wp-single-view-tabs/keep-tab/keep-tab.service';
-import {tdClassName} from '../../builders/cell-builder';
 import {tableRowClassName} from '../../builders/rows/single-row-builder';
 import {WorkPackageTable} from '../../wp-fast-table';
-import {TableEventHandler} from '../table-handler-registry';
+import {TableEventComponent, TableEventHandler} from '../table-handler-registry';
 import {WorkPackageViewSelectionService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-selection.service";
+import {displayClassName} from "core-app/modules/fields/display/display-field-renderer";
+import {activeFieldClassName} from "core-app/modules/fields/edit/edit-form/edit-form";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 export class RowClickHandler implements TableEventHandler {
 
   // Injections
-  public $state:StateService = this.injector.get(StateService);
-  public states:States = this.injector.get(States);
-  public keepTab:KeepTabService = this.injector.get(KeepTabService);
-  public wpTableSelection:WorkPackageViewSelectionService = this.injector.get(WorkPackageViewSelectionService);
-  public wpTableFocus:WorkPackageViewFocusService = this.injector.get(WorkPackageViewFocusService);
+  @InjectField() public $state:StateService;
+  @InjectField() public states:States;
+  @InjectField() public keepTab:KeepTabService;
+  @InjectField() public wpTableSelection:WorkPackageViewSelectionService;
+  @InjectField() public wpTableFocus:WorkPackageViewFocusService;
 
-  constructor(public readonly injector:Injector,
-              table:WorkPackageTable) {
+  constructor(public readonly injector:Injector) {
   }
 
   public get EVENT() {
@@ -31,11 +32,11 @@ export class RowClickHandler implements TableEventHandler {
     return `.${tableRowClassName}`;
   }
 
-  public eventScope(table:WorkPackageTable) {
-    return jQuery(table.tbody);
+  public eventScope(view:TableEventComponent) {
+    return jQuery(view.workPackageTable.tbody);
   }
 
-  public handleEvent(table:WorkPackageTable, evt:JQuery.TriggeredEvent) {
+  public handleEvent(view:TableEventComponent, evt:JQuery.TriggeredEvent) {
     let target = jQuery(evt.target);
 
     // Ignore links
@@ -45,7 +46,7 @@ export class RowClickHandler implements TableEventHandler {
 
     // Shortcut to any clicks within a cell
     // We don't want to handle these.
-    if (target.parents(`.${tdClassName}`).length) {
+    if (target.hasClass(`${displayClassName}`) || target.hasClass(`${activeFieldClassName}`)) {
       debugLog('Skipping click on inner cell');
       return true;
     }
@@ -59,27 +60,25 @@ export class RowClickHandler implements TableEventHandler {
       return true;
     }
 
-    // Ignore links
-    if (target.is('a') || target.parent().is('a')) {
-      return true;
-    }
-
-    let [index, row] = table.findRenderedRow(classIdentifier);
+    let [index, row] = view.workPackageTable.findRenderedRow(classIdentifier);
 
     // Update single selection if no modifier present
     if (!(evt.ctrlKey || evt.metaKey || evt.shiftKey)) {
       this.wpTableSelection.setSelection(wpId, index);
+      view.itemClicked.emit({ workPackageId: wpId, double: false });
     }
 
     // Multiple selection if shift present
     if (evt.shiftKey) {
-      this.wpTableSelection.setMultiSelectionFrom(table.renderedRows, wpId, index);
+      this.wpTableSelection.setMultiSelectionFrom(view.workPackageTable.renderedRows, wpId, index);
     }
 
     // Single selection expansion if ctrl / cmd(mac)
     if (evt.ctrlKey || evt.metaKey) {
       this.wpTableSelection.toggleRow(wpId);
     }
+
+    view.selectionChanged.emit(this.wpTableSelection.getSelectedWorkPackageIds());
 
     // The current row is the last selected work package
     // not matter what other rows are (de-)selected below.

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,10 +30,10 @@ require 'spec_helper'
 
 describe 'Projects status administration', type: :feature, js: true do
   let(:current_user) do
-    FactoryBot.create(:user).tap do |user|
-      FactoryBot.create(:principal_role,
-                        principal: user,
-                        role: FactoryBot.create(:global_role, permissions: global_permissions))
+    FactoryBot.create(:user).tap do |u|
+      FactoryBot.create(:global_member,
+                        principal: u,
+                        roles: [FactoryBot.create(:global_role, permissions: global_permissions)])
     end
   end
   let(:global_permissions) { [:add_project] }
@@ -69,7 +69,7 @@ describe 'Projects status administration', type: :feature, js: true do
       .to have_content('Successful creation.')
 
     # Check that the status has been set correctly
-    visit settings_project_path(Project.last)
+    visit settings_generic_project_path(Project.last)
 
     expect(page)
       .to have_select('Status', selected: 'On track')

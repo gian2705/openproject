@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -45,7 +45,7 @@ module RolesHelper
   def group_permissions_by_module(perms)
     perms_by_module = perms.group_by { |p| p.project_module.to_s }
     ::OpenProject::AccessControl
-      .sorted_modules
+      .sorted_module_names(false)
       .select { |module_name| perms_by_module[module_name].present? }
       .map do |module_name|
       [module_name, perms_by_module[module_name]]

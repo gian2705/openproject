@@ -1,9 +1,7 @@
-import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
-import {WorkPackageTable} from '../wp-fast-table';
 /**
  * Returns the collapsed group class for the given ancestor id
  */
-export function collapsedGroupClass(ancestorId:string):string {
+export function collapsedGroupClass(ancestorId:string = ''):string {
   return `__collapsed-group-${ancestorId}`;
 }
 

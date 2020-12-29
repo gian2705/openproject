@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,7 +31,7 @@
 class Authorization::UserAllowedService
   attr_accessor :user
 
-  def initialize(user, role_cache: User::ProjectRoleCache.new(user))
+  def initialize(user, role_cache: Users::ProjectRoleCache.new(user))
     self.user = user
     self.project_role_cache = role_cache
   end
@@ -114,7 +114,7 @@ class Authorization::UserAllowedService
   end
 
   def project_authorization_cache
-    @project_authorization_cache ||= User::ProjectAuthorizationCache.new(user)
+    @project_authorization_cache ||= Users::ProjectAuthorizationCache.new(user)
   end
 
   def normalize_action(action)

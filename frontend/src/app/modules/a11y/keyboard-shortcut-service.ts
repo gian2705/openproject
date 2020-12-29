@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -62,7 +62,6 @@ export class KeyboardShortcutService {
     'g a': this.projectScoped('projectActivityPath'),
     'g c': this.projectScoped('projectCalendarPath'),
     'g n': this.projectScoped('projectNewsPath'),
-    'g t': this.projectScoped('projectTimelinesPath'),
     'n w p': this.projectScoped('projectWorkPackageNewPath'),
 
     'g e': this.accessKey('edit'),
@@ -79,6 +78,7 @@ export class KeyboardShortcutService {
   constructor(private readonly PathHelper:PathHelperService,
               private readonly FocusHelper:FocusHelperService,
               private readonly currentProject:CurrentProjectService) {
+    this.register();
   }
 
   /**
@@ -86,12 +86,6 @@ export class KeyboardShortcutService {
    */
   public register() {
     _.each(this.shortcuts, (action:() => void, key:string) => Mousetrap.bind(key, action));
-
-    // Register help link clicks
-    jQuery('.help-link-shortcuts-link').click(() => {
-      this.showHelpModal();
-      return false;
-    });
   }
 
   public accessKey(keyName:'preview'|'newWorkPackage'|'edit'|'quickSearch'|'projectSearch'|'help'|'moreMenu'|'details') {
@@ -101,7 +95,7 @@ export class KeyboardShortcutService {
       if (elem.is('input') || elem.attr('id') === 'global-search-input') {
         // timeout with delay so that the key is not
         // triggered on the input
-        setTimeout( () => this.FocusHelper.focus(elem), 0);
+        setTimeout(() => this.FocusHelper.focus(elem), 200);
       } else if (elem.is('[href]')) {
         this.clickLink(elem[0]);
       } else {
@@ -130,15 +124,14 @@ export class KeyboardShortcutService {
   clickLink(link:any) {
     var cancelled = false;
 
-    if (document.createEvent) {
+    if (!!document.createEvent) {
       var event = new MouseEvent('click', {
         view: window,
         bubbles: true,
         cancelable: true
       });
       cancelled = !link.dispatchEvent(event);
-    }
-    else if (link.fireEvent) {
+    } else if (link.fireEvent) {
       cancelled = !link.fireEvent('onclick');
     }
 
@@ -154,7 +147,7 @@ export class KeyboardShortcutService {
   findListInPage() {
     const domLists = jQuery(accessibleListSelector);
     const focusElements:any = [];
-    domLists.find('tbody tr').each(function(index, tr) {
+    domLists.find('tbody tr').each(function (index, tr) {
       var firstLink = jQuery(tr).find(':visible:tabbable')[0];
       if (firstLink !== undefined) {
         focusElements.push(firstLink);
@@ -191,6 +184,3 @@ export class KeyboardShortcutService {
   }
 }
 
-export function initializeKeyboardShortcuts(KeyboardShortcuts:KeyboardShortcutService) {
-  return () => KeyboardShortcuts.register();
-}

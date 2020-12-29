@@ -1,6 +1,6 @@
 #-- copyright
-#OpenProject is a project management system.
-#Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License version 3.
 #OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
@@ -37,6 +37,7 @@ de:
     close_filter_title: "Filter schließen"
     close_form_title: "Formular schließen"
     button_add_watcher: "Beobachter hinzufügen"
+    button_add: "Hinzufügen"
     button_back: "Zurück"
     button_back_to_list_view: "Zurück zur Listenansicht"
     button_cancel: "Abbrechen"
@@ -54,6 +55,8 @@ de:
     button_duplicate: "Duplizieren"
     button_edit: "Bearbeiten"
     button_filter: "Filter"
+    button_collapse_all: "Alle zuklappen"
+    button_expand_all: "Alle ausklappen"
     button_advanced_filter: "Erweiterte Filter"
     button_list_view: "Listenansicht"
     button_show_view: "Vollbildansicht"
@@ -68,7 +71,7 @@ de:
     button_save: "Speichern"
     button_settings: "Einstellungen"
     button_uncheck_all: "Alle abwählen"
-    button_update: "Bearbeiten"
+    button_update: "Aktualisieren"
     button_export-pdf: "PDF-Download"
     button_export-atom: "Atom-Download"
     calendar:
@@ -80,6 +83,7 @@ de:
         inline: 'Hervorheben neben Attribut:'
         entire_card_by: 'Gesamte Karte nach'
       remove_from_list: 'Karte aus Liste entfernen'
+    caption_rate_history: "Stundensatz-Historie"
     clipboard:
       browser_error: "Ihr Browser unterstützt das Kopieren in die Zwischenablage nicht nativ. Bitte selektieren und kopieren Sie den Text händisch."
       copied_successful: "Erfolgreich in die Zwischenablage kopiert!"
@@ -114,6 +118,11 @@ de:
         manual: 'Wechseln zu reinem Markdown-Text'
         wysiwyg: 'Wechseln zu WYSIWYG-Editor'
       macro:
+        error: 'Kann Makro nicht anzeigen: %{message}'
+        attribute_reference:
+          macro_help_tooltip: 'Dieser Textabschnitt wird dynamisch durch ein Makro erzeugt.'
+          not_found: 'Die angeforderte Ressource konnte nicht gefunden werden'
+          invalid_attribute: "Das ausgewählte Attribut '%{name}' existiert nicht."
         child_pages:
           button: 'Auflistung untergeordneter Seiten'
           include_parent: 'Elternseite anzeigen'
@@ -161,6 +170,60 @@ de:
         edit_query: 'Abfrage bearbeiten'
         new_group: 'Neue Gruppe'
         reset_to_defaults: 'Auf Standardwerte zurücksetzen'
+      enterprise:
+        trial:
+          confirmation: "E-Mail-Adresse bestätigen"
+          confirmation_info: >
+            Wir haben Ihnen am %{date} eine E-Mail an %{email} gesendet. Bitte überprüfen Sie Ihren Posteingang und klicken Sie auf den Bestätigungslink, um Ihre 14 Tage Testversion zu starten.
+          form:
+            general_consent: >
+              Ich stimme den <a target="_blank" href="%{link_terms}">Nutzungsbedingungen</a> und der <a target="_blank" href="%{link_privacy}">Datenschutzrichtlinie</a> zu.
+            invalid_email: "Ungültige E-Mail-Adresse"
+            label_company: "Unternehmen"
+            label_first_name: "Vorname"
+            label_last_name: "Nachname"
+            label_email: "E-Mail"
+            label_domain: "Domain"
+            label_subscriber: "Abonnent"
+            label_maximum_users: "Maximale aktive Nutzer"
+            label_starts_at: "Beginnt am"
+            label_expires_at: "Endet am"
+            receive_newsletter: Ich möchte den OpenProject <a target="_blank" href="%{link}">Newsletter</a> erhalten.
+            taken_domain: Es kann nur eine aktive Trial pro Domain geben.
+            taken_email: Jeder Benutzer kann nur eine Testversion erstellen.
+          email_not_received: "Sie haben keine E-Mail erhalten? Sie können die E-Mail mit dem Link auf der rechten Seite noch einmal anfordern."
+          try_another_email: "Oder versuchen Sie es mit einer anderen E-Mail-Adresse."
+          next_steps: "Nächste Schritte"
+          resend_link: "Erneut senden"
+          resend_success: "E-Mail wurde erneut gesendet. Bitte überprüfen Sie Ihre E-Mails und klicken Sie auf den angegebenen Bestätigungslink."
+          resend_warning: "E-Mail konnte nicht erneut gesendet werden."
+          session_timeout: "Ihre Sitzung ist abgelaufen. Bitte versuchen Sie, die Seite neu zu laden oder die E-Mail erneut zu senden."
+          status_label: "Status: "
+          status_confirmed: "bestätigt"
+          status_waiting: "E-Mail gesendet - Warten auf Bestätigung"
+          test_ee: "Testen Sie die Enterprise Edition 14 Tage kostenlos"
+          quick_overview: "Erhalten Sie einen schnellen Überblick über Projektmanagement und Teamzusammenarbeit mit der OpenProject Enterprise Edition."
+        upsale:
+          become_hero: "Werde zum Held!"
+          benefits:
+            description: "Was sind die Vorteile?"
+            high_security: "Sicherheitsfunktionen"
+            high_security_text: "Single Sign on (SAML, OpenID Connect, CAS), Zwei-Faktor-Authentifizierung und automatische Synchronisation von LDAP-Gruppen."
+            installation: "Installations-Support"
+            installation_text: "Erfahrene Software-Ingenieure führen Sie durch den gesamten Installations- und Einrichtungsprozess in Ihrer eigenen Infrastruktur."
+            premium_features: "Premiumfunktionen"
+            premium_features_text: "Agile Boards, benutzerdefinierte Farben und Logo, Graphen, intelligente Workflows und vieles mehr."
+            professional_support: "Professionelle Unterstützung"
+            professional_support_text: "Erhalten Sie zuverlässigen und schnellen Support von erfahrenen OpenProject Software-Ingenieuren."
+          button_start_trial: "Kostenlose Testversion starten"
+          button_book_now: "Jetzt buchen"
+          confidence: >
+            OpenProject bietet eine bewährte und hoch-skalierbare Projektmanagement-Software für Unternehmen - mit Open Source und open mind.
+          link_quote: "Angebot anfordern"
+          text: >
+            Die OpenProject Enterprise Edition baut auf der Community Edition auf. Die Enterprise Edition umfasst Premium-Funktionen und professionelle Unterstützung und richtet sich primär an Organisationen mit mehr als 10 Benutzern, die unternehmenskritische Projekte mit OpenProject verwalten.
+          unlimited: "Unbegrenzt"
+          you_contribute: "Auch Softwareentwickler müssen ihre Rechnungen begleichen. Mit der Enterprise Edition tragen Sie wesentlich zu der Open-Source Community von OpenProject bei."
     custom_actions:
       date:
         specific: 'am'
@@ -170,6 +233,9 @@ de:
       cannot_save_changes_with_message: "Ihre Änderungen können nicht gespeichert werden. Fehler: %{error}"
       query_saving: "Die Ansicht konnte nicht gespeichert werden."
       embedded_table_loading: "Die eingebettete Ansicht konnte nicht geladen werden: %{message}"
+    enumeration_activities: "Aktivitäten (Zeiterfassung)"
+    enumeration_doc_categories: "Dokumentenkategorien"
+    enumeration_work_package_priorities: "Arbeitspaket-Prioritäten"
     filter:
       description:
         text_open_filter: "Öffnen Sie diesen Filter mittels \"Alt\" und den Pfeiltasten."
@@ -202,8 +268,15 @@ de:
       blocks:
         new_features:
           text_new_features: "Lesen Sie über neue Funktionen und Updates."
-          current_new_feature_html: "OpenProject enthält eine neue <b>Übersicht-Seite</b>, um <b>wichtige Projektinformationen anzuzeigen</b> und zu zeigen, ob das Projekt im Zeitplan ist. </br> Sie können verschiedene neue Status-Widgets einfügen, wie: <ul><li>Projektstatus,</li> <li>Übersicht über Arbeitspaket-Status,</li> <li>Aufgabenfortschritt,</li> <li>Aufgaben zugewiesen an Benutzer.</li></ul>"
-          learn_about: "Erfahren Sie mehr über die neuen Status-Widgets"
+          learn_about: "Erfahren Sie mehr über die neuen Funktionen"
+          standard:
+            learn_about_link: https://www.openproject.org/openproject-11-1-release
+            current_new_feature_html: >
+              Die Version enthält zahlreiche neue Funktionen und Verbesserungen: <br> <ul class="%{list_styling_class}"> <li><b>Verbessertes Styling</b>  des WYSIWYG-Editors.</li> <li>Direkte Anzeige von <b>Benutzernamen für @Benachrichtigungen</b> während der Bearbeitung.</li> <li>Erweitertes Authentifizierungsprofil mit einem <b>OpenID Connect Provider.</b></li> <li>Darstellung von Projekt-<b>Meilensteinen aggregiert</b> in einer Zeile im Gantt-Diagramm.</li> <li><b>Button zum Einklappen von Gruppen</b> in der Arbeitspaketliste.</li> <li><b>Optimierung für das Drucken,</b> z.B. von Wiki-Seiten, über die Druckfunktion des Browsers.</li> </ul>
+          bim:
+            learn_about_link: https://www.openproject.org/openproject-11-0-release
+            current_new_feature_html: >
+              Die Version enthält zahlreiche neue Funktionen und Verbesserungen: <br> <ul class="%{list_styling_class}"> <li><b>Verbessertes Styling</b>  des WYSIWYG-Editors.</li> <li>Direkte Anzeige von <b>Benutzernamen für @Benachrichtigungen</b> während der Bearbeitung.</li> <li>Erweitertes Authentifizierungsprofil mit einem <b>OpenID Connect Provider.</b></li> <li>Darstellung von Projekt-<b>Meilensteinen aggregiert</b> in einer Zeile im Gantt-Diagramm.</li> <li><b>Button zum Einklappen von Gruppen</b> in der Arbeitspaketliste.</li> <li><b>Optimierung für das Drucken,</b> z.B. von Wiki-Seiten, über die Druckfunktion des Browsers.</li> </ul>
     label_activate: "Aktiviere"
     label_add_column_after: "Spalte danach hinzufügen"
     label_add_column_before: "Spalte davor hinzufügen"
@@ -214,13 +287,14 @@ de:
     label_add_row_before: "Zeile davor hinzufügen"
     label_add_selected_columns: "Ausgewählte Spalten hinzufügen"
     label_added_by: "hinzugefügt von"
-    label_added_time_by: "Von %{author} %{age} hinzugefügt"
+    label_added_time_by: "Hinzugefügt von <a href=%{authorLink}>%{author}</a> am %{age}"
     label_ago: "vor (Tage)"
     label_all: "alle"
     label_all_work_packages: "alle Arbeitspakete"
     label_and: "und"
     label_ascending: "Aufsteigend"
     label_author: "Autor: %{user}"
+    label_avatar: "Profilbild"
     label_between: "zwischen"
     label_board: "Board"
     label_board_locked: "Gesperrt"
@@ -234,6 +308,8 @@ de:
     label_deactivate: "Deaktiviere"
     label_descending: "Absteigend"
     label_description: "Beschreibung"
+    label_details: "Details"
+    label_display: "Anzeige"
     label_cancel_comment: "Kommentar abbrechen"
     label_closed_work_packages: "Geschlossen"
     label_collapse: "Zuklappen"
@@ -252,31 +328,41 @@ de:
     label_expand_all: "Alle ausklappen"
     label_expand_project_menu: "Projektmenü ausklappen"
     label_export: "Exportieren"
+    label_export_preparing: "Der Export wird vorbereitet und wird in Kürze heruntergeladen."
     label_filename: "Datei"
     label_filesize: "Größe"
+    label_general: "Allgemein"
+    label_global_roles: "Globale Rollen"
     label_greater_or_equal: ">="
     label_group: 'Gruppe'
     label_group_by: "Gruppiere Ergebnisse"
+    label_group_plural: "Gruppen"
     label_hide_attributes: "Weniger anzeigen"
     label_hide_column: "Spalte ausblenden"
     label_hide_project_menu: "Projektmenü einklappen"
     label_in: "an"
     label_in_less_than: "in weniger als"
     label_in_more_than: "in mehr als"
+    label_incoming_emails: "Eingehende E-Mails"
+    label_information_plural: "Information"
     label_import: "Import"
     label_latest_activity: "Letzte Änderungen"
     label_last_updated_on: "Zuletzt aktualisiert am"
+    label_learn_more_link: "Weitere Informationen"
     label_less_or_equal: "<="
     label_less_than_ago: "vor weniger als (Tage)"
     label_loading: "Lade..."
+    label_mail_notification: "Mailbenachrichtigung"
     label_me: "ich"
+    label_meeting_agenda: "Agenda"
+    label_meeting_minutes: "Protokoll"
     label_menu_collapse: "zusammenklappen"
     label_menu_expand: "ausklappen"
     label_more_than_ago: "vor mehr als (Tage)"
     label_next: "Weiter"
     label_no_color: "Keine Farbe"
     label_no_data: "Es sind keine Daten vorhanden"
-    label_no_due_date: "kein Abgabedatum"
+    label_no_due_date: "kein Endtermin"
     label_no_start_date: "kein Startdatum"
     label_no_value: "Kein Wert"
     label_none: "keine"
@@ -290,12 +376,16 @@ de:
     label_previous: "Zurück"
     label_per_page: "Pro Seite:"
     label_please_wait: "Bitte warten"
+    label_project_plural: "Projekte"
     label_visibility_settings: "Sichtbarkeits-Einstellungen"
     label_quote_comment: "Diesen Kommentar zitieren"
+    label_recent: "Kürzlich benutzt"
     label_reset: "Zurücksetzen"
     label_remove_column: "Spalte entfernen"
     label_remove_columns: "Ausgewählte Spalten entfernen"
     label_remove_row: "Zeile entfernen"
+    label_report: "Report"
+    label_repository_plural: "Projektarchive"
     label_save_as: "Speichern unter"
     label_select_watcher: "Beobachter auswählen ..."
     label_selected_filter_list: "Ausgewählte Filter"
@@ -306,6 +396,7 @@ de:
     label_sort_higher: "Eins höher"
     label_sort_lower: "Eins tiefer"
     label_sorting: "Sortierung"
+    label_spent_time: "Aufgewendete Zeit"
     label_star_query: "Favorisiert"
     label_press_enter_to_save: "Drücken Sie Enter zum Speichern."
     label_public_query: "Öffentlich"
@@ -313,16 +404,20 @@ de:
     label_sum_for: "Summe für"
     label_subject: "Thema"
     label_this_week: "aktuelle Woche"
-    label_today: "heute"
+    label_today: "Heute"
+    label_time_entry_plural: "Aufgewendete Zeit"
     label_up: "Nach oben"
+    label_user_plural: "Benutzer"
     label_activity_show_only_comments: "Nur Aktivitäten mit Kommentaren"
     label_activity_show_all: "Alle Aktivitäten anzeigen"
     label_total_progress: "%{percent}% Gesamtfortschritt"
     label_total_amount: "Gesamt: %{amount}"
     label_updated_on: "aktualisiert am"
     label_value_derived_from_children: "(aggregierter Wert von Kindelementen)"
+    label_children_derived_duration: "Aggregierte Dauer der Unterarbeitspakete"
     label_warning: "Warnung"
     label_work_package: "Arbeitspaket"
+    label_work_package_parent: "Übergeordnetes Arbeitspaket"
     label_work_package_plural: "Arbeitspakete"
     label_watch: "Beobachten"
     label_watch_work_package: "Arbeitspaket beobachten"
@@ -356,6 +451,7 @@ de:
     label_wait: "Bitte warten Sie auf die Konfiguration..."
     label_upload_counter: "%{done} von %{count} Dateien fertig"
     label_validation_error: "Das Arbeitspaket konnte aufgrund folgender Fehler nicht gespeichert werden:"
+    label_version_plural: "Versionen"
     label_view_has_changed: "Diese Ansicht hat ungespeicherte Änderungen. Klicken, um sie zu speichern."
     help_texts:
       show_modal: 'Hilfe-Text für dieses Attribut anzeigen'
@@ -383,7 +479,7 @@ de:
           drag: 'Ziehen Sie Ihre Karten in eine Liste, um diese zu sortieren oder weisen Sie diese einer anderen Liste zu. Ein Doppelklick auf eine Karte öffnet die Detailansicht.'
         wp:
           toggler: "Hier sind die <b>Arbeitspakete</b>, die Ihnen eine detailliertere Sicht auf die Arbeit in Ihrem Projekt geben."
-          list: 'Dies ist die Liste der wichtigen <b>Arbeitspakete</b> in Ihrem Projekt, z.B. Aufgaben, Funktionen, Meilensteine, Fehler, und Vieles mehr.  <br> Sie können neue Arbeitspakete direkt in der Liste anlegen und bearbeiten. Ein Doppelklick auf die Zeile öffnet die Detailansicht.'
+          list: 'Dies ist die Liste der wichtigen <b>Arbeitspakete</b> in Ihrem Projekt, z.B. Aufgaben, Funktionen, Meilensteine, Fehler, und Vieles mehr. <br> Sie können neue Arbeitspakete direkt in der Liste anlegen und bearbeiten. Ein Doppelklick auf eine Zeile öffnet die Detailansicht.'
           full_view: 'In der <b>Arbeitspaket-Detailansicht</b> finden Sie alle wichtigen Informationen, wie Beschreibung, Status und Priorität, Aktivitäten, Abhängigkeiten oder Kommentare.'
           back_button: 'Mit dem Pfeil kommen Sie zurück in die Listenansicht.'
           create_button: 'Mit <b>Anlegen</b> Können Sie neue Arbeitspakete Ihrem Projekt hinzufügen.'
@@ -408,6 +504,7 @@ de:
       context: 'Projektkontext'
       work_package_belongs_to: 'Dieses Arbeitspaket gehört zum Projekt %{projectname}.'
       click_to_switch_context: 'Dieses Arbeitspaket in dem Projekt öffnen.'
+      confirm_template_load: 'Das Ändern der Vorlage wird die Seite neu laden und Sie verlieren alle Eingaben zu diesem Formular. Fortfahren?'
       autocompleter:
         label: 'Projekt Auto-Vervollständigung'
     text_are_you_sure: "Sind Sie sicher?"
@@ -422,23 +519,22 @@ de:
         upgrade_to_ee_text: "Wow! Wenn du dieses Feature benötigst, bist du ein super Pro! Würdest du uns OpenProject-Entwickler unterstützen, indem du ein Enterprise Edition-Kunde wirst?"
         more_information: "Weitere Informationen"
         nevermind: "Nein danke"
-        filter_types:
-          parent: "die Unteraufgaben sind von"
-          precedes: "die Vörganger sind von"
-          follows: "die Nachfolger sind von"
-          relates: "die verwandt sind mit"
-          duplicates: "die duplizierend sind gegenüber"
-          duplicated: "Dupliziert durch"
-          blocks: "die eine Blockierung sind von"
-          blocked: "Blockiert durch"
-          partof: "die enthalten sind in"
-          includes: "die einschließend sind von"
-          requires: "die erfordernd sind von"
-          required: "die benötigt werden von"
+      edit:
+        form_configuration: "Formularkonfiguration"
+        projects: "Projekte"
+        settings: "Einstellungen"
     time_entry:
+      project: 'Projekt'
+      work_package: 'Arbeitspaket'
+      work_package_required: 'Benötigt zuerst die Auswahl eines Arbeitspakets.'
       activity: 'Aktivität'
       comment: 'Kommentar'
+      duration: 'Dauer'
+      spent_on: 'Datum'
       hours: 'Stunden'
+      title: 'Zeit buchen'
+    two_factor_authentication:
+      label_two_factor_authentication: 'Zwei-Faktor-Authentifizierung'
     watchers:
       label_loading: Lade Beobachter...
       label_error_loading: Beim Laden der Beobachter ist ein Fehler aufgetreten
@@ -491,22 +587,15 @@ de:
       abort: "Abbrechen"
     relations_autocomplete:
       placeholder: "Suchbegriff eintippen"
-      parent_placeholder: "Wählen Sie einen neuen Teil oder drücken sie Escape, um abzubrechen."
+      parent_placeholder: "Wählen Sie ein neues Eltern-Arbeitspaket oder drücken Sie Escape, um abzubrechen."
     repositories:
       select_tag: 'Tag auswählen'
       select_branch: 'Branch auswählen'
     field_value_enter_prompt: "Einen Wert für '%{field}' eingeben"
-    select2:
-      input_too_short:
-        one: "Bitte ein weiteres Zeichen eingeben"
-        other: "Bitte {{count}} weitere Zeichen eingeben"
-      load_more: "Weitere Ergebnisse werden geladen ..."
-      no_matches: "Keine Treffer gefunden"
-      searching: "Suche ..."
-      selection_too_big:
-        one: "Sie dürfen nur ein Element auswählen"
-        other: "Sie dürfen nur {{limit}} Elemente auswählen"
     project_menu_details: "Details"
+    scheduling:
+      manual: 'Manuelle Planung'
+      automatic: 'Automatische Planung'
     sort:
       sorted_asc: 'Aufsteigende Sortierung angewendet, '
       sorted_dsc: 'Absteigende Sortierung angewendet, '
@@ -653,7 +742,7 @@ de:
       property_groups:
         details: "Details"
         people: "Personen"
-        estimatesAndTime: "Schätzungen & Zeit"
+        estimatesAndTime: "Schätzungen & Zeiten"
         other: "Andere"
       properties:
         assignee: "Zugewiesen an"
@@ -672,6 +761,7 @@ de:
         startDate: "Anfangstermin"
         status: "Status"
         subject: "Thema"
+        subproject: "Unterprojekt"
         title: "Titel"
         type: "Typ"
         updatedAt: "Aktualisiert am"
@@ -717,6 +807,9 @@ de:
           not_found: "Diese Ansicht konnte nicht gefunden werden"
           duplicate_query_title: "Eine Ansicht mit diesem Namen existiert bereits. Trotzdem ändern?"
         text_no_results: "Keine übereinstimmenden Ansichten gefunden."
+      scheduling:
+        is_parent: "Die Termine dieses Arbeitspakets werden automatisch von seinen Kindern aggregiert. Aktivieren Sie \"Manuelle Planung\", um die Termine frei zu setzen."
+        is_switched_from_manual_to_automatic: "Die Termine dieses Arbeitspakets müssen nach dem Wechsel auf automatische Planung neu berechnet werden."
       table:
         configure_button: 'Arbeitspaket-Tabelle konfigurieren'
         summary: "Tabelle mit Zeilen von Arbeitspaketen und Spalten von Attributen dieser Arbeitspakete."
@@ -750,14 +843,13 @@ de:
           automatic: 'Automatisch'
           manually: 'Manuell'
           warning: 'Sie verlieren Ihre vorherige Sortierung beim Aktivieren des automatischen Sortiermodus.'
-        columns_help_text: "Verwenden Sie die Eingabe oben um Spalten zur Tabellenansicht hinzuzufügen oder zu entfernen. Sie können die Reihenfolge der Spalten über Drag & Drop verändern."
+        columns_help_text: "Verwenden Sie die obige Eingabe, um Spalten zur Tabellenansicht hinzuzufügen. Sie können die Spalten per Drag & Drop verschieben, um sie neu anzuordnen."
         upsale:
           attribute_highlighting: 'Sollen bestimmte Arbeitspakete aus der Menge herausstechen?'
           relation_columns: 'Möchten Sie Zusammenhänge in der Arbeitspaketliste anzeigen?'
           check_out_link: 'Testen Sie die Enterprise Edition.'
         relation_filters:
-          first_part: "Alle Arbeitspakete anzeigen"
-          second_part: "dem aktuellen Arbeitspaket"
+          filter_work_packages_by_relation_type: 'Arbeitspakete nach Beziehungs-Typ filtern'
       tabs:
         overview: Übersicht
         activity: Aktivität
@@ -806,7 +898,10 @@ de:
         has_children: "Dieses Arbeitspaket hat %{childUnits}:"
         confirm_deletion_children: "Ich bestätige, dass alle untergordneten Elemente der hier aufgeführten Arbeitspakete rekursiv entfernt werden."
         deletes_children: "Alle untergeordneten Arbeitspaketen und deren Nachkommen werden auch rekursiv gelöscht."
-    notice_no_results_to_display: "Keine sichtbaren Ergebnisse."
+      destroy_time_entry:
+        title: "Löschen der Zeitbuchung bestätigen"
+        text: "Sind Sie sicher, dass Sie die folgende Zeitbuchung löschen möchten?"
+    notice_no_results_to_display: "Keine sichtbaren Ergebnisse anzuzeigen."
     notice_successful_create: "Erfolgreich angelegt."
     notice_successful_delete: "Erfolgreich gelöscht."
     notice_successful_update: "Erfolgreich aktualisiert."
@@ -843,8 +938,9 @@ de:
         one: "ein untergeordnetes Arbeitspaket"
         other: "%{count} untergeordnete Arbeitspakete"
       hour:
-        one: "%{count} h"
-        other: "%{count} h"
+        zero: "0 h"
+        one: ""
+        other: ""
     zen_mode:
       button_activate: 'Zen-Modus aktivieren'
       button_deactivate: 'Zen-Modus deaktivieren'

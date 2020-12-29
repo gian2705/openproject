@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -71,19 +71,15 @@ feature 'Top menu items', js: true, selenium: true do
     !let(:top_menu) { find(:css, "[title=#{I18n.t('label_modules')}]") }
 
     let(:news_item) { I18n.t('label_news_plural') }
-    let(:time_entries_item) { I18n.t('label_time_sheet_menu') }
+    let(:project_item) { I18n.t('label_projects_menu') }
+    let(:reporting_item) { I18n.t('cost_reports_title') }
 
-    let(:all_items) { [news_item, time_entries_item] }
+    let(:all_items) { [news_item, project_item, reporting_item] }
 
     context 'as an admin' do
       let(:user) { FactoryBot.create :admin }
       it 'displays all items' do
-        has_menu_items?(time_entries_item, news_item)
-      end
-
-      it 'visits the time sheet page' do
-        click_link_in_open_menu(time_entries_item)
-        expect(page).to have_current_path(time_entries_path)
+        has_menu_items?(reporting_item, news_item, project_item)
       end
 
       it 'visits the news page' do
@@ -93,29 +89,21 @@ feature 'Top menu items', js: true, selenium: true do
     end
 
     context 'as a regular user' do
-      it 'displays news only' do
-        has_menu_items? news_item
+      it 'displays news and projects only' do
+        has_menu_items? news_item, project_item
       end
     end
 
     context 'as a user with permissions', allowed_to: true do
       it 'displays all options' do
-        has_menu_items?(time_entries_item, news_item)
-      end
-    end
-
-    context 'as a user without permissions', allowed_to: false do
-      let(:open_menu) { false }
-      it 'displays no options and hides the module menu' do
-        has_menu_items?
-        expect(page).not_to have_link('Modules')
+        has_menu_items?(reporting_item, news_item, project_item)
       end
     end
 
     context 'as an anonymous user' do
       let(:user) { FactoryBot.create :anonymous }
-      it 'displays only news' do
-        has_menu_items? news_item
+      it 'displays only news and projects' do
+        has_menu_items? news_item, project_item
       end
     end
   end

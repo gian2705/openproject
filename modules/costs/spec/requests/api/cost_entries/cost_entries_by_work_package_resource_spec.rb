@@ -1,12 +1,12 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
 # OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'spec_helper'
@@ -33,9 +33,9 @@ describe 'API v3 Cost Entry resource' do
   include Rack::Test::Methods
   include API::V3::Utilities::PathHelper
 
-  let(:current_user) {
+  let(:current_user) do
     FactoryBot.create(:user, member_in_project: project, member_through_role: role)
-  }
+  end
   let(:role) { FactoryBot.create(:role, permissions: permissions) }
   let(:work_package_permissions) { [:view_work_packages] }
   let(:cost_entry_permissions) { [:view_cost_entries] }
@@ -44,16 +44,15 @@ describe 'API v3 Cost Entry resource' do
   let(:work_package) { FactoryBot.create(:work_package, project: project) }
   subject(:response) { last_response }
 
-  let(:cost_entry) {
-    FactoryBot.build(:cost_entry,
+  let(:cost_entry) do
+    FactoryBot.create(:cost_entry,
                       project: project,
                       work_package: work_package,
                       user: current_user)
-  }
+  end
 
   before do
-    allow(User).to receive(:current).and_return current_user
-    cost_entry.save!
+    login_as current_user
 
     get get_path
   end

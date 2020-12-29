@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,7 +31,7 @@ shared_examples_for 'GET individual query' do
   let(:filter) { [] }
   let(:path) do
     if filter.any?
-      params = URI.encode(JSON.dump(filter))
+      params = CGI.escape(JSON.dump(filter))
       "#{base_path}?filters=#{params}"
     else
       base_path

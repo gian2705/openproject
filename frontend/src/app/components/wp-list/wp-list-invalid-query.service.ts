@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {QueryResource} from 'core-app/modules/hal/resources/query-resource';
@@ -36,28 +36,25 @@ import {QueryFilterInstanceSchemaResource} from 'core-app/modules/hal/resources/
 import {QueryColumn} from '../wp-query/query-column';
 import {Injectable} from '@angular/core';
 import {HalResourceService} from 'core-app/modules/hal/services/hal-resource.service';
-import {QueryFormDmService} from "core-app/modules/hal/dm-services/query-form-dm.service";
 
 @Injectable()
 export class WorkPackagesListInvalidQueryService {
-  constructor(protected halResourceService:HalResourceService,
-              protected queryFormDm:QueryFormDmService) {}
+  constructor(protected halResourceService:HalResourceService) {
+  }
 
   public restoreQuery(query:QueryResource, form:QueryFormResource) {
-    let payload = this.queryFormDm.buildQueryResource(form);
-
-    this.restoreFilters(query, payload, form.schema);
-    this.restoreColumns(query, payload, form.schema);
-    this.restoreSortBy(query, payload, form.schema);
-    this.restoreGroupBy(query, payload, form.schema);
-    this.restoreOtherProperties(query, payload);
+    this.restoreFilters(query, form.payload, form.schema);
+    this.restoreColumns(query, form.payload, form.schema);
+    this.restoreSortBy(query, form.payload, form.schema);
+    this.restoreGroupBy(query, form.payload, form.schema);
+    this.restoreOtherProperties(query, form.payload);
   }
 
   private restoreFilters(query:QueryResource, payload:QueryResource, querySchema:SchemaResource) {
     let filters = _.map((payload.filters), filter => {
       let filterInstanceSchema = _.find(querySchema.filtersSchemas.elements, (schema:QueryFilterInstanceSchemaResource) => {
         return (schema.filter.allowedValues as QueryFilterResource[])[0].$href === filter.filter.$href;
-      })
+      });
 
       if (!filterInstanceSchema) {
         return null;
@@ -73,7 +70,7 @@ export class WorkPackagesListInvalidQueryService {
         recreatedFilter.operator = operator;
       }
 
-      recreatedFilter.values.length = 0
+      recreatedFilter.values.length = 0;
       _.each(filter.values, value => recreatedFilter.values.push(value));
 
       return recreatedFilter;

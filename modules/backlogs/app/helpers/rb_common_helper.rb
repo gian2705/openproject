@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module RbCommonHelper
@@ -169,10 +162,6 @@ module RbCommonHelper
     story.type.nil? ? '' : h(backlogs_types_by_id[story.type_id].name)
   end
 
-  def updated_on_with_milliseconds(story)
-    date_string_with_milliseconds(story.updated_on, 0.001) unless story.blank?
-  end
-
   def date_string_with_milliseconds(d, add = 0)
     return '' if d.blank?
     d.strftime('%B %d, %Y %H:%M:%S') + '.' + (d.to_f % 1 + add).to_s.split('.')[1]
@@ -210,19 +199,11 @@ module RbCommonHelper
     end
   end
 
-  def show_burndown_link(sprint)
-    ret = ''
-
-    ret += link_to(l('backlogs.show_burndown_chart'),
-                   {},
-                   class: 'show_burndown_chart button')
-
-    ret += nonced_javascript_tag "
-            jQuery(document).ready(function(){
-              var burndown = RB.Factory.initialize(RB.Burndown, jQuery('.show_burndown_chart'));
-              burndown.setSprintId(#{sprint.id});
-            });"
-    ret.html_safe
+  def show_burndown_link(project, sprint)
+    link_to(I18n.t('backlogs.show_burndown_chart'),
+            backlogs_project_sprint_burndown_chart_path(project.identifier, sprint),
+            class: 'show_burndown_chart button',
+            target: :_blank)
   end
 
   private

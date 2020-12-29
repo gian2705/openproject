@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {KeepTabService} from '../../wp-single-view-tabs/keep-tab/keep-tab.service';
@@ -42,8 +42,8 @@ import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 export class WorkPackageDetailsViewButtonComponent extends AbstractWorkPackageButtonComponent implements OnDestroy {
   public projectIdentifier:string;
   public accessKey:number = 8;
-  public activeState:string = 'work-packages.list.details';
-  public listState:string = 'work-packages.list';
+  public activeState:string = 'work-packages.partitioned.list.details';
+  public listState:string = 'work-packages.partitioned.list';
   public buttonId:string = 'work-packages-details-view-button';
   public buttonClass:string = 'toolbar-icon';
   public iconClass:string = 'icon-info2';
@@ -73,6 +73,7 @@ export class WorkPackageDetailsViewButtonComponent extends AbstractWorkPackageBu
   }
 
   public ngOnDestroy() {
+    super.ngOnDestroy();
     this.transitionListener();
   }
 

@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -52,6 +52,7 @@ describe 'Upload attachment to forum message', js: true do
 
   it 'can upload an image to new and existing messages via drag & drop' do
     index_page.visit!
+    click_link forum.name
 
     create_page = index_page.click_create_message
     create_page.set_subject 'A new message'
@@ -71,6 +72,11 @@ describe 'Upload attachment to forum message', js: true do
     within '.toolbar-items' do
       click_on "Edit"
     end
+
+    find('.op-uc-figure').click
+    find('.ck-widget__type-around__button_after').click
+
+    editor.type_slowly("A spacer text")
 
     editor.drag_attachment image_fixture, 'Image uploaded the second time'
 

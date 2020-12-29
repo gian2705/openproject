@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,16 +24,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 
 require 'spec_helper'
 
-describe Scm::DeleteManagedRepositoryService do
+describe SCM::DeleteManagedRepositoryService do
   let(:user) { FactoryBot.build(:user) }
   let(:project) { FactoryBot.build(:project) }
 
   let(:repository) { FactoryBot.build(:repository_subversion) }
-  subject(:service) { Scm::DeleteManagedRepositoryService.new(repository) }
+  subject(:service) { SCM::DeleteManagedRepositoryService.new(repository) }
 
   let(:config) { {} }
 
@@ -90,7 +90,7 @@ describe Scm::DeleteManagedRepositoryService do
 
     it 'does not raise an exception upon permission errors' do
       expect(File.directory?(repository.root_url)).to be true
-      expect(Scm::DeleteLocalRepositoryJob)
+      expect(SCM::DeleteLocalRepositoryJob)
         .to receive(:new).and_raise(Errno::EACCES)
 
       expect(service.call).to be false
@@ -138,7 +138,7 @@ describe Scm::DeleteManagedRepositoryService do
       end
 
       it 'calls the callback' do
-        expect(::Scm::DeleteRemoteRepositoryJob)
+        expect(::SCM::DeleteRemoteRepositoryJob)
           .to receive(:perform_now)
           .and_call_original
 
@@ -157,7 +157,7 @@ describe Scm::DeleteManagedRepositoryService do
       end
 
       it 'calls the callback' do
-        expect(::Scm::DeleteRemoteRepositoryJob)
+        expect(::SCM::DeleteRemoteRepositoryJob)
           .to receive(:perform_now)
           .and_call_original
 

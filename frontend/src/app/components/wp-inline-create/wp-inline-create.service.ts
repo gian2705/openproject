@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,23 +23,24 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Injectable, Injector, OnDestroy} from '@angular/core';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
-import {Observable, of, Subject} from "rxjs";
+import {Subject} from "rxjs";
 import {ComponentType} from "@angular/cdk/portal";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {AuthorisationService} from "core-app/modules/common/model-auth/model-auth.service";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 @Injectable()
 export class WorkPackageInlineCreateService implements OnDestroy {
 
-  protected readonly I18n:I18nService = this.injector.get(I18nService);
-  protected readonly authorisationService:AuthorisationService = this.injector.get(AuthorisationService);
+  @InjectField() protected readonly I18n:I18nService;
+  @InjectField() protected readonly authorisationService:AuthorisationService;
 
-  constructor(protected readonly injector:Injector) {
+  constructor(readonly injector:Injector) {
   }
 
   /**

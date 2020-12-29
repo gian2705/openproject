@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2014 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,18 +23,20 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 
 import {DisplayField} from "core-app/modules/fields/display/display-field.module";
-import {WorkPackageCacheService} from "core-components/work-packages/work-package-cache.service";
 import {IFieldSchema} from "core-app/modules/fields/field.base";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 interface ICostsByType {
     costObjectId:string;
     costType:{
         name:string;
+        id:string;
     };
     staticPath:{
         href:string;
@@ -44,11 +46,10 @@ interface ICostsByType {
 
 export class CostsByTypeDisplayField extends DisplayField {
 
-    public wpCacheService:any;
+    @InjectField() apiV3Service:APIV3Service;
 
     public apply(resource:any, schema:IFieldSchema) {
         super.apply(resource, schema);
-        this.wpCacheService = this.$injector.get(WorkPackageCacheService);
         this.loadIfNecessary();
     }
 
@@ -57,7 +58,11 @@ export class CostsByTypeDisplayField extends DisplayField {
             this.value.$load().then(() => {
 
                 if (this.resource.$source._type === 'WorkPackage') {
-                    this.wpCacheService.touch(this.resource.id!);
+                  this
+                    .apiV3Service
+                    .work_packages
+                    .cache
+                    .touch(this.resource.id!);
                 }
             });
         }
@@ -96,7 +101,7 @@ export class CostsByTypeDisplayField extends DisplayField {
     const showCosts = this.resource.showCosts;
     const link = document.createElement('a') as HTMLAnchorElement;
 
-    link.href = showCosts.href + '?cost_type_id=' + val.costObjectId;
+    link.href = showCosts.href + '&unit=' + val.costType.id;
     link.setAttribute('target', '_blank');
     link.textContent = val.spentUnits + ' ' + val.costType.name;
     element.appendChild(link);
@@ -110,7 +115,7 @@ export class CostsByTypeDisplayField extends DisplayField {
   private renderCostAsText(val:ICostsByType, element:HTMLElement, i:number) {
     const span = document.createElement('span');
     span.textContent = val.spentUnits + ' ' + val.costType.name;
-
+    element.appendChild(span);
     this.addSeparator(element, i);
   }
 

@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,11 +23,11 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
-import {Component, ElementRef, EventEmitter, Inject, Input, Output, ViewChild} from "@angular/core";
+import {Component, ElementRef, EventEmitter, Input, Output, ViewChild} from "@angular/core";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 
 
@@ -45,7 +45,7 @@ export class WorkPackageRelationsGroupComponent {
 
   @Output() public onToggleGroupBy = new EventEmitter<undefined>();
 
-  @ViewChild('wpRelationGroupByToggler', { static: false }) readonly toggleElement:ElementRef;
+  @ViewChild('wpRelationGroupByToggler') readonly toggleElement:ElementRef;
 
   public text = {
     groupByType: this.I18n.t('js.relation_buttons.group_by_wp_type'),

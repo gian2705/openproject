@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,28 +24,28 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 module RandomData
   class ForumSeeder
     def self.seed!(project)
       user = User.admin.first
 
       puts ''
-      print ' ↳ Creating forum with posts'
+      print_status ' ↳ Creating forum with posts'
 
       forum = Forum.create! project: project,
                             name: I18n.t("seeders.#{OpenProject::Configuration['edition']}.demo_data.board.name"),
                             description: I18n.t("seeders.#{OpenProject::Configuration['edition']}.demo_data.board.description")
 
       rand(30).times do
-        print '.'
+        print_status '.'
         message = Message.create forum: forum,
                                  author: user,
                                  subject: Faker::Lorem.words(5).join(' '),
                                  content: Faker::Lorem.paragraph(5, true, 3)
 
         rand(5).times do
-          print '.'
+          print_status '.'
           Message.create forum: forum,
                          author: user,
                          subject: message.subject,

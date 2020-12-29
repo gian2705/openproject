@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -49,7 +49,7 @@ describe ::API::V3::Queries::Schemas::VersionFilterDependencyRepresenter, clear_
       describe 'values' do
         let(:path) { 'values' }
         let(:type) { '[]Version' }
-        let(:order) { "sortBy=#{CGI.escape(JSON.dump([%i(name asc)]))}" }
+        let(:order) { "sortBy=#{CGI.escape(JSON.dump([%i(semver_name asc)]))}" }
 
         context "for operator 'Queries::Operators::All'" do
           let(:operator) { Queries::Operators::All }

@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -27,8 +27,8 @@ See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 
-<% html_title l(:label_administration), l("label_group_plural") %>
-<%= toolbar title: l(:label_group_plural) do %>
+<% html_title t(:label_administration), t("label_group_plural") %>
+<%= toolbar title: t(:label_group_plural) do %>
   <li class="toolbar-item">
     <%= link_to new_group_path,
           { class: 'button -alt-highlight',
@@ -63,7 +63,7 @@ See docs/COPYRIGHT.rdoc for more details.
               <div class="generic-table--sort-header-outer">
                 <div class="generic-table--sort-header">
                   <span>
-                    <%=l(:label_user_plural)%>
+                    <%=t(:label_user_plural)%>
                   </span>
                 </div>
               </div>
@@ -78,7 +78,7 @@ See docs/COPYRIGHT.rdoc for more details.
               <td><%= group.users.size %></td>
               <td class="buttons">
                 <%= link_to '', group,
-                                data: { confirm: l(:text_are_you_sure) },
+                                data: { confirm: t(:text_are_you_sure) },
                                 method: :delete,
                                 class: 'icon icon-delete',
                                 title: t(:button_delete) %>

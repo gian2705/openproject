@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,41 +23,45 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {Component} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import * as moment from "moment";
 import {TimezoneService} from "core-components/datetime/timezone.service";
 import {EditFieldComponent} from "core-app/modules/fields/edit/edit-field.component";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
+import {OpModalService} from "core-components/op-modals/op-modal.service";
 
 @Component({
   template: `
     <op-date-picker
-      tabindex="-1"
-      (onChange)="onValueSelected($event)"
-      [initialDate]="defaultDate">
-
-      <input [ngModel]="formatter(value)"
-             (ngModelChange)="value = parser($event);"
-             type="text"
-             class="inline-edit--field"
-             (keydown)="handler.handleUserKeydown($event)"
-             [attr.required]="required"
-             [disabled]="inFlight"
-             [attr.placeholder]="placeholder"
-             [id]="handler.htmlId" />
-
+        tabindex="-1"
+        (onChange)="onValueSelected($event)"
+        (onCancel)="onCancel()"
+        [initialDate]="formatter(value)"
+        [required]="required"
+        [disabled]="inFlight"
+        [id]="handler.htmlId"
+        classes="inline-edit--field">
     </op-date-picker>
-
   `
 })
-export class DateEditFieldComponent extends EditFieldComponent {
-  readonly timezoneService = this.injector.get(TimezoneService);
+export class DateEditFieldComponent extends EditFieldComponent implements OnInit {
+  @InjectField() readonly timezoneService:TimezoneService;
+  @InjectField() opModalService:OpModalService;
+
+  ngOnInit() {
+    super.ngOnInit();
+  }
 
   public onValueSelected(data:string) {
     this.value = this.parser(data);
     this.handler.handleUserSubmit();
+  }
+
+  public onCancel() {
+    this.handler.handleUserCancel();
   }
 
   public parser(data:any) {
@@ -75,19 +79,5 @@ export class DateEditFieldComponent extends EditFieldComponent {
     } else {
       return null;
     }
-  }
-
-  /**
-   * Return the default date for the datepicker instance.
-   * If this field is the finish date, we select the start date + 1 as the default.
-   */
-  public get defaultDate():String {
-    const isDueDate = this.name === 'dueDate';
-
-    if (isDueDate) {
-      return this.resource.startDate;
-    }
-
-    return '';
   }
 }

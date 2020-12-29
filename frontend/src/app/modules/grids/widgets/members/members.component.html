@@ -3,6 +3,7 @@
     [editable]="isEditable">
 
   <widget-menu
+      slot="menu"
       [resource]="resource">
   </widget-menu>
 </widget-header>
@@ -21,7 +22,7 @@
           <span *ngFor="let principal of usersByRole.users; let last = last">
 
             <ng-container *ngIf="isGroup(principal)">
-              {{userName(principal)}}
+              <span [textContent]="userName(principal)"></span>
             </ng-container>
             <ng-container *ngIf="!isGroup(principal)">
               <user-avatar [user]="principal"

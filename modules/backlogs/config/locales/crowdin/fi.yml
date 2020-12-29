@@ -1,17 +1,11 @@
 #-- copyright
-#OpenProject Backlogs Plugin
-#Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-#Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-#Copyright (C)2010-2011 friflaj
-#Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-#Copyright (C)2009-2010 Mark Maglana
-#Copyright (C)2009 Joe Heck, Nate Lowrie
-#This program is free software; you can redistribute it and/or modify it under
-#the terms of the GNU General Public License version 3.
-#OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-#The copyright follows:
-#Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-#Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License version 3.
+#OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+#Copyright (C) 2006-2017 Jean-Philippe Lang
+#Copyright (C) 2010-2013 the ChiliProject Team
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
 #as published by the Free Software Foundation; either version 2
@@ -23,9 +17,8 @@
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#See doc/COPYRIGHT.rdoc for more details.
+#See docs/COPYRIGHT.rdoc for more details.
 #++
-#---
 fi:
   activerecord:
     attributes:
@@ -41,24 +34,18 @@ fi:
           attributes:
             blocks_ids:
               can_only_contain_work_packages_of_current_sprint: "voi sisältää vain tässä sprintissä mukana olevia typaketteja."
-              must_block_at_least_one_work_package: "vähintään yhden työpaketin tunnuksen tulee olla mainittuna."
+              must_block_at_least_one_work_package: "vähintään yhden tehtävän ID-mainittava."
             parent_id:
+              parent_child_relationship_across_projects: "ei ole kelvollinen, koska tehtävä \"%{work_package_name}\" on työjonossa ja sillä ei voi olla päätehtävää nykyisen projektin ulkopuolella."
               type_must_be_one_of_the_following: "Tyypin on oltava jokin seuraavista: %{type_names}."
+            version_id:
+              task_version_must_be_the_same_as_story_version: "must be the same as the parent story's version."
         sprint:
           cannot_end_before_it_starts: "Sprintti ei voi päättyä, ennen kuin se alkaa."
-  activemodel:
-    errors:
-      models:
-        work_package:
-          attributes:
-            fixed_version_id:
-              task_version_must_be_the_same_as_story_version: "must be the same as the parent story's version."
-            parent_id:
-              parent_child_relationship_across_projects: "ei kelpaa, koska työpaketti \"%{work_package_name}\" on työjonossa ja siksi sillä ei voi olla edeltäjää nykyisen projektin ulkopuolella."
   backlogs:
     add_new_story: "Uusi tarina"
     any: "kaikki"
-    backlog_settings: "Työjonon asetukset"
+    backlog_settings: "Backlogs settings"
     burndown_graph: "Edistymiskäyrä"
     card_paper_size: "Paperin koko kortille"
     chart_options: "Kaavion asetukset"
@@ -69,8 +56,8 @@ fi:
     generating_chart: "Luodaan kaavio..."
     hours: "Tunnit"
     impediment: "Este"
-    label_versions_default_fold_state: "Näytä versiot taitettuna"
-    work_package_is_closed: "Työpaketti on valmis, kun"
+    label_versions_default_fold_state: "Näytä versiot ryhmiteltyinä"
+    work_package_is_closed: "Tehtävä on valmis, kun"
     label_is_done_status: "Tila %{status_name} tarkoittaa valmista"
     no_burndown_data: "Edistymistietoja ei ole saatavilla. Sprintin aloitus- ja lopetuspäivien asettaminen on välttämätöntä."
     points: "Pisteet"
@@ -127,7 +114,7 @@ fi:
   label_burndown: "Edistyminen"
   label_column_in_backlog: "Sarake työjonossa"
   label_hours: "tuntia"
-  label_work_package_hierarchy: "Työpaketti hierarkia"
+  label_work_package_hierarchy: "Tehtävähierarkia"
   label_master_backlog: "Pääasiallinen työjono"
   label_not_prioritized: "ei priorisoitu"
   label_points: "pisteet"
@@ -156,10 +143,10 @@ fi:
   points_to_accept: "hylätyt pisteet"
   points_to_resolve: "ratkaisemattomat pisteet"
   project_module_backlogs: "Työjonot"
-  rb_label_copy_tasks: "Kopioi työpaketteja"
+  rb_label_copy_tasks: "Kopioi tehtäviä"
   rb_label_copy_tasks_all: "Kaikki"
   rb_label_copy_tasks_none: "Ei mitään"
-  rb_label_copy_tasks_open: "Avoinna"
+  rb_label_copy_tasks_open: "Avoin"
   rb_label_link_to_original: "Sisällytä linkki alkuperäiseen tarinaan"
   remaining_hours: "jäljellä olevat tunnit"
   required_burn_rate_hours: "tarvittava eistymisnopeus (tuntia)"

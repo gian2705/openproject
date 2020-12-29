@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Directive} from '@angular/core';
@@ -55,7 +55,6 @@ import {WorkPackageInlineCreateService} from "core-components/wp-inline-create/w
 import {WpChildrenInlineCreateService} from "core-components/wp-relations/embedded/children/wp-children-inline-create.service";
 import {WpRelationInlineCreateService} from "core-components/wp-relations/embedded/relations/wp-relation-inline-create.service";
 import {WorkPackagesListChecksumService} from "core-components/wp-list/wp-list-checksum.service";
-import {PortalCleanupService} from "core-app/modules/fields/display/display-portal/portal-cleanup.service";
 import {TableDragActionsRegistryService} from "core-components/wp-table/drag-and-drop/actions/table-drag-actions-registry.service";
 import {IsolatedGraphQuerySpace} from "core-app/modules/work_packages/query-space/isolated-graph-query-space";
 import {WorkPackageIsolatedQuerySpaceDirective} from "core-app/modules/work_packages/query-space/wp-isolated-query-space.directive";
@@ -99,12 +98,9 @@ export const WpIsolatedGraphQuerySpaceProviders = [
 
   WorkPackageStatesInitializationService,
 
-  PortalCleanupService,
-
   // Table Drag & Drop actions
   TableDragActionsRegistryService,
 ];
-
 
 
 /**

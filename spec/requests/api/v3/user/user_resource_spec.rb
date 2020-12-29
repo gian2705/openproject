@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,7 +29,10 @@
 require 'spec_helper'
 require 'rack/test'
 
-describe 'API v3 User resource', type: :request, content_type: :json do
+describe 'API v3 User resource',
+         type: :request,
+         content_type: :json,
+         with_clean_fixture: true do
   include Rack::Test::Methods
   include API::V3::Utilities::PathHelper
 
@@ -41,7 +44,7 @@ describe 'API v3 User resource', type: :request, content_type: :json do
   subject(:response) { last_response }
 
   before do
-    allow(User).to receive(:current).and_return current_user
+    login_as(current_user)
   end
 
   describe '#index' do
@@ -84,7 +87,7 @@ describe 'API v3 User resource', type: :request, content_type: :json do
 
         it 'contains the current user in the response' do
           expect(subject.body)
-            .to be_json_eql(user.name.to_json)
+            .to be_json_eql(current_user.name.to_json)
             .at_path('_embedded/elements/0/name')
         end
       end

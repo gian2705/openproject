@@ -1,9 +1,22 @@
-# OpenProject Community Guides
+---
+sidebar_navigation:
+  title: OpenProject Documentation
+  priority: 999
+description: Help and documentation for OpenProject Community Edition, Enterprise on-premises and Enterprise cloud.
+robots: index, follow
+keywords: help, documentation
+---
+# OpenProject Documentation
 
+<div class="alert alert-info" role="alert">
+**Note**: To better read our OpenProject Documentation, please go to [docs.openproject.org](https://docs.openproject.org).
+</div>
+
+ToDo: check all links.
 
 ## Installation
 
-Get started with installing and upgrading OpenProject using [our Installation Guide starting point](https://www.openproject.org/open-source/download/).
+Get started with installing and upgrading OpenProject using [our Installation Guide starting point](https://docs.openproject.org/installation-and-operations/).
 
 The guides for [manual](./installation/manual/README.md), [packaged](./installation/packaged/) and [Docker-based](./installation/docker/README.md) installations are provided.
 
@@ -24,7 +37,7 @@ The guides for [manual](./operations/upgrading/manual/upgrading.md), [packaged](
 
 ## User Guides
 
-Please see our [User Guide pages](https://www.openproject.org/help/user-guides/) for detailed documentation on the functionality of OpenProject.
+Please see our [User Guide pages](https://docs.openproject.org/user-guide/) for detailed documentation on the functionality of OpenProject.
 
 
 ## Development

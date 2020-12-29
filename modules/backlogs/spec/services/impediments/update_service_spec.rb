@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
@@ -79,7 +72,7 @@ describe Impediments::UpdateService, type: :model do
   }
   let(:impediment) do
     FactoryBot.build(:impediment, author: user,
-                                   fixed_version: version,
+                                   version: version,
                                    assigned_to: user,
                                    project: project,
                                    type: type_task,
@@ -99,7 +92,7 @@ describe Impediments::UpdateService, type: :model do
     project.save
     type_workflow.save
 
-    feature.fixed_version = version
+    feature.version = version
     feature.save
 
     impediment.blocks_ids = feature.id.to_s
@@ -109,7 +102,7 @@ describe Impediments::UpdateService, type: :model do
   shared_examples_for 'impediment update' do
     it { expect(subject.author).to eql user }
     it { expect(subject.project).to eql project }
-    it { expect(subject.fixed_version).to eql version }
+    it { expect(subject.version).to eql version }
     it { expect(subject.priority).to eql priority }
     it { expect(subject.status).to eql status2 }
     it { expect(subject.type).to eql type_task }
@@ -153,7 +146,7 @@ describe Impediments::UpdateService, type: :model do
     let(:story_version)  { version }
 
     before(:each) do
-      story.fixed_version = story_version
+      story.version = story_version
       story.save!
     end
 

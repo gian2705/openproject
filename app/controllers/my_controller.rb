@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,8 +29,8 @@
 #++
 
 class MyController < ApplicationController
-  include Concerns::PasswordConfirmation
-  include Concerns::UserPasswordChange
+  include PasswordConfirmation
+  include Accounts::UserPasswordChange
   include ActionView::Helpers::TagHelper
 
   layout 'my'
@@ -91,7 +91,7 @@ class MyController < ApplicationController
   # Create a new feeds key
   def generate_rss_key
     if request.post?
-      token = Token::Rss.create!(user: current_user)
+      token = Token::RSS.create!(user: current_user)
       flash[:info] = [
         t('my.access_token.notice_reset_token', type: 'RSS').html_safe,
         content_tag(:strong, token.plain_value),
@@ -108,7 +108,7 @@ class MyController < ApplicationController
   # Create a new API key
   def generate_api_key
     if request.post?
-      token = Token::Api.create!(user: current_user)
+      token = Token::API.create!(user: current_user)
       flash[:info] = [
         t('my.access_token.notice_reset_token', type: 'API').html_safe,
         content_tag(:strong, token.plain_value),
@@ -123,7 +123,7 @@ class MyController < ApplicationController
   end
 
   def default_breadcrumb
-    l(:label_my_account)
+    I18n.t(:label_my_account)
   end
 
   def show_local_breadcrumb
@@ -134,7 +134,7 @@ class MyController < ApplicationController
 
   def redirect_if_password_change_not_allowed_for(user)
     unless user.change_password_allowed?
-      flash[:error] = l(:notice_can_t_change_password)
+      flash[:error] = I18n.t(:notice_can_t_change_password)
       redirect_to action: 'account'
       return true
     end
@@ -146,7 +146,7 @@ class MyController < ApplicationController
     if update_service.call(mail_notification: permitted_params.user[:mail_notification],
                            self_notified: params[:self_notified] == '1',
                            notified_project_ids: params[:notified_project_ids])
-      flash[:notice] = l(:notice_account_updated)
+      flash[:notice] = I18n.t(:notice_account_updated)
       redirect_to(action: redirect_to)
     end
   end

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,11 +32,17 @@ require 'spec_helper'
 describe UserMailer, type: :mailer do
   let(:type_standard) { FactoryBot.build_stubbed(:type_standard) }
   let(:user) { FactoryBot.build_stubbed(:user) }
-  let(:journal) { FactoryBot.build_stubbed(:work_package_journal) }
-  let(:work_package) {
+  let(:journal) do
+    FactoryBot.build_stubbed(:work_package_journal).tap do |j|
+      allow(j)
+        .to receive(:data)
+        .and_return(FactoryBot.build_stubbed(:journal_work_package_journal))
+    end
+  end
+  let(:work_package) do
     FactoryBot.build_stubbed(:work_package,
                              type: type_standard)
-  }
+  end
 
   let(:recipient) { FactoryBot.build_stubbed(:user) }
 
@@ -53,8 +59,10 @@ describe UserMailer, type: :mailer do
   end
 
   shared_examples_for 'mail is sent' do
+    let(:letters_sent_count) { 1 }
+
     it 'actually sends a mail' do
-      expect(ActionMailer::Base.deliveries.size).to eql(1)
+      expect(ActionMailer::Base.deliveries.size).to eql(letters_sent_count)
     end
 
     it 'is sent to the recipient' do
@@ -66,6 +74,12 @@ describe UserMailer, type: :mailer do
     end
   end
 
+  shared_examples_for 'multiple mails are sent' do |set_letters_sent_count|
+    it_behaves_like 'mail is sent' do
+      let(:letters_sent_count) { set_letters_sent_count }
+    end
+  end
+
   shared_examples_for 'mail is not sent' do
     it 'sends no mail' do
       expect(ActionMailer::Base.deliveries.size).to eql(0)
@@ -73,9 +87,9 @@ describe UserMailer, type: :mailer do
   end
 
   shared_examples_for 'does only send mails to author if permitted' do
-    let(:user_preference) {
+    let(:user_preference) do
       FactoryBot.build(:user_preference, others: { no_self_notified: true })
-    }
+    end
     let(:user) { FactoryBot.build_stubbed(:user, preference: user_preference) }
 
     context 'mail is for another user' do
@@ -130,13 +144,14 @@ describe UserMailer, type: :mailer do
     it_behaves_like 'does only send mails to author if permitted'
   end
 
-  describe '#work_package_watcher_added' do
-    let(:watcher_setter) { user }
+  describe '#work_package_watcher_changed' do
+    let(:watcher_changer) { user }
     before do
-      UserMailer.work_package_watcher_added(work_package, recipient, watcher_setter).deliver_now
+      UserMailer.work_package_watcher_changed(work_package, recipient, watcher_changer, 'added').deliver_now
+      UserMailer.work_package_watcher_changed(work_package, recipient, watcher_changer, 'removed').deliver_now
     end
 
-    it_behaves_like 'mail is sent'
+    include_examples 'multiple mails are sent', 2
 
     it 'contains the WP subject in the mail subject' do
       expect(ActionMailer::Base.deliveries.first.subject).to include(work_package.subject)
@@ -165,7 +180,7 @@ describe UserMailer, type: :mailer do
     it_behaves_like 'mail is sent'
 
     it 'should link to the latest version diff page' do
-      expect(ActionMailer::Base.deliveries.first.body.encoded).to include 'diff/2'
+      expect(ActionMailer::Base.deliveries.first.body.encoded).to include 'diff/1'
     end
 
     it_behaves_like 'does only send mails to author if permitted'
@@ -385,12 +400,12 @@ describe UserMailer, type: :mailer do
         end
       end
 
-      describe 'attribute fixed version' do
+      describe 'attribute version' do
         let(:version_1) { FactoryBot.create(:version) }
         let(:version_2) { FactoryBot.create(:version) }
 
         before do
-          allow(journal).to receive(:details).and_return('fixed_version_id' => [version_1.id, version_2.id])
+          allow(journal).to receive(:details).and_return('version_id' => [version_1.id, version_2.id])
         end
 
         it "shows the old version's name" do
@@ -422,10 +437,10 @@ describe UserMailer, type: :mailer do
       describe 'custom field' do
         let(:expected_text_1) { 'original, unchanged text' }
         let(:expected_text_2) { 'modified, new text' }
-        let(:custom_field) {
+        let(:custom_field) do
           FactoryBot.create :work_package_custom_field,
                             field_format: 'text'
-        }
+        end
 
         before do
           allow(journal).to receive(:details).and_return("custom_fields_#{custom_field.id}" => [expected_text_1, expected_text_2])
@@ -492,11 +507,11 @@ describe UserMailer, type: :mailer do
     end
 
     describe 'html mail' do
-      let(:expected_translation) {
+      let(:expected_translation) do
         I18n.t(:done_ratio, scope: [:activerecord,
                                     :attributes,
                                     :work_package])
-      }
+      end
       let(:expected_prefix) { "<li><strong>#{expected_translation}</strong>" }
 
       before do

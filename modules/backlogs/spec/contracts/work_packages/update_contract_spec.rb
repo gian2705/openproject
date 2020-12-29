@@ -1,12 +1,12 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
 # OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'spec_helper'
@@ -31,24 +31,24 @@ require 'spec_helper'
 describe WorkPackages::UpdateContract do
   let(:work_package) do
     FactoryBot.create(:work_package,
-                       done_ratio: 50,
-                       estimated_hours: 6.0,
-                       project: project)
+                      done_ratio: 50,
+                      estimated_hours: 6.0,
+                      project: project)
   end
   let(:member) { FactoryBot.create(:user, member_in_project: project, member_through_role: role) }
-  let (:project) { FactoryBot.create(:project) }
+  let(:project) { FactoryBot.create(:project) }
   let(:current_user) { member }
-  let(:permissions) {
-    [
-      :view_work_packages,
-      :view_work_package_watchers,
-      :edit_work_packages,
-      :add_work_package_watchers,
-      :delete_work_package_watchers,
-      :manage_work_package_relations,
-      :add_work_package_notes
+  let(:permissions) do
+    %i[
+      view_work_packages
+      view_work_package_watchers
+      edit_work_packages
+      add_work_package_watchers
+      delete_work_package_watchers
+      manage_work_package_relations
+      add_work_package_notes
     ]
-  }
+  end
   let(:role) { FactoryBot.create :role, permissions: permissions }
   let(:changed_values) { [] }
 
@@ -105,7 +105,7 @@ describe WorkPackages::UpdateContract do
         let(:changed_values) { ['remaining_hours'] }
 
         it('is invalid') do
-          expect(contract.errors.symbols_for('remaining_hours')).to match_array([:error_readonly])
+          expect(contract.errors.symbols_for(:remaining_hours)).to match_array([:error_readonly])
         end
       end
     end

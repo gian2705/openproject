@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -75,7 +75,7 @@ describe RepositoriesController, type: :controller do
       end
 
       it 'redirects to settings' do
-        expect(response).to redirect_to(settings_project_path(project, tab: 'repository'))
+        expect(response).to redirect_to(controller: '/project_settings/repository', id: project.identifier, action: 'show')
       end
     end
 
@@ -85,7 +85,7 @@ describe RepositoriesController, type: :controller do
       end
 
       it 'redirects to settings' do
-        expect(response).to redirect_to(controller: '/project_settings', id: project.identifier, action: 'show', tab: 'repository')
+        expect(response).to redirect_to(controller: '/project_settings/repository', id: project.identifier, action: 'show')
       end
     end
 
@@ -101,7 +101,7 @@ describe RepositoriesController, type: :controller do
       end
 
       it 'redirects to settings' do
-        expect(response).to redirect_to(controller: '/project_settings', id: project.identifier, action: 'show', tab: 'repository')
+        expect(response).to redirect_to(controller: '/project_settings/repository', id: project.identifier, action: 'show')
       end
     end
   end
@@ -111,7 +111,7 @@ describe RepositoriesController, type: :controller do
     before do
       allow(repository.scm)
         .to receive(:check_availability!)
-        .and_raise(OpenProject::Scm::Exceptions::ScmEmpty)
+        .and_raise(OpenProject::SCM::Exceptions::SCMEmpty)
     end
 
     context 'with #show' do

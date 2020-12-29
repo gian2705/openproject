@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,6 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper.rb')
@@ -52,11 +61,10 @@ describe 'Work Package cost fields', type: :feature, js: true do
 
   before do
     login_as(user)
-    full_view.visit!
   end
 
   it 'does not show read-only fields' do
-
+    full_view.visit!
     # Go to add cost entry page
     find('#action-show-more-dropdown-menu .button').click
     find('.menu-item', text: 'Log unit costs').click
@@ -80,7 +88,7 @@ describe 'Work Package cost fields', type: :feature, js: true do
 
     # Override costs
     find('#cost_entry_costs').click
-    fill_in 'cost_entry_costs_edit', with: '15'
+    fill_in 'cost_entry_costs_edit', with: '15.52'
 
     click_on 'Save'
 
@@ -90,9 +98,58 @@ describe 'Work Package cost fields', type: :feature, js: true do
     expect(entry.cost_type_id).to eq(cost_type2.id)
     expect(entry.units).to eq(2.0)
     expect(entry.costs).to eq(4.0)
-    expect(entry.real_costs).to eq(15.0)
+    expect(entry.real_costs).to eq(15.52)
 
     visit edit_cost_entry_path(entry)
-    expect(page).to have_selector('#cost_entry_costs', text: '15.00 EUR')
+    expect(page).to have_selector('#cost_entry_costs', text: '15.52 EUR')
+  end
+
+  context 'with german locale' do
+    it 'creates the budget including the given cost items with german locale' do
+      user.update!(language: :de)
+      I18n.locale = :de
+
+      full_view.visit!
+
+      # Go to add cost entry page
+      find('#action-show-more-dropdown-menu .button').click
+      find('.menu-item', text: I18n.t(:button_log_costs)).click
+
+      fill_in 'cost_entry_units', with: '1,42'
+      select 'B', from: 'cost_entry_cost_type_id'
+      expect(page).to have_selector('#cost_entry_unit_name', text: 'B plural')
+      expect(page).to have_selector('#cost_entry_costs', text: '2,84 EUR')
+
+      # Override costs
+      find('#cost_entry_costs').click
+      fill_in 'cost_entry_costs_edit', with: '1.350,25'
+
+      click_on I18n.t(:button_save)
+
+      # Expect correct costs
+      expect(page).to have_selector('.flash.notice', text: I18n.t(:notice_cost_logged_successfully))
+      entry = CostEntry.last
+      expect(entry.cost_type_id).to eq(cost_type2.id)
+      expect(entry.units).to eq(1.42)
+      expect(entry.costs).to eq(2.84)
+      expect(entry.real_costs).to eq(1350.25)
+
+      # Can edit the costs again
+      visit edit_cost_entry_path(entry)
+      expect(page).to have_selector('#cost_entry_costs', text: '1.350,25 EUR')
+
+      # Toggle the cost button
+      find('#cost_entry_costs').click
+
+      # Update the costs in german locale
+      fill_in 'cost_entry_costs_edit', with: '55.000,55'
+      click_on I18n.t(:button_save)
+
+      expect(page).to have_selector('#cost_entry_costs', text: '55.000,55 EUR')
+      entry.reload
+      expect(entry.units).to eq(1.42)
+      expect(entry.costs).to eq(2.84)
+      expect(entry.real_costs).to eq(55000.55)
+    end
   end
 end

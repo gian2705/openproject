@@ -1,22 +1,23 @@
-<div class="toolbar">
-  <div class="title-container">
-    <h2 [textContent]="text.boards">
-    </h2>
+<div class="toolbar-container">
+  <div class="toolbar">
+    <div class="title-container">
+      <h2 [textContent]="text.boards"></h2>
+    </div>
+    <ul class="toolbar-items"
+        *ngIf="showBoardIndexView()">
+      <li *ngIf="canAdd"
+          class="toolbar-item">
+        <a class="button -alt-highlight"
+           (click)="newBoard()">
+          <op-icon icon-classes="button--icon icon-add">
+          </op-icon>
+          <span class="button--text"
+                [textContent]="text.board">
+          </span>
+        </a>
+      </li>
+    </ul>
   </div>
-  <ul class="toolbar-items"
-      *ngIf="showBoardIndexView()">
-    <li *ngIf="canAdd"
-        class="toolbar-item">
-      <a class="button -alt-highlight"
-         (click)="newBoard()">
-        <op-icon icon-classes="icon-add icon4">
-        </op-icon>
-        <span class="button--text"
-              [textContent]="text.board">
-        </span>
-      </a>
-    </li>
-  </ul>
 </div>
 
 <div class="boards--listing-group loading-indicator--location"
@@ -78,7 +79,7 @@
         <tr *ngFor="let board of boards">
           <td class="name">
            <a [textContent]="board.name"
-              uiSref="boards.show"
+              uiSref="boards.partitioned.show"
               [uiParams]="{ board_id: board.id }">
            </a>
           </td>
@@ -120,7 +121,7 @@
   </a>
 
   <div class="boards--teaser-video-container">
-    <iframe [src]="teaserVideoURL()"
+    <iframe [src]="teaserVideoURL"
             class="boards--teaser-video"
             frameborder="0"
             allow="autoplay; fullscreen"

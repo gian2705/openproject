@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,23 +23,23 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
-import {Component, Inject, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {PathHelperService} from 'core-app/modules/common/path-helper/path-helper.service';
 import {WorkPackageRelationsHierarchyService} from 'core-components/wp-relations/wp-relations-hierarchy/wp-relations-hierarchy.service';
-import {componentDestroyed} from 'ng2-rx-componentdestroyed';
-import {take, takeUntil} from 'rxjs/operators';
-import {WorkPackageCacheService} from '../../work-packages/work-package-cache.service';
+import {take} from 'rxjs/operators';
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   selector: 'wp-relations-hierarchy',
   templateUrl: './wp-relations-hierarchy.template.html'
 })
-export class WorkPackageRelationsHierarchyComponent implements OnInit, OnDestroy {
+export class WorkPackageRelationsHierarchyComponent extends UntilDestroyedMixin implements OnInit {
   @Input() public workPackage:WorkPackageResource;
   @Input() public relationType:string;
 
@@ -52,9 +52,10 @@ export class WorkPackageRelationsHierarchyComponent implements OnInit, OnDestroy
   public childrenQueryProps:any;
 
   constructor(protected wpRelationsHierarchyService:WorkPackageRelationsHierarchyService,
-              protected wpCacheService:WorkPackageCacheService,
+              protected apiV3Service:APIV3Service,
               protected PathHelper:PathHelperService,
               readonly I18n:I18nService) {
+    super();
   }
 
   public text = {
@@ -68,24 +69,30 @@ export class WorkPackageRelationsHierarchyComponent implements OnInit, OnDestroy
     this.canAddRelation = !!this.workPackage.addRelation;
 
     this.childrenQueryProps = {
-      filters: JSON.stringify([{ parent: { operator: '=', values: [this.workPackage.id] }  }]),
+      filters: JSON.stringify([{ parent: { operator: '=', values: [this.workPackage.id] } }]),
       'columns[]': ['id', 'type', 'subject', 'status'],
       showHierarchies: false
     };
 
-    this.wpCacheService.loadWorkPackage(this.workPackage.id!).values$()
+    this
+      .apiV3Service
+      .work_packages
+      .id(this.workPackage)
+      .requireAndStream()
       .pipe(
-        takeUntil(componentDestroyed(this))
+        this.untilDestroyed()
       )
       .subscribe((wp:WorkPackageResource) => {
         this.workPackage = wp;
 
-        let toLoad:string[] = [];
+        let parentId = this.workPackage.parent?.id?.toString();
 
-        if (this.workPackage.parent) {
-          toLoad.push(this.workPackage.parent.id.toString());
-
-          this.wpCacheService.loadWorkPackage(this.workPackage.parent.id).values$()
+        if (parentId) {
+          this
+            .apiV3Service
+            .work_packages
+            .id(parentId)
+            .get()
             .pipe(
               take(1)
             )
@@ -93,12 +100,6 @@ export class WorkPackageRelationsHierarchyComponent implements OnInit, OnDestroy
               this.workPackage.parent = parent;
             });
         }
-
-        this.wpCacheService.requireAll(toLoad);
       });
-  }
-
-  ngOnDestroy() {
-    // nothing to do
   }
 }

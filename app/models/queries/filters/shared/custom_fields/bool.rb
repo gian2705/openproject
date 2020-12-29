@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -33,22 +33,7 @@ require_relative 'base'
 module Queries::Filters::Shared
   module CustomFields
     class Bool < Base
-      def allowed_values
-        [
-          [I18n.t(:general_text_yes), OpenProject::Database::DB_VALUE_TRUE],
-          [I18n.t(:general_text_no), OpenProject::Database::DB_VALUE_FALSE]
-        ]
-      end
-
-      def type
-        :list
-      end
-
-      protected
-
-      def type_strategy_class
-        ::Queries::Filters::Strategies::BooleanList
-      end
+      include Queries::Filters::Shared::BooleanFilter
     end
   end
 end

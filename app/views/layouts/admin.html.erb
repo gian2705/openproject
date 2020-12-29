@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -29,12 +29,15 @@ See docs/COPYRIGHT.rdoc for more details.
 
 <%
   if local_assigns[:additional_breadcrumb].nil?
-    breadcrumb_paths(t(:label_administration), default_breadcrumb)
+    breadcrumb_paths(ActionController::Base.helpers.link_to(t(:label_administration), admin_index_path),
+                     default_breadcrumb)
   else
-    breadcrumb_paths(t(:label_administration), default_breadcrumb, local_assigns[:additional_breadcrumb])
+    breadcrumb_paths(ActionController::Base.helpers.link_to(t(:label_administration), admin_index_path),
+                     default_breadcrumb,
+                     local_assigns[:additional_breadcrumb])
   end
 %>
 
-<% @page_header_title = l(:label_administration) %>
+<% @page_header_title = t(:label_administration) %>
 
 <%= render template: "layouts/base", locals: { menu_name: :admin_menu } %>

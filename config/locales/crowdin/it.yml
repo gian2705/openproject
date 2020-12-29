@@ -1,6 +1,6 @@
 #-- copyright
-#OpenProject is a project management system.
-#Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License version 3.
 #OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
@@ -28,34 +28,57 @@ it:
     plugins:
       no_results_title_text: Al momento non vi sono plugin disponibili.
     custom_styles:
+      color_theme: "Tema a colori"
+      color_theme_custom: "(Personalizzato)"
+      colors:
+        alternative-color: "Alternativa"
+        content-link-color: "Collega font"
+        primary-color: "Primario"
+        primary-color-dark: "Primario (scuro)"
+        header-bg-color: "Sfondo intestazione"
+        header-item-bg-hover-color: "Sfondo intestazione al passaggio del mouse"
+        header-item-font-color: "Font intestazione"
+        header-item-font-hover-color: "Font intestazione al passaggio del mouse"
+        header-border-bottom-color: "Bordo intestazione"
+        main-menu-bg-color: "Sfondo del menu principale"
+        main-menu-bg-selected-background: "Menu principale quando selezionato"
+        main-menu-bg-hover-background: "Menu principale al passaggio del mouse"
+        main-menu-font-color: "Font del menu principale"
+        main-menu-selected-font-color: "Font del menu principale quando selezionato"
+        main-menu-hover-font-color: "Font del menu principale al passaggio del mouse"
+        main-menu-border-color: "Bordo del menu principale"
       custom_colors: "Colori personalizzati"
       customize: "Personalizza l'installazione di OpenProject con il tuo logo. Nota: Il logo sarà visibile pubblicamente."
       enterprise_notice: "Questa funzionalità è disponibile solo per chi si è iscritto alla Enterprise Edition, come ringraziamento speciale per il contributo finanziario allo sviluppo di OpenProject."
       manage_colors: "Modifica opzioni di selezione del colore"
       instructions:
-        alternative_color: "Colore forte, utilizzato di solito per far risaltare il tasto principale sullo schermo."
-        content_link_color: "Colore del carattere della maggior parte dei collegamenti."
-        primary_color: "Colore principale."
-        primary_color_dark: "In genere una versione più scura del colore principale utilizzato per effetti hover."
-        header_bg_color: "Colore di sfondo dell'intestazione."
-        header_item_bg_hover_color: "Colore dello sfondo degli elementi cliccabili nelle intestazioni al passaggio del mouse."
-        header_item_font_color: "Colore del carattere degli elementi cliccabili nelle intestazioni."
-        header_item_font_hover_color: "Colore del carattere degli elementi cliccabili nelle intestazioni al passaggio del mouse."
-        header_border_bottom_color: "Sottile linea sotto l'intestazione. Lascia vuoto questo campo se non vuoi nessuna linea."
-        main_menu_bg_color: "Colore di sfondo del menu a sinistra."
+        alternative-color: "Colore forte, utilizzato di solito per far risaltare il tasto principale sullo schermo."
+        content-link-color: "Colore del carattere della maggior parte dei collegamenti."
+        primary-color: "Colore principale."
+        primary-color-dark: "In genere una versione più scura del colore principale utilizzato per effetti hover."
+        header-item-bg-hover-color: "Colore dello sfondo degli elementi cliccabili nelle intestazioni al passaggio del mouse."
+        header-item-font-color: "Colore del carattere degli elementi cliccabili nelle intestazioni."
+        header-item-font-hover-color: "Colore del carattere degli elementi cliccabili nelle intestazioni al passaggio del mouse."
+        header-border-bottom-color: "Sottile linea sotto l'intestazione. Lascia vuoto questo campo se non vuoi nessuna linea."
+        main-menu-bg-color: "Colore di sfondo del menu a sinistra."
+      theme_warning: Cambiando il tema si sovrascriverà lo stile personalizzato. Il design andrà poi perso. Sei sicuro di voler continuare?
     enterprise:
-      upgrade_to_ee: "Aggiorna ad Enterprise Edition"
+      upgrade_to_ee: "Aggiorna a Enterprise Edition"
       add_token: "Carica un token di assistenza per Enterprise Edition"
       replace_token: "Sostituisci il token di assistenza attuale"
       order: "Ordina Enterprise Edition"
       paste: "Incolla il tuo token di assistenza per Enterprise Edition"
       required_for_feature: "Questa funzionalità è disponibile solo con un token di assistenza Enterprise Edition attivo."
       enterprise_link: "Per ulteriori informazioni, clicca qui."
+      start_trial: 'Inizia la prova gratuita'
+      book_now: 'Prenota ora'
+      get_quote: 'Richiedi un preventivo'
   announcements:
     show_until: Mostra fino a
     is_active: attualmente visualizzato
     is_inactive: attualmente non visualizzato
   attribute_help_texts:
+    note_public: 'Qualsiasi testo o immagine che aggiungi a questo campo sarà pubblicamente visibile a tutti gli utenti registrati!'
     text_overview: 'In questa vista, puoi creare testi guida personalizzati per la visualizzazione degli attributi. Quando definiti, questi testi possono essere visualizzati facendo clic sull''icona guida accanto all''attributo relativo.'
     label_plural: 'Testi guida degli attributi'
     show_preview: 'Anteprima testo'
@@ -65,8 +88,50 @@ it:
     index:
       no_results_content_title: Al momento non vi è alcuna modalità di autenticazione.
       no_results_content_text: Crea una nuova modalità di autenticazione
+  background_jobs:
+    status:
+      error_requeue: "Si è verificato un errore col lavoro ma si sta riprovando. Errore: %{message}"
+      cancelled_due_to: "Il lavoro è stato annullato a causa di un errore: %{message}"
   ldap_auth_sources:
+    technical_warning_html: |
+      Questo form LDAP richiede una conoscenza tecnica dell'attuale setup LDAP / Active Directory. <br/>
+      <a href="https://www.openproject.org/help/administration/manage-ldap-authentication/">Per favore visita la nostra documentazione per istruzioni dettagliate</a>.
+    attribute_texts:
+      name: Nome della connessione LDAP
+      host: Nome host LDAP o indirizzo IP
+      login_map: L'attributo chiave LDAP usato per identificare il login univoco dell'utente. Solitamente, è il campo 'uid' o 'samAccountName'.
+      generic_map: L'attributo chiave LDAP mappato nell'attributo OpenProject '%{attribute}'
+      admin_map_html: "Opzionale: L'attributo chiave LDAP che <strong>se presente</strong> indica l'utente OpenProject come amministratore. Lasciare vuoto se non sicuri."
+      system_user_dn_html: |
+        Inserire il nome dominio del sistema utilizzato dall'utente per l'accesso in sola lettura.
+        <br/>
+        Esempio: uid=openproject,ou=system,dc=example,dc=com
+      system_user_password: Inserire la password associata all'utente di sistema
+      base_dn: |
+        Inserire il nome dominio del ramo LDAP che si vuole far scansionare da OpenProject per la ricerca di utenti e gruppi.
+        OpenProject scansionerà solo il ramo fornito.
+        Esempio: ou=utenti,dc=esempio,dc=com
+      filter_string: |
+        Aggiungi un filtro RFC4515 opzionale da applicare ai risultati restituiti per gli utenti filtrati in LDAP.
+        Questa funzionalità può essere usata per limitare l'insieme di utenti che vengono trovati da OpenProject per l'autenticazione e la sincronizzazione di gruppo.
+      filter_string_concat: |
+        OpenProject filtrerà sempre tramite l'attributo di login fornito dall'utente al fine di identificare il record. Inserendo un filtro qui,
+        sarà concatenato con una AND. Come impostazione predefinita, verrà usato un jolly (objectClass=*) come filtro.
+      onthefly_register: |
+        Se selezioni questa spunta, OpenProject creerà automaticamente nuovi utenti dai loro record LDAP quando effettueranno la prima autenticazione con OpenProject.
+        Lasciare vuota questa spunta se si vuole garantire ai soli account presenti su OpenProject di autenticarsi tramite LDAP!
+      onthefly_group_sync: |
+        Se abiliti la sincronizzazione di gruppo per questa connessione LDAP, gli utenti verranno creati automaticamente
+        in OpenProject per i gruppi sincronizzati. Senza di essa, solo gli account esistenti in OpenProject saranno aggiunti ai gruppi.
     connection_encryption: 'Crittografia connessione'
+    system_account: 'Account di sistema'
+    system_account_legend: |
+      OpenProject richiede accesso in sola lettura ad un account di sistema per cercare utenti e gruppi nell'albero LDAP.
+      Per favore, specificare le credenziali associate per l'account di sistema nella sezione seguente.
+    ldap_details: 'Dettagli LDAP'
+    user_settings: 'Mappatura attributi'
+    user_settings_legend: |
+      I seguenti campi sono associati a come gli utenti sono creati all'interno di OpenProject dai record LDAP e quali attributi LDAP sono usati per definire gli attributi di un utente OpenProject (mapping degli attributi).
     tls_mode:
       plain: 'nessuno'
       simple_tls: 'simple_tls'
@@ -110,8 +175,6 @@ it:
       no_results_content_text: Crea un nuovo campo personalizzato
   concatenation:
     single: 'oppure'
-  deprecations:
-    time_entries: "Questa visualizzazione di voci sul tempo è superata dal modulo \"Rapporto Costi\". Questa visualizzazione ora supporta solo l'esportazione di informazioni sulle voci sul tempo in csv. Per usare i filtri in modo interattivo, attiva il modulo \"Rapporto Costi\" nelle impostazioni del progetto."
   global_search:
     overwritten_tabs:
       wiki_pages: "Wiki"
@@ -132,10 +195,13 @@ it:
       scheduled: "L'eliminazione è stata programmata e verrà eseguita in background. Verrai avvisato del risultato."
       schedule_failed: "Il progetto non può essere eliminato: %{errors}"
       failed: "Eliminazione del progetto %{name} non riuscita"
-      failed_text: "La richiesta di eliminare il progetto %{name} non è riuscita. Il progetto è stato lasciato in archivio."
+      failed_text: "La richiesta di eliminare il progetto %{name} non è riuscita. Il progetto è stato archiviato."
       completed: "Eliminazione del progetto %{name} completata"
       completed_text: "La richiesta di cancellare il progetto '%{name}' è stata completata."
     index:
+      open_as_gantt: 'Apri come vista Gantt'
+      open_as_gantt_title: "Usa questo pulsante per generare una vista Gantt che filtra le macro-attività per i progetti visibili in questa pagina."
+      open_as_gantt_title_admin: "È possibile modificare le impostazioni di visualizzazione (come i tipi di macro-attività selezionati) nell'amministrazione nelle impostazioni del progetto."
       no_results_title_text: Al momento non esistono progetti
       no_results_content_text: Crea un nuovo progetto
     settings:
@@ -169,6 +235,9 @@ it:
       no_results_title_text: Al momento non c'è nessuna notizia da segnalare.
       no_results_content_text: Aggiungi una notizia
   users:
+    groups:
+      member_in_these_groups: 'Questo utente è attualmente membro dei seguenti gruppi:'
+      no_results_title_text: Questo utente al momento non è un membro di alcun gruppo.
     memberships:
       no_results_title_text: Questo utente non è attualmente membro di alcun progetto.
   prioritiies:
@@ -211,6 +280,7 @@ it:
     overview:
       no_results_title_text: Al momento non vi è alcuna macro-attività assegnata a questa versione.
   wiki:
+    page_not_editable_index: La pagina richiesta non esiste (ancora). Sei stato reindirizzato all'indice di tutte le pagine wiki.
     no_results_title_text: Al momento non vi sono pagine wiki.
     index:
       no_results_content_text: Aggiungi una nuova pagina wiki
@@ -294,7 +364,7 @@ it:
         attr_mail: "Attributo email"
         base_dn: "Nome Dominio (DN) base"
         host: "Host"
-        onthefly: "Creazione dell'utente istantanea"
+        onthefly: "Creazione automatica degli utenti"
         port: "Porta"
       changeset:
         repository: "Archivio"
@@ -347,7 +417,8 @@ it:
         types: "Tipi"
         versions: "Versioni"
         work_packages: "Macro-attività"
-      project/status:
+        templated: 'Progetto modello'
+      projects/status:
         code: 'Stato'
         explanation: 'Descrizione stato'
         codes:
@@ -412,12 +483,13 @@ it:
         done_ratio: "Avanzamento (%)"
         end_insertion: "Fine inserimento"
         end_deletion: "Fine cancellazione"
-        fixed_version: "Versione"
+        version: "Versione"
         parent: "Superiore"
         parent_issue: "Superiore"
         parent_work_package: "Superiore"
         priority: "Priorità"
         progress: "Avanzamento (%)"
+        schedule_manually: "Programmazione manuale"
         spent_hours: "Tempo speso"
         spent_time: "Tempo speso"
         subproject: "Sottoprogetto"
@@ -426,10 +498,10 @@ it:
         watcher: "Osservatore"
       'doorkeeper/application':
         uid: "Client ID"
-        secret: "Chiave segreta del client"
+        secret: "Segreto del client"
         owner: "Proprietario"
-        redirect_uri: "Reindirizzamento URI"
-        client_credentials_user_id: "ID utente delle credenziali client"
+        redirect_uri: "Reindirizzamento URl"
+        client_credentials_user_id: "ID utente credenziali client"
         scopes: "Ambiti"
         confidential: "Confidenziale"
     errors:
@@ -443,10 +515,10 @@ it:
         cant_link_a_work_package_with_a_descendant: "Una macro-attività non può essere collegato a una delle sue sottoattività."
         circular_dependency: "Questa relazione creerebbe una dipendenza circolare."
         confirmation: "non coincide con %{attribute}."
-        could_not_be_copied: "non possono essere copiati (integralmente)."
+        could_not_be_copied: "%{dependency} non può essere (completamente) copiato."
         does_not_exist: "non esiste."
-        error_unauthorized: "may not be accessed."
-        error_readonly: "is not writable."
+        error_unauthorized: "potrebbe non essere accessibile."
+        error_readonly: "è in sola lettura, pertanto non è stato possibile modificarlo."
         empty: "non può essere vuoto."
         even: "deve essere pari."
         exclusion: "è riservato."
@@ -460,6 +532,7 @@ it:
         invalid_url: 'non è un URL valido.'
         invalid_url_scheme: 'non è un protocollo supportato (ammessi: %{allowed_schemes}).'
         less_than_or_equal_to: "deve essere inferiore o uguale a %{count}."
+        not_current_user: "non è l'utente attuale."
         not_a_date: "non è una data valida."
         not_a_datetime: "non è un'orario valido."
         not_a_number: "non è un numero."
@@ -474,7 +547,7 @@ it:
         too_long: "è troppo lungo (il massimo è %{count} caratteri)."
         too_short: "è troppo breve (il minimo è %{count} caratteri)."
         unchangeable: "non può essere modificato."
-        unremovable: "impossibile rimuovere."
+        unremovable: "non può essere rimosso."
         wrong_length: "è della lunghezza sbagliata (dovrebbe essere %{count} caratteri)."
       models:
         custom_field:
@@ -487,6 +560,7 @@ it:
           not_an_integer: "(%{name}) non è un intero."
           smaller_than_or_equal_to: "(%{name}) deve essere più piccolo o uguale a %{count}."
           greater_than_or_equal_to: "(%{name}) deve essere più grande o uguale a %{count}."
+          format: "%{message}"
         doorkeeper/application:
           attributes:
             redirect_uri:
@@ -496,7 +570,7 @@ it:
               secured_uri: 'deve essere un URI HTTPS/SSL.'
               forbidden_uri: 'è vietato dal server.'
             scopes:
-              not_match_configured: "non corrisponde a nessuno degli ambiti disponibili."
+              not_match_configured: "non corrisponde ai campi disponibili."
         enterprise_token:
           unreadable: "non può essere letto. Sei sicuro che si tratta di un token di assistenza?"
         grids/grid:
@@ -521,11 +595,25 @@ it:
               error_not_found: "non trovato"
             public:
               error_unauthorized: "- L'utente non è autorizzato a creare viste pubbliche."
+            group_by:
+              invalid: "Impossibile raggruppare per: %{value}"
+              format: "%{message}"
+            column_names:
+              invalid: "Colonna di query non valida: %{value}"
+              format: "%{message}"
+            sort_criteria:
+              invalid: "Impossibile ordinare per la colonna: %{value}"
+              format: "%{message}"
           group_by_hierarchies_exclusive: "è mutuamente esclusivo con il raggruppamento per '%{group_by}'. Non puoi attivare entrambi."
           filters:
             custom_fields:
               inexistent: "Nessun campo personalizzato per il filtro."
               invalid: "Il campo personalizzato non è valido nel contesto dato."
+        queries/filters/base:
+          attributes:
+            values:
+              inclusion: "il filtro ha valori non validi."
+              format: "%{message}"
         relation:
           typed_dag:
             circular_dependency: "La relazione crea un riferimento circolare."
@@ -543,8 +631,13 @@ it:
           must_not_be_ssh: "non deve essere un URL SSH."
           no_directory: "non è una directory."
         role:
-          permissions:
-            dependency_missing: "deve includere anche '%{dependency}' in quanto è selezionato '%{permission}'."
+          attributes:
+            permissions:
+              dependency_missing: "deve includere anche '%{dependency}' in quanto è selezionato '%{permission}'."
+        time_entry:
+          attributes:
+            hours:
+              day_limit: "è troppo alto: puoi registrare fino a 24 ore al giorno."
         work_package:
           is_not_a_valid_target_for_time_entries: "La macro-attività #%{id} non può essere utilizzata per riassegnare la cronologia."
           attributes:
@@ -604,6 +697,8 @@ it:
               unassignable: "non può essere assegnato a un progetto."
         version:
           undeletable_work_packages_attached: "Questa versione non può essere eliminata perché vi sono macro-attività collegate a essa."
+        status:
+          readonly_default_exlusive: "non può essere attivato per gli stati che sono contrassegnati come predefiniti."
       template:
         body: "Perfavore controlla i seguenti campi:"
         header:
@@ -655,12 +750,14 @@ it:
     content: "Contenuto"
     color: "Colore"
     created_at: "Creato il"
-    created_on: "Creato il"
     custom_options: "Valori possibili"
     custom_values: "Campo personalizzato"
     date: "Data"
     default_columns: "Colonne predefinite"
     description: "Descrizione"
+    derived_due_date: "Data di fine derivata"
+    derived_estimated_time: "Tempo stimato derivato"
+    derived_start_date: "Data di inizio derivata"
     display_sums: "Visualizza somme"
     due_date: "Data di fine"
     estimated_hours: "Tempo stimato"
@@ -694,10 +791,12 @@ it:
     type: "Tipo"
     updated_at: "Aggiornato il"
     updated_on: "Aggiornato il"
+    uploader: "Caricatore"
     user: "Utente"
     version: "Versione"
     work_package: "Macro-attività"
   button_add: "Aggiungi"
+  button_add_comment: "Aggiungi un commento"
   button_add_member: Aggiungi membro
   button_add_watcher: "Aggiungi osservatore"
   button_annotate: "Annota"
@@ -710,7 +809,7 @@ it:
   button_change_password: "Cambia password"
   button_check_all: "Seleziona tutti"
   button_clear: "Pulisci"
-  button_click_to_reveal: "Clicca per mostrare"
+  button_click_to_reveal: "Clicca per visualizzare"
   button_close: 'Chiuso'
   button_collapse_all: "Comprimi Tutto"
   button_configure: "Configura"
@@ -731,7 +830,6 @@ it:
   button_generate: "Genera"
   button_list: "Elenca"
   button_lock: "Blocca"
-  button_log_time: "Registra l'orario effettuato"
   button_login: "Accedi"
   button_move: "Sposta"
   button_move_and_follow: "Sposta e segui"
@@ -809,6 +907,7 @@ it:
       - "Ott"
       - "Nov"
       - "Dic"
+    abbr_week: 'Sett'
     day_names:
       - "Domenica"
       - "Lunedi"
@@ -926,6 +1025,7 @@ it:
   default_role_anonymous: "Anonimo"
   default_role_developer: "Sviluppatore"
   default_role_project_admin: "Amministratore di progetto"
+  default_role_project_creator: "Creatore del progetto"
   default_role_non_member: "Non membro"
   default_role_reader: "Osservatore"
   default_role_member: "Membro"
@@ -948,8 +1048,6 @@ it:
   description_compare_to: "Confronta con"
   description_current_position: "Sei qui: "
   description_date_from: "Inserisci data di inizio"
-  description_date_range_interval: "Scegli l'intervallo selezionando la data di inizio e fine"
-  description_date_range_list: "Scegli l'intervallo dalla lista"
   description_date_to: "Inserisci data di fine"
   description_enter_number: "Inserisci numero"
   description_enter_text: "Inserisci testo"
@@ -978,10 +1076,9 @@ it:
         add_groups: "Aggiunta di gruppi di proprietà"
         rename_groups: "Rinominazione di gruppi di proprietà"
       project_filters:
-        description_html: "Filtering and sorting on custom fields is an enterprise edition feature."
-  enumeration_activities: "Attività (monitoraggio tempi)"
+        description_html: "Le opzioni di filtraggio ed ordinamento dei campi personalizzati sono disponibili nella versione enterprise."
+  enumeration_activities: "Attività di monitoraggio dei tempi"
   enumeration_work_package_priorities: "Priorità della macro-attività"
-  enumeration_system_activity: "Attività del sistema"
   enumeration_reported_project_statuses: "Stato di progetto segnalato"
   error_auth_source_sso_failed: "Single Sign-On (SSO) per l'utente '%{value}' non riuscita"
   error_can_not_archive_project: "Questo progetto non può essere archiviato: %{errors}"
@@ -999,12 +1096,10 @@ it:
   error_cookie_missing: 'Il cookie di OpenProject è mancante. Prego, verifica che i cookie siano attivati, questa applicazione non funziona correttamente senza.'
   error_custom_option_not_found: "L'opzione non esiste."
   error_enterprise_activation_user_limit: "Il tuo account potrebbe non essere attivo (raggiunto il limite utente). Si prega di contattare l'amministratore per ottenere l'accesso."
+  error_enterprise_token_invalid_domain: "L'Enterprise Edition non è attiva. Il dominio del token Enterprise (%{actual}) non corrisponde al nome host del sistema (%{expected})."
   error_failed_to_delete_entry: 'Cancellazione voce non riuscita.'
   error_in_dependent: "Errore nel tentativo di modificare l'oggetto dipendente: %{dependent_class} #%{related_id} - %{related_subject}: %{error}"
   error_invalid_selected_value: "Valore selezionato non valido."
-  error_invalid_group_by: "Impossibile raggruppare per: %{value}"
-  error_invalid_query_column: "Colonna di query non valida: %{value}"
-  error_invalid_sort_criterion: "Impossibile ordinare per la colonna: %{value}"
   error_journal_attribute_not_present: "Il diario non contiene l'attributo %{attribute}."
   error_pdf_export_too_many_columns: "Troppe colonne selezionate per l'esportazione in PDF. Ridurre il numero di colonne."
   error_pdf_failed_to_export: "L'esportazione del PDF non può essere salvata: %{error}"
@@ -1017,6 +1112,7 @@ it:
   error_no_default_work_package_status: "Non è configurato alcuno stato predefinito per le macro-attività. Per favore controlla la tua configurazione (vai a \"Amministrazione -> Stato macro-attività\")."
   error_no_type_in_project: "Nessun tipo è associato a questo progetto. Si prega di controllare le impostazioni del progetto."
   error_omniauth_registration_timed_out: "La registrazione tramite un provider di autenticazione esterno è scaduta. Per favore riprova."
+  error_omniauth_invalid_auth: "Le informazioni di autenticazione restituite dal provider d'identità non sono valide. Contatta il tuo amministratore per ulteriori informazioni."
   error_scm_command_failed: "Si è verificato un errore durante il tentativo di accesso all'archivio: %{value}"
   error_scm_not_found: "La voce o la revisione non è stata trovata nell'archivio."
   error_unable_delete_status: "Lo stato della macro-attività non può essere eliminato poiché è utilizzato da almeno una macro-attività."
@@ -1044,6 +1140,8 @@ it:
     work_package_edit: 'Macro-attività modificata'
     work_package_note: 'Aggiunta nota alla macro-attività'
   export:
+    your_work_packages_export: "Esportazione macro-attività"
+    succeeded: "L’esportazione si è conclusa con successo."
     format:
       atom: "Atom"
       csv: "CSV"
@@ -1051,6 +1149,8 @@ it:
       pdf_with_descriptions: "PDF con descrizioni"
       pdf_with_descriptions_and_attachments: "PDF con descrizioni e allegati"
       pdf_with_attachments: "PDF con allegati"
+    image:
+      omitted: "Immagine non esportata."
   extraction:
     available:
       pdftotext: "Pdfatesto disponibile (opzionale)"
@@ -1081,13 +1181,8 @@ it:
     blocks:
       community: "Comunità di OpenProject"
       upsale:
-        become_hero: "Diventa un eroe!"
         title: "Aggiorna ad Enterprise Edition"
-        description: "Quali sono i vantaggi?"
         more_info: "Altre informazioni"
-        additional_features: "Funzionalità aggiuntive speciali"
-        professional_support: "Assistenza professionale da parte degli esperti OpenProject"
-        you_contribute: "Anche gli sviluppatori devono pagare le bollette. Con Enterprise Edition puoi contribuire in modo sostanziale al lavoro di questa comunità Open-Source."
     links:
       upgrade_enterprise_edition: "Aggiorna ad Enterprise Edition"
       postgres_migration: "Migrazione dell'installazione su PostgreSQL"
@@ -1098,8 +1193,13 @@ it:
       blog: "Blog di OpenProject"
       forums: "Forum della Comunità"
       newsletter: "Avvisi di sicurezza / Notizie"
+  image_conversion:
+    imagemagick: 'Imagemagick'
+  journals:
+    changes_retracted: "Le modifiche sono state annullate."
   links:
     configuration_guide: 'Guida di configurazione'
+    get_in_touch: "Hai dei dubbi? Mettiti in contatto con noi."
   instructions_after_registration: "Puoi accedere non appena il tuo account è stato attivato cliccando %{signin}."
   instructions_after_logout: "Può accedere nuovamente cliccando %{signin}."
   instructions_after_error: "Si può provare ad accedere nuovamente cliccando %{signin}. Se l'errore persiste, chiedi aiuto al tuo amministratore."
@@ -1231,7 +1331,6 @@ it:
   label_date_and_time: "Data e ora"
   label_date_from: "Da"
   label_date_from_to: "Da %{start} a %{end}"
-  label_date_range: "Intervallo di date"
   label_date_to: "A"
   label_day_plural: "giorni"
   label_default: "Predefinito"
@@ -1239,6 +1338,7 @@ it:
   label_delete_project: "Elimina progetto"
   label_deleted: "cancellato"
   label_deleted_custom_field: "(campo personalizzato eliminato)"
+  label_deleted_custom_option: "(opzione eliminata)"
   label_descending: "Decrescente"
   label_details: "Dettagli"
   label_development_roadmap: "Tabella di marcia di sviluppo"
@@ -1256,6 +1356,7 @@ it:
   label_duplicate: "duplica"
   label_duplicates: "duplica"
   label_edit: "Modifica"
+  label_edit_x: "Modifica: %{x}"
   label_enable_multi_select: "Attiva/disattiva multiselezione"
   label_enabled_project_custom_fields: 'Campi personalizzati abilitati'
   label_enabled_project_modules: 'Moduli abilitati'
@@ -1376,7 +1477,6 @@ it:
   label_modified: "modificato"
   label_module_plural: "Moduli"
   label_modules: "Moduli"
-  label_month: "Mese"
   label_months_from: "mesi da"
   label_more: "Più"
   label_more_than_ago: "più di qualche giorno fa"
@@ -1389,6 +1489,7 @@ it:
   label_new: "Nuovo"
   label_new_features: "Nuove funzionalità"
   label_new_statuses_allowed: "Nuovi stati acconsentiti"
+  label_news_singular: "Notizie"
   label_news_added: "Notizie aggiunte"
   label_news_comment_added: "Commento aggiunto a una notizia"
   label_news_latest: "Ultime notizie"
@@ -1403,6 +1504,7 @@ it:
   label_no_parent_page: "Nessuna pagina genitore"
   label_nothing_display: "Niente da visualizzare"
   label_nobody: "nessuno"
+  label_not_found: 'non trovato'
   label_none: "nessuno"
   label_none_parentheses: "(nessuno)"
   label_not_contains: "non contiene"
@@ -1417,7 +1519,6 @@ it:
   label_options: "Opzioni"
   label_other: "Altro"
   label_overall_activity: "Totale attività"
-  label_overall_spent_time: "Totale tempo impiegato"
   label_overview: "Panoramica"
   label_page_title: "Titolo della Pagina"
   label_part_of: "parte di"
@@ -1510,7 +1611,7 @@ it:
   label_search: "Cerca"
   label_send_information: "Invia le informazioni di registrazione all'utente"
   label_send_test_email: "Invia un email di prova"
-  label_settings: "Impostazioni"
+  label_setting_plural: "Impostazioni"
   label_system_settings: "Impostazioni di sistema"
   label_show_completed_versions: "Visualizza le versioni completate"
   label_sort: "Ordina"
@@ -1546,8 +1647,7 @@ it:
   label_this_week: "questa settimana"
   label_this_year: "questo anno"
   label_time_entry_plural: "Tempo speso"
-  label_time_sheet_menu: "Foglio orario"
-  label_time_tracking: "Monitoraggio tempi"
+  label_projects_menu: "Progetti"
   label_today: "oggi"
   label_top_menu: "Top Menu"
   label_topic_plural: "Argomenti"
@@ -1590,7 +1690,7 @@ it:
   label_view_diff: "Mostra le differenze"
   label_view_revisions: "Vedi revisioni"
   label_watched_work_packages: "Macro-attività osservate"
-  label_what_is_this: "Cos'è questo?"
+  label_what_is_this: "Che cos'è questo?"
   label_week: "Settimana"
   label_wiki_content_added: "Pagina wiki aggiunta"
   label_wiki_content_updated: "Pagina wiki aggiornata"
@@ -1631,44 +1731,27 @@ it:
   label_workflow_plural: "Flussi di lavoro"
   label_workflow_summary: "Sommario"
   label_x_closed_work_packages_abbr:
-    one: "1 chiuso"
-    other: "%{count} chiusi"
+    zero: "0 chiusi"
+    one: ""
+    other: ""
   label_x_comments:
-    one: "1 commento"
-    other: "%{count} commenti"
+    zero: "nessun commento"
+    one: ""
+    other: ""
   label_x_open_work_packages_abbr:
-    one: "1 aperto"
-    other: "%{count} aperti"
+    zero: "0 aperti"
+    one: ""
+    other: ""
   label_x_projects:
-    one: "1 progetto"
-    other: "%{count} progetti"
-  label_year: "Anno"
+    zero: "nessun progetto"
+    one: ""
+    other: ""
   label_yesterday: "ieri"
-  label_keyboard_function: "Funzione"
-  label_keyboard_shortcut: "Scorciatoia da tastiera"
-  label_keyboard_accesskey: "Tasto di accesso"
-  label_keyboard_shortcut_help_heading: "Scorciatoie da tastiera disponibili"
-  label_keyboard_shortcut_within_project: "Scorciatoie da tastiera specifiche del progetto:"
-  label_keyboard_shortcut_global_shortcuts: "Scorciatoie da tastiera globali:"
-  label_keyboard_shortcut_some_pages_only: "Scorciatoie da tastiera speciali:"
-  label_keyboard_shortcut_search_global: "Ricerca globale"
-  label_keyboard_shortcut_search_project: "Trova un progetto"
-  label_keyboard_shortcut_go_my_page: "Vai alla mia pagina"
-  label_keyboard_shortcut_show_help: "Visualizza questo messaggio di aiuto"
-  label_keyboard_shortcut_go_overview: "Vai alla panoramica del progetto"
-  label_keyboard_shortcut_go_work_package: "Vai alle macro-attività del progetto"
-  label_keyboard_shortcut_go_wiki: "Vai alle pagine wiki del progetto"
-  label_keyboard_shortcut_go_activity: "Vai alle attività del progetto"
-  label_keyboard_shortcut_go_calendar: "Vai al calendario del progetto"
-  label_keyboard_shortcut_go_news: "Vai alle notizie progetto"
-  label_keyboard_shortcut_go_timelines: "Vai alle cronologie"
-  label_keyboard_shortcut_new_work_package: "Crea una nuova macro-attività"
-  label_keyboard_shortcut_details_package: "Visualizza il pannello di dettaglio delle macro-attività"
-  label_keyboard_shortcut_go_edit: "Vai a modificare la voce corrente (solo nelle pagine di dettaglio)"
-  label_keyboard_shortcut_open_more_menu: "Apri il menu-altri comandi (solo nelle pagine di dettaglio)"
-  label_keyboard_shortcut_go_preview: "Vai all'anteprima della modifica corrente (solo nella pagina di modifica)"
-  label_keyboard_shortcut_focus_previous_item: "Evidenzia l'elemento precedente nella lista (solo su alcune liste)"
-  label_keyboard_shortcut_focus_next_item: "Evidenzia l'elemento successivo della lista (solo in alcune liste)"
+  label_role_type: "Tipo"
+  label_member_role: "Ruolo di progetto"
+  label_global_role: "Ruolo globale"
+  label_not_changeable: "(non modificabile)"
+  label_global: "Globale"
   auth_source:
     using_abstract_auth_source: "Non è possibile utilizzare una fonte di autenticazione astratta."
     ldap_error: "Errore LDAP: %{error_message}"
@@ -1698,7 +1781,16 @@ it:
   mail_body_account_information: "Informazioni sul tuo account"
   mail_body_account_information_external: "Puoi usare il tuo %{value} account per accedere."
   mail_body_lost_password: "Per cambiare la password, clicca nel link seguente:"
-  mail_body_register: "Per attivare il tuo account, clicca sul seguente link:"
+  mail_body_register: "Benvenuto in OpenProject. Attiva il tuo account cliccando su questo link:"
+  mail_body_register_header_title: "Email di invito come membro del progetto"
+  mail_body_register_user: "Gentile %{name}, "
+  mail_body_register_links_html: |
+    Date un'occhiata al nostro canale youtube (%{youtube_link}) dove forniamo un webinar (%{webinar_link})
+    e video su “Come iniziare” (%{get_started_link}), in modo da rendere i tuoi primi passi in OpenProject più facili possibile.
+    <br />
+    Se hai ulteriori domande, consulta la nostra documentazione (%{documentation_link}) o contattaci (%{contact_us_link}).
+  mail_body_register_closing: "Il tuo team OpenProject"
+  mail_body_register_ending: "Resta in contatto! Cordiali saluti,"
   mail_body_reminder: "%{count} macro-attività a te assegnata/e scadono nei prossimi %{days} giorni:"
   mail_body_group_reminder: "%{count} macro-attività assegnata/e al gruppo \"%{group}\" scadono nei prossimi %{days} giorni:"
   mail_body_wiki_content_added: "La pagina wiki '%{id}' è stata aggiunta da %{author}."
@@ -1775,7 +1867,6 @@ it:
   notice_successful_delete: "Cancellato con successo."
   notice_successful_update: "Aggiornato con successo."
   notice_to_many_principals_to_display: "Ci sono troppi risultati.\nAffina la ricerca digitando il nome del nuovo membro (o gruppo)."
-  notice_unable_delete_time_entry: "Impossibile eliminare la registrazione di orario effettuato."
   notice_user_missing_authentication_method: L'utente deve ancora scegliere una password o un altro sistema di autenticazione.
   notice_user_invitation_resent: Un invito è stato inviato a %{email}.
   present_access_key_value: "Il tuo %{key_name} è: %{value}"
@@ -1854,7 +1945,7 @@ it:
   permission_manage_project_activities: "Gestire le attività del progetto"
   permission_manage_public_queries: "Gestisci viste pubbliche"
   permission_manage_repository: "Gestire gli archivi"
-  permission_manage_subtasks: "Gestire sotto-attività"
+  permission_manage_subtasks: "Gestire le gerarchie delle macro-attività"
   permission_manage_versions: "Gestire le versioni"
   permission_manage_wiki: "Gestire le pagine wiki"
   permission_manage_wiki_menu: "Gestire i menu wiki"
@@ -1889,16 +1980,21 @@ it:
       warning_one: I membri del progetto dovranno trasferire gli archivi del progetto.
       warning_two: I collegamenti esistenti al progetto non funzioneranno più.
       title: Modifica l'identificatore del progetto
+    template:
+      copying: >
+        Il tuo progetto è in fase di creazione dal progetto modello selezionato. Sarai avvisato via mail non appena il progetto sarà disponibile.
+      use_template: 'Utilizza modello'
+      make_template: 'Imposta come modello'
+      remove_from_templates: 'Rimuovi dai modelli'
     archive:
       are_you_sure: "Sicuro di voler archiviare il progetto '%{name}'?"
+      archived: "Archiviato"
   project_module_activity: "Attività"
   project_module_forums: "Forum"
   project_module_calendar: "Calendario"
   project_module_work_package_tracking: "Monitoraggio macro-attività"
   project_module_news: "Notizie"
   project_module_repository: "Archivio"
-  project_module_time_tracking: "Monitoraggio tempi"
-  project_module_timelines: "Tempistiche"
   project_module_wiki: "Wiki"
   query:
     attribute_and_direction: "%{attribute} (%{direction})"
@@ -1909,7 +2005,8 @@ it:
     assigned_to_role: "Ruolo dell'incaricato"
     member_of_group: "Gruppo dell'incaricato"
     assignee_or_group: "Assegnatario o gruppo di appartenenza"
-    subproject_id: "Sottoprogetto"
+    subproject_id: "Compreso Il sottoprogetto"
+    only_subproject_id: "Solo sottoprogetto"
     name_or_identifier: "Nome o identificativo"
   repositories:
     at_identifier: 'presso %{identifier}'
@@ -2014,7 +2111,14 @@ it:
     url: "URL all'archivio"
     warnings:
       cannot_annotate: "Questo file non può essere annotato."
+  scheduling:
+    activated: 'attivato'
+    deactivated: 'disattivato'
   search_input_placeholder: "Ricerca..."
+  setting_apiv3_cors_enabled: "Abilita CORS"
+  setting_apiv3_cors_origins: "Origini di condivisione CORS (Cross-Origin Resource Sharing) API V3 consentite"
+  setting_apiv3_cors_origins_text_html: >
+    Se CORS è abilitato, queste sono le origini che possono accedere alle API di OpenProject. <br/> Controlla la <a href="%{origin_link}" target="_blank">Documentazione sull'intestazione dell'origine</a> per sapere come specificare i valori previsti.
   setting_email_delivery_method: "Metodo di invio e-mail"
   setting_sendmail_location: "Percorso dell'eseguibile del programma di invio della posta"
   setting_smtp_enable_starttls_auto: "Usa automaticamente, se disponibile, STARTTLS"
@@ -2059,6 +2163,7 @@ it:
   setting_emails_header: "Intestazione e-mail"
   setting_email_login: "Usa email come login"
   setting_enabled_scm: "SCM Abilitato"
+  setting_enabled_projects_columns: "Visibile nell'elenco dei progetti"
   setting_feeds_enabled: "Abilita Feed"
   setting_feeds_limit: "Limite al contenuto del contributo"
   setting_file_max_size_displayed: "Dimensione massima dei file di testo visualizzati inline"
@@ -2069,7 +2174,6 @@ it:
   setting_work_package_done_ratio_status: "Usa lo stato della macro-attività"
   setting_work_package_done_ratio_disabled: "Disabilita (nascondi l'avanzamento)"
   setting_work_package_list_default_columns: "Visualizza come impostazione predefinita"
-  setting_work_package_list_summable_columns: "Sommabile"
   setting_work_package_properties: "Proprietà della macro-attività"
   setting_work_package_startdate_is_adddate: "Usa la data corrente come data di inizio per le nuove macro-attività"
   setting_work_packages_export_limit: "Limite di esportazione delle macro-attività"
@@ -2090,6 +2194,8 @@ it:
   setting_per_page_options: "Opzioni degli oggetti per pagina"
   setting_plain_text_mail: "Posta in formato testo semplice (no HTML)"
   setting_protocol: "Protocollo"
+  setting_project_gantt_query: "Visione Gantt portafoglio progetti"
+  setting_project_gantt_query_text: "È possibile modificare la query utilizzata per visualizzare il grafico Gantt dalla pagina di panoramica del progetto."
   setting_security_badge_displayed: "Mostra badge di sicurezza"
   setting_registration_footer: "Piè di pagina registrazione"
   setting_repositories_automatic_managed_vendor: "Tipo automatico di gestore dell'archivio di progetto"
@@ -2119,7 +2225,6 @@ it:
   setting_welcome_text: "Blocco di testo di benvenuto"
   setting_welcome_title: "Blocco di testo del titolo"
   setting_welcome_on_homescreen: "Mostra il blocco testo di benvenuto nella pagina home"
-  setting_wiki_compression: "Compressione del registro della wiki"
   setting_work_package_group_assignment: "Consentire l'assegnazione ai gruppi"
   setting_work_package_list_default_highlighting_mode: "Modalità evidenziazione predefinita"
   setting_work_package_list_default_highlighted_attributes: "Attributi evidenziati in linea predefiniti"
@@ -2129,6 +2234,9 @@ it:
     passwords: "Password"
     session: "Sessione"
     brute_force_prevention: "Blocco automatico degli utenti"
+    projects:
+      section_new_projects: "Impostazioni per i nuovi progetti"
+      section_project_overview: "Impostazioni per l'elenco generale dei progetti"
     user:
       default_preferences: "Preferenze predefinite"
       deletion: "Eliminazione"
@@ -2183,7 +2291,7 @@ it:
   text_destroy_with_associated: "Ci sono ulteriori oggetti associati con la/le macro-attività che devono essere eliminati. Tali oggetti sono dei seguenti tipi:"
   text_destroy_what_to_do: "Cosa vuoi fare?"
   text_diff_truncated: "... Questo diff è stato troncato perché supera la dimensione massima che può essere visualizzata."
-  text_email_delivery_not_configured: "L'invio di email non è configurato e le notifiche sono disabilitate.\nConfigura il tuo server SMTP nel file config/configuration.yml e riavvia l'applicazione per abilitare le nuove impostazioni."
+  text_email_delivery_not_configured: "Consegna email non configurata. Le notifiche sono state disabilitate.\nConfigura il tuo server SMTP per abilitarle."
   text_enumeration_category_reassign_to: "Riassegnali a questo valore:"
   text_enumeration_destroy_question: "%{count} oggetti sono assegnati a questo valore."
   text_file_repository_writable: "Cartella allegati scrivibile"
@@ -2196,7 +2304,8 @@ it:
   text_work_package_category_destroy_question: "Alcune macro-attività (%{count}) sono assegnate a questa categoria. Cosa vuoi fare?"
   text_work_package_category_reassign_to: "Riassegna le macro-attività a questa categoria"
   text_work_package_updated: "La macro-attività %{id} è stata aggiornata da %{author}."
-  text_work_package_watcher_added: "Sei stato aggiunto come osservatore della macro-attività %{id} da %{watcher_setter}."
+  text_work_package_watcher_added: "Sei stato aggiunto come supervisore della macro-attività %{id} da %{watcher_changer}."
+  text_work_package_watcher_removed: "Sei stato rimosso dai supervisori della macro-attività %{id} da %{watcher_changer}."
   text_work_packages_destroy_confirmation: "Sei sicuro di che voler eliminare le/le macro-attività selezionata/e?"
   text_work_packages_ref_in_commit_messages: "Macro-attivita che sono correlate e/o modificate nei messaggi di conferma"
   text_journal_added: "%{label} %{value} aggiunto"
@@ -2209,6 +2318,7 @@ it:
   text_journal_deleted_with_diff: "%{label} cancellato (%{link})"
   text_journal_set_to: "%{label} impostato su %{value}"
   text_journal_set_with_diff: "insieme di %{label} (%{link})"
+  text_journal_label_value: "%{label} %{value}"
   text_latest_note: "L'ultimo commento è: %{note}"
   text_length_between: "Lunghezza compresa tra %{min} e %{max} caratteri."
   text_line_separated: "Valori multipli consentiti (una linea per ogni valore)."
@@ -2419,7 +2529,7 @@ it:
     Invia un'altra email di invito con un token nuovo nel caso in cui quello vecchio sia scaduto o l'utente non abbia ricevuto la prima email. Può anche consentire agli utenti attivi di scegliere un nuovo metodo di autenticazione. Se utilizzato da utenti attivi, il loro stato verrà modificato in "invitato".
   tooltip:
     setting_email_login: >
-      Se attivato, un utente non potrà selezionare il login per la registrazione. Invece servirà il suo indirizzo di posta per l'accesso. Un amministratore può ancora modificare il login separatamente.
+      Se attivato, un utente non potrà selezionare un login durante la registrazione. Utilizzerà il suo indirizzo di posta per l'accesso. Un amministratore potrà modificare il login separatamente.
   queries:
     apply_filter: Applica il filtro preconfigurato
   top_menu:
@@ -2458,6 +2568,7 @@ it:
       mail_self_notified: "Voglio essere informato delle modifiche che faccio io stesso"
     status_user_and_brute_force: "%{user} e %{brute_force}"
     status_change: "Cambiamento di stato"
+    text_change_disabled_for_provider_login: "Il nome è impostato dal servizio con cui hai effettuato l'accesso e non può essere modificato."
     unlock: "Sblocca"
     unlock_and_reset_failed_logins: "Sblocca e azzera gli accessi non riusciti"
   version_status_closed: "chiuso"
@@ -2476,6 +2587,17 @@ it:
     Raggiunto il limite di utente. Non puoi attivare altri utenti. Per favore<a href="%{upgrade_url}">aggiorna il tuo piano</a> o blocca i membri per consentire altri utenti.
   warning_user_limit_reached_instructions: >
     Raggiunto il limite di utenti (%{current}/%{max} utenti attivi). Si prega di contattare sales@openproject.com per aggiornare il tuo piano Enterprise Edition e aggiungere ulteriori utenti.
+  0: >
+
+  warning_bar:
+    protocol_mismatch:
+      title: 'Mancata corrispondenza delle impostazioni di protocollo'
+      text_html: >
+        La tua applicazione è in esecuzione con le impostazioni del protocollo impostate a <code>%{set_protocol}</code>, ma la richiesta è una richiesta <code>%{actual_protocol}</code>. Ciò causerà degli errori! Vai nelle <a href="%{setting_path}">Impostazioni di sistema</a> e cambia l'impostazione "Protocollo" per correggerlo.
+    hostname_mismatch:
+      title: 'Mancata corrispondenza delle impostazioni del nome host'
+      text_html: >
+        La tua applicazione è in esecuzione con le impostazioni del nome host impostate a <code>%{set_hostname}</code>, ma la richiesta è un nome host <code>%{actual_hostname}</code>. Ciò causerà degli errori! Vai nelle <a href="%{setting_path}">Impostazioni di sistema</a> e modifica l'impostazione "Nome dell'Host" per correggerlo.
   menu_item: "Voce di menu"
   menu_item_setting: "Visibilità"
   wiki_menu_item_for: "Voce di menù per la pagina wiki \"%{title}\""
@@ -2484,6 +2606,7 @@ it:
     Stai eliminando la sola voce del menù principale della wiki. Ora devi scegliere una pagina wiki per il quale verrà generata una nuova voce di menù. Per eliminare la wiki, il modulo wiki può essere disattivato dagli amministratori del progetto.
   wiki_menu_item_delete_not_permitted: La voce di menù wiki dell'unica pagina wiki non può essere eliminata.
   query_menu_item_for: "Voce di menù per la query \"%{title}\""
+  #TODO: merge with work_packages top level key
   work_package:
     updated_automatically_by_child_changes: |
       _Aggiornata automaticamente cambiando i valori all'interno della macro-attività figlia %{child}_
@@ -2528,20 +2651,24 @@ it:
         estimated_hours: "Le ore stimate non può essere impostate sulla macro-attività principale."
         invalid_user_assigned_to_work_package: "All'utente scelto non è consentito di essere '%{property}' per questa macro-attività."
         start_date: "La data di inizio non può essere impostata sulla macro-attività principale."
-      writing_read_only_attributes: "Non puoi scrivere un attributo di sola lettura."
+      eprops:
+        invalid_gzip: "gzip non valido: %{message}"
+        invalid_json: "json non valido: %{message}"
     resources:
       schema: 'Schema'
   doorkeeper:
     pre_authorization:
       status: 'Pre-autorizzazione'
+    auth_url: 'URL di Autenticazione'
+    access_token_url: 'URL del token di accesso'
     errors:
       messages:
         #Common error messages
-        invalid_request: 'La richiesta manca un parametro obbligatorio, include un valore non supportato in un parametro, o non è scritto correttamente.'
+        invalid_request: 'Nella richiesta non è presente un parametro richiesto, include un valore di parametro non supportato, o non è valido.'
         invalid_redirect_uri: "Il reindirizzamento dell'URI richiesto non è valido o non corrisponde all'URI di reindirizzamento del client."
         unauthorized_client: 'Il client non è autorizzato ad eseguire questa richiesta usando questo metodo.'
         access_denied: 'Il proprietario della risorsa o il server di autorizzazione hanno rifiutato la richiesta.'
-        invalid_scope: 'L''ambito richiesto non è valido, è sconosciuto o non è scritto bene.'
+        invalid_scope: 'Lo scopo richiesto non è non valido, sconosciuto o malformato.'
         invalid_code_challenge_method: 'Il metodo di sfida del codice deve essere semplice o S256.'
         server_error: 'Il server di autorizzazione ha riscontrato una condizione inaspettata che ha impedito di elaborare la richiesta.'
         temporarily_unavailable: 'Il server di autorizzazione non è attualmente in grado di gestire la richiesta a causa di un sovraccarico temporaneo o della manutenzione del server.'
@@ -2576,6 +2703,7 @@ it:
         redirect_uri_html: >
           Gli URL consentiti a cui possono essere reindirizzati gli utenti autorizzati. Una voce per riga. <br/> Se stai registrando un'applicazione desktop, usa il seguente URL.
         confidential: "Controlla se l'applicazione verrà utilizzata dove il segreto del client può essere tenuto confidenziale. Applicazioni mobili native e app a pagina singola sono considerate non riservate."
+        scopes: "Controlla a cosa avrà accesso l'applicazione. Se non sono selezionati permessi, si assume api_v3."
         client_credential_user_id: "ID utente opzionale da impersonare quando i client usano questa applicazione. Lascia vuoto per consentire solo l'accesso pubblico"
         register_intro: "Se stai sviluppando un'applicazione client OAuth API per OpenProject è possibile registrarla utilizzando questo modulo per consentirne l'uso a tutti gli utenti."
         default_scopes: ""
@@ -2590,8 +2718,8 @@ it:
       wants_to_access_html: >
         Questa applicazione richiede l'accesso al tuo account OpenProject. <br/> <strong>Ha richiesto i seguenti permessi:</strong>
     scopes:
-      api_v3: "Accesso Completo API"
-      api_v3_text: "L'applicazione riceverà l'accesso completo alla lettura e scrittura delle API OpenProject per eseguire azioni a tuo nome."
+      api_v3: "Accesso completo alle API v3"
+      api_v3_text: "L'applicazione riceverà accesso completo in lettura e scrittura alle API v3 per effettuare azioni a tuo nome."
     grants:
       created_date: "Approvato il"
       scopes: "Permessi"

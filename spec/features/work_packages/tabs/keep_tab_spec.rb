@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -56,7 +56,7 @@ RSpec.feature 'Keep current details tab', js: true, selenium: true do
     wp_split2.expect_tab :activity
 
     # Open first WP by click on table
-    wp_table.open_split_view(wp1)
+    wp_table.click_on_row(wp1)
     wp_split1.expect_subject
     wp_split1.expect_tab :activity
 

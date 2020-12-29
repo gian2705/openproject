@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -45,9 +45,6 @@ describe MessagesController, type: :controller do
 
   let(:filename) { 'testfile.txt' }
   let(:file) { File.open(Rails.root.join('spec/fixtures/files', filename)) }
-  let(:uploaded_file) do
-    fixture_file_upload "files/#{filename}", filename
-  end
 
   before { allow(User).to receive(:current).and_return user }
 
@@ -69,35 +66,6 @@ describe MessagesController, type: :controller do
     end
   end
 
-  describe '#create' do
-    context 'attachments' do
-      # see ticket #2464 on OpenProject.org
-      context 'new attachment on new messages' do
-        before do
-          expect(controller).to receive(:authorize).and_return(true)
-
-          allow_any_instance_of(Attachment).to receive(:filename).and_return(filename)
-
-          post 'create', params: { forum_id: forum.id,
-                                   message: { subject: 'Test created message',
-                                              content: 'Messsage body' },
-                                   attachments: { '1' => { 'file' => uploaded_file,
-                                                           'description' => '' } } }
-        end
-
-        describe '#journal' do
-          let(:attachment_id) { "attachments_#{Message.last.attachments.first.id}" }
-
-          subject { Message.last.journals.last.details }
-
-          it { is_expected.to have_key attachment_id }
-
-          it { expect(subject[attachment_id]).to eq([nil, filename]) }
-        end
-      end
-    end
-  end
-
   describe '#update' do
     let(:message) { FactoryBot.create :message, forum: forum }
     let(:other_forum) { FactoryBot.create :forum, project: project }
@@ -111,65 +79,40 @@ describe MessagesController, type: :controller do
     it 'allows for changing the board' do
       expect(message.reload.forum).to eq(other_forum)
     end
-  end
 
-  describe '#attachment' do
-    let!(:message) { FactoryBot.create(:message) }
-    let(:attachment_id) { "attachments_#{message.attachments.first.id}" }
-    let(:params) do
-      { id: message.id,
-        attachments: { '1' => { 'file' => uploaded_file,
-                                'description' => '' } } }
-    end
-
-    describe '#add' do
-      before do
-        allow_any_instance_of(Message).to receive(:editable_by?).and_return(true)
-
-        allow_any_instance_of(Attachment).to receive(:filename).and_return(filename)
+    context 'attachment upload' do
+      let!(:message) { FactoryBot.create(:message) }
+      let(:attachment_id) { "attachments_#{message.attachments.first.id}" }
+      # Attachment is already uploaded
+      let(:attachment) { FactoryBot.create(:attachment, container: nil, author: user) }
+      let(:params) do
+        { id: message.id,
+          attachments: { '0' => { 'id' => attachment.id } } }
       end
 
-      context 'invalid attachment' do
-        let(:max_filesize) { Setting.attachment_max_size.to_i.kilobytes }
-
+      describe 'add' do
         before do
-          allow_any_instance_of(Attachment).to receive(:filesize).and_return(max_filesize + 1)
-
-          put :update, params: params
+          allow_any_instance_of(Message).to receive(:editable_by?).and_return(true)
         end
 
-        describe '#view' do
-          subject { response }
+        context 'journal' do
+          before do
+            put :update, params: params
 
-          it { is_expected.to render_template('messages/edit') }
-        end
+            message.reload
+          end
 
-        describe '#error' do
-          subject { assigns(:message).errors.messages }
+          describe '#key' do
+            subject { message.journals.last.details }
 
-          it { is_expected.to have_key(:attachments) }
+            it { is_expected.to have_key attachment_id }
+          end
 
-          it { subject[:attachments] =~ /too long/ }
-        end
-      end
+          describe '#value' do
+            subject { message.journals.last.details[attachment_id].last }
 
-      context 'journal' do
-        before do
-          put :update, params: params
-
-          message.reload
-        end
-
-        describe '#key' do
-          subject { message.journals.last.details }
-
-          it { is_expected.to have_key attachment_id }
-        end
-
-        describe '#value' do
-          subject { message.journals.last.details[attachment_id].last }
-
-          it { is_expected.to eq(filename) }
+            it { is_expected.to eq(attachment.filename) }
+          end
         end
       end
     end

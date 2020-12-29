@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,7 +29,7 @@
 ##
 # Acts as a filter for actions that require password confirmation to have
 # passed before it may be accessed.
-module Concerns::PasswordConfirmation
+module PasswordConfirmation
   def check_password_confirmation
     return true unless password_confirmation_required?
 

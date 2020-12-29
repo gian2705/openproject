@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -156,7 +156,7 @@ describe ::API::Utilities::PropertyNameConverter do
       end
 
       context 'inapropriate back-replacement' do
-        # should not be translated back to updated_on, which is transformed for ar->api
+        # should not be translated back to updated_at, which is transformed for ar->api
         let(:attribute_name) { 'updatedAt' }
 
         it 'should not be performed' do
@@ -167,7 +167,7 @@ describe ::API::Utilities::PropertyNameConverter do
           let(:context) { FactoryBot.build_stubbed(:version) }
 
           it 'should be performed' do
-            is_expected.to eql('updated_on')
+            is_expected.to eql('updated_at')
           end
         end
       end

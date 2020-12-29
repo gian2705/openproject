@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,6 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper.rb')
@@ -52,8 +61,8 @@ describe 'Only see your own rates', type: :feature, js: true do
                                                      user: user }
   let(:other_role) { FactoryBot.create :role, permissions: [] }
   let(:other_user) { FactoryBot.create :user,
-                                        member_in_project: project,
-                                        member_through_role: other_role }
+                                       member_in_project: project,
+                                       member_through_role: other_role }
   let(:other_hourly_rate) { FactoryBot.create :default_hourly_rate, user: other_user,
                                                                      rate: 11.00 }
   let(:other_time_entry) { FactoryBot.create :time_entry, user: other_user,
@@ -61,10 +70,10 @@ describe 'Only see your own rates', type: :feature, js: true do
                                                            project: project,
                                                            work_package: work_package }
   let(:other_cost_entry) { FactoryBot.create :cost_entry, work_package: work_package,
-                                                           project: project,
-                                                           units: 5.00,
-                                                           user: other_user,
-                                                           cost_type: cost_type }
+                                                          project: project,
+                                                          units: 5.00,
+                                                          user: other_user,
+                                                          cost_type: cost_type }
 
   before do
     login_as(user)
@@ -74,6 +83,7 @@ describe 'Only see your own rates', type: :feature, js: true do
     time_entry
     cost_entry
     other_hourly_rate
+    other_user
     other_time_entry
     other_cost_entry
 

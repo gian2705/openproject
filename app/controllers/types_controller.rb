@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -34,6 +34,7 @@ class TypesController < ApplicationController
   layout 'admin'
 
   before_action :require_admin
+  helper_method :gon
 
   def index
     @types = ::Type.page(page_param).per_page(per_page_param)
@@ -102,7 +103,7 @@ class TypesController < ApplicationController
     @type = ::Type.find(params[:id])
 
     if @type.update(permitted_params.type_move)
-      flash[:notice] = l(:notice_successful_update)
+      flash[:notice] = I18n.t(:notice_successful_update)
     else
       flash.now[:error] = t('type_could_not_be_saved')
       render action: 'edit'
@@ -117,7 +118,7 @@ class TypesController < ApplicationController
     # put that into the model and do a `if @type.destroy`
     if @type.work_packages.empty? && !@type.is_standard?
       @type.destroy
-      flash[:notice] = l(:notice_successful_delete)
+      flash[:notice] = I18n.t(:notice_successful_delete)
     else
       flash[:error] = if @type.is_standard?
                         t(:error_can_not_delete_standard_type)

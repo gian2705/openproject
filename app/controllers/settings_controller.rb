@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,11 +29,11 @@
 #++
 
 class SettingsController < ApplicationController
-  layout 'admin'
+  include AdminSettingsUpdater
 
-  before_action :require_admin
+  helper_method :gon
 
-  current_menu_item [:index, :edit] do
+  current_menu_item [:show] do
     :settings
   end
 
@@ -43,36 +44,15 @@ class SettingsController < ApplicationController
     :settings
   end
 
-  def index
-    edit
-    render action: 'edit'
-  end
-
-  def edit
-    @notifiables = Redmine::Notifiable.all
-    if request.post? && params[:settings]
-      Settings::UpdateService
-        .new(user: current_user)
-        .call(settings: permitted_params.settings.to_h)
-
-      flash[:notice] = l(:notice_successful_update)
-      redirect_to action: 'edit', tab: params[:tab]
-    else
-      @options = {}
-      @options[:user_format] = User::USER_FORMATS_STRUCTURE.keys.map { |f| [User.current.name(f), f.to_s] }
-      @deliveries = ActionMailer::Base.perform_deliveries
-
-      @guessed_host = request.host_with_port.dup
-
-      @custom_style = CustomStyle.current || CustomStyle.new
-    end
+  def show
+    redirect_to general_settings_path
   end
 
   def plugin
     @plugin = Redmine::Plugin.find(params[:id])
     if request.post?
       Setting["plugin_#{@plugin.id}"] = params[:settings].permit!.to_h
-      flash[:notice] = l(:notice_successful_update)
+      flash[:notice] = I18n.t(:notice_successful_update)
       redirect_to action: 'plugin', id: @plugin.id
     else
       @partial = @plugin.settings[:partial]
@@ -80,10 +60,6 @@ class SettingsController < ApplicationController
     end
   rescue Redmine::PluginNotFound
     render_404
-  end
-
-  def default_breadcrumb
-    l(:label_system_settings)
   end
 
   def show_local_breadcrumb

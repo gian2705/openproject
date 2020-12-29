@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,18 +23,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {WorkPackageCacheService} from 'core-components/work-packages/work-package-cache.service';
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
 import {States} from 'core-components/states.service';
-import {
-  displayClassName,
-  DisplayFieldRenderer,
-  editFieldContainerClass
-} from 'core-components/wp-edit-form/display-field-renderer';
-
 import {HalResourceEditingService} from "core-app/modules/fields/edit/services/hal-resource-editing.service";
 import {SelectionHelpers} from '../../../../helpers/selection-helpers';
 import {debugLog} from '../../../../helpers/debug_output';
@@ -46,31 +38,37 @@ import {
   Injector,
   Input,
   OnDestroy,
-  OnInit,
+  OnInit, Optional,
   ViewChild
 } from '@angular/core';
 import {ConfigurationService} from 'core-app/modules/common/config/configuration.service';
 import {OPContextMenuService} from "core-components/op-context-menu/op-context-menu.service";
 import {NotificationsService} from 'core-app/modules/common/notifications/notifications.service';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
-import {IFieldSchema} from "core-app/modules/fields/field.base";
 import {ClickPositionMapper} from "core-app/modules/common/set-click-position/set-click-position";
-import {untilComponentDestroyed} from "ng2-rx-componentdestroyed";
 import {EditFormComponent} from "core-app/modules/fields/edit/edit-form/edit-form.component";
 import {HalResource} from "core-app/modules/hal/resources/hal-resource";
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+import {SchemaCacheService} from "core-components/schemas/schema-cache.service";
+import {ISchemaProxy} from "core-app/modules/hal/schemas/schema-proxy";
+import {
+  displayClassName,
+  DisplayFieldRenderer,
+  editFieldContainerClass
+} from "core-app/modules/fields/display/display-field-renderer";
 
 @Component({
   selector: 'editable-attribute-field',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './editable-attribute-field.component.html'
 })
-export class EditableAttributeFieldComponent implements OnInit, OnDestroy {
-  @Input('fieldName') public fieldName:string;
-  @Input('resource') public resource:HalResource;
-  @Input('wrapperClasses') public wrapperClasses?:string;
-  @Input('displayFieldOptions') public displayFieldOptions:any = {};
-  @Input('displayPlaceholder') public displayPlaceholder?:string;
-  @Input('isDropTarget') public isDropTarget?:boolean = false;
+export class EditableAttributeFieldComponent extends UntilDestroyedMixin implements OnInit, OnDestroy {
+  @Input() public fieldName:string;
+  @Input() public resource:HalResource;
+  @Input() public wrapperClasses?:string;
+  @Input() public displayFieldOptions:any = {};
+  @Input() public displayPlaceholder?:string;
+  @Input() public isDropTarget?:boolean = false;
 
   @ViewChild('displayContainer', { static: true }) readonly displayContainer:ElementRef;
   @ViewChild('editContainer', { static: true }) readonly editContainer:ElementRef;
@@ -85,22 +83,21 @@ export class EditableAttributeFieldComponent implements OnInit, OnDestroy {
   constructor(protected states:States,
               protected injector:Injector,
               protected elementRef:ElementRef,
-              protected halNotification:HalResourceNotificationService,
               protected ConfigurationService:ConfigurationService,
               protected opContextMenu:OPContextMenuService,
               protected halEditing:HalResourceEditingService,
-              protected wpCacheService:WorkPackageCacheService,
-              // Get parent field group from injector
-              protected editForm:EditFormComponent,
+              protected schemaCache:SchemaCacheService,
+              // Get parent field group from injector if we're in a form
+              @Optional() protected editForm:EditFormComponent,
               protected NotificationsService:NotificationsService,
               protected cdRef:ChangeDetectorRef,
               protected I18n:I18nService) {
-
+    super();
   }
 
   public setActive(active:boolean = true) {
     this.active = active;
-    if (!this.destroyed) {
+    if (!this.componentDestroyed) {
       this.cdRef.detectChanges();
     }
   }
@@ -108,22 +105,20 @@ export class EditableAttributeFieldComponent implements OnInit, OnDestroy {
   public ngOnInit() {
     this.fieldRenderer = new DisplayFieldRenderer(this.injector, 'single-view', this.displayFieldOptions);
     this.$element = jQuery(this.elementRef.nativeElement);
-    this.editForm.register(this);
+
+    // Register on the form if we're in an editable context
+    this.editForm?.register(this);
 
     this.halEditing
       .temporaryEditResource(this.resource)
       .values$()
       .pipe(
-        untilComponentDestroyed(this)
+        this.untilDestroyed()
       )
-      .subscribe(workPackage => {
-        this.resource = workPackage;
+      .subscribe(resource => {
+        this.resource = resource;
         this.render();
       });
-  }
-
-  public ngOnDestroy() {
-    this.destroyed = true;
   }
 
   // Open the field when its closed and relay drag & drop events to it.
@@ -153,9 +148,8 @@ export class EditableAttributeFieldComponent implements OnInit, OnDestroy {
     }
   }
 
-  public get isEditable() {
-    const fieldSchema = this.resource.schema[this.fieldName] as IFieldSchema;
-    return this.resource.isAttributeEditable(this.fieldName) && fieldSchema && fieldSchema.writable;
+  public get isEditable():boolean {
+    return this.editForm && this.schema.isAttributeEditable(this.fieldName);
   }
 
   public activateIfEditable(event:JQuery.TriggeredEvent) {
@@ -217,4 +211,11 @@ export class EditableAttributeFieldComponent implements OnInit, OnDestroy {
     this.deactivate();
   }
 
+  private get schema() {
+    if (this.halEditing.typedState(this.resource).hasValue()) {
+      return this.halEditing.typedState(this.resource).value!.schema;
+    } else {
+      return this.schemaCache.of(this.resource) as ISchemaProxy;
+    }
+  }
 }

@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -27,10 +27,10 @@ See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 
-<% html_title l(:label_administration), l(:label_enumeration_new) %>
-<% local_assigns[:additional_breadcrumb] =  l(:label_enumeration_new) %>
-<%= breadcrumb_toolbar l(:label_enumeration_new) %>
+<% html_title t(:label_administration), t(:label_enumeration_new) %>
+<% local_assigns[:additional_breadcrumb] =  t(:label_enumeration_new) %>
+<%= breadcrumb_toolbar t(:label_enumeration_new) %>
 <%= labelled_tabular_form_for @enumeration do |f| %>
   <%= render partial: 'form', locals: { f: f } %>
-  <%= styled_button_tag l(:button_create), class: '-highlight -with-icon icon-checkmark' %>
+  <%= styled_button_tag t(:button_create), class: '-highlight -with-icon icon-checkmark' %>
 <% end %>

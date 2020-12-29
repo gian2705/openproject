@@ -6,21 +6,21 @@ import {KeepTabService} from '../../../wp-single-view-tabs/keep-tab/keep-tab.ser
 import {tableRowClassName} from '../../builders/rows/single-row-builder';
 import {uiStateLinkClass} from '../../builders/ui-state-link-builder';
 import {WorkPackageTable} from '../../wp-fast-table';
-import {TableEventHandler} from '../table-handler-registry';
+import {TableEventComponent, TableEventHandler} from '../table-handler-registry';
 import {StateService} from '@uirouter/core';
 import {WorkPackageViewSelectionService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-selection.service";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 export class WorkPackageStateLinksHandler implements TableEventHandler {
 
   // Injections
-  public $state:StateService = this.injector.get(StateService);
-  public keepTab:KeepTabService = this.injector.get(KeepTabService);
-  public states:States = this.injector.get(States);
-  public wpTableSelection:WorkPackageViewSelectionService = this.injector.get(WorkPackageViewSelectionService);
-  public wpTableFocus:WorkPackageViewFocusService = this.injector.get(WorkPackageViewFocusService);
+  @InjectField() public $state:StateService;
+  @InjectField() public keepTab:KeepTabService;
+  @InjectField() public states:States;
+  @InjectField() public wpTableSelection:WorkPackageViewSelectionService;
+  @InjectField() public wpTableFocus:WorkPackageViewFocusService;
 
-  constructor(public readonly injector:Injector,
-              table:WorkPackageTable) {
+  constructor(public readonly injector:Injector) {
   }
 
   public get EVENT() {
@@ -31,13 +31,13 @@ export class WorkPackageStateLinksHandler implements TableEventHandler {
     return `.${uiStateLinkClass}`;
   }
 
-  public eventScope(table:WorkPackageTable) {
-    return jQuery(table.tableAndTimelineContainer);
+  public eventScope(view:TableEventComponent) {
+    return jQuery(view.workPackageTable.tableAndTimelineContainer);
   }
 
   protected workPackage:WorkPackageResource;
 
-  public handleEvent(table:WorkPackageTable, evt:JQuery.TriggeredEvent) {
+  public handleEvent(view:TableEventComponent, evt:JQuery.TriggeredEvent) {
     // Avoid the state capture when clicking with modifier
     if (evt.shiftKey || evt.ctrlKey || evt.metaKey || evt.altKey) {
       return true;
@@ -58,15 +58,12 @@ export class WorkPackageStateLinksHandler implements TableEventHandler {
     // Locate the row from event
     let row = target.closest(`.${tableRowClassName}`);
     let classIdentifier = row.data('classIdentifier');
-    let [index, _] = table.findRenderedRow(classIdentifier);
+    let [index, _] = view.workPackageTable.findRenderedRow(classIdentifier);
 
     // Update single selection if no modifier present
     this.wpTableSelection.setSelection(workPackageId, index);
 
-    this.$state.go(
-      (this.keepTab as any)[state],
-      {workPackageId: workPackageId, focus: true}
-    );
+    view.stateLinkClicked.emit({ workPackageId: workPackageId, requestedState: state });
 
     evt.preventDefault();
     evt.stopPropagation();

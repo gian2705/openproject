@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -37,6 +37,7 @@ describe ::API::V3::WorkPackages::WorkPackagePayloadRepresenter do
                              due_date: Date.today.to_datetime,
                              created_at: DateTime.now,
                              updated_at: DateTime.now,
+                             budget: budget,
                              type: FactoryBot.build_stubbed(:type)) do |wp|
       allow(wp)
         .to receive(:available_custom_fields)
@@ -44,13 +45,7 @@ describe ::API::V3::WorkPackages::WorkPackagePayloadRepresenter do
     end
   end
 
-  let(:user) do
-    FactoryBot.build_stubbed(:user) do |u|
-      allow(u)
-        .to receive(:allowed_to?)
-        .and_return(true)
-    end
-  end
+  let(:budget) { FactoryBot.build_stubbed(:budget) }
 
   let(:representer) do
     ::API::V3::WorkPackages::WorkPackagePayloadRepresenter
@@ -65,6 +60,14 @@ describe ::API::V3::WorkPackages::WorkPackagePayloadRepresenter do
       .and_return(1)
   end
 
+  let(:user) do
+    FactoryBot.build_stubbed(:user) do |u|
+      allow(u)
+        .to receive(:allowed_to?)
+        .and_return(true)
+    end
+  end
+
   context 'generation' do
     subject(:generated) { representer.to_json }
 
@@ -74,7 +77,7 @@ describe ::API::V3::WorkPackages::WorkPackagePayloadRepresenter do
       it_behaves_like 'API V3 formattable', 'description' do
         let(:format) { 'markdown' }
         let(:raw) { work_package.description }
-        let(:html) { '<p>' + work_package.description + '</p>' }
+        let(:html) { '<p class="op-uc-p">' + work_package.description + '</p>' }
       end
 
       describe 'lock version' do
@@ -343,7 +346,7 @@ describe ::API::V3::WorkPackages::WorkPackagePayloadRepresenter do
         let(:version) { FactoryBot.build_stubbed(:version) }
 
         before do
-          work_package.fixed_version = version
+          work_package.version = version
         end
 
         it_behaves_like 'linked property' do
@@ -351,7 +354,7 @@ describe ::API::V3::WorkPackages::WorkPackagePayloadRepresenter do
           let(:link) { "/api/v3/versions/#{version.id}" }
         end
 
-        it_behaves_like 'linked property with 0 value', :version, :fixed_version
+        it_behaves_like 'linked property with 0 value', :version, :version
       end
 
       describe 'category' do
@@ -405,6 +408,38 @@ describe ::API::V3::WorkPackages::WorkPackagePayloadRepresenter do
           it_behaves_like 'linked property' do
             let(:property) { :parent }
             let(:link) { nil }
+          end
+        end
+      end
+
+      describe 'budgets' do
+        context 'without a cost object assigned' do
+          let(:budget) { nil }
+
+          it_behaves_like 'linked property' do
+            let(:property) { :budget }
+            let(:link) { nil }
+          end
+        end
+
+        context 'with a cost object assigned' do
+          it_behaves_like 'linked property' do
+            let(:property) { :budget }
+            let(:link) { api_v3_paths.budget(budget.id) }
+          end
+        end
+
+        context 'without necessary permissions' do
+          before do
+            allow(user)
+              .to receive(:allowed_to?)
+              .with(:view_budgets, work_package.project)
+              .and_return(false)
+          end
+
+          it 'has no href' do
+            expect(subject)
+              .not_to have_json_path('_links/budget')
           end
         end
       end
@@ -481,6 +516,28 @@ describe ::API::V3::WorkPackages::WorkPackagePayloadRepresenter do
 
         it 'raises an error' do
           expect { subject }.to raise_error(API::Errors::PropertyFormatError)
+        end
+      end
+    end
+
+    describe 'scheduleManually' do
+      let(:value) { raise "define value" }
+
+      let(:attributes) { { scheduleManually: value } }
+
+      context 'with true' do
+        let(:value) { true }
+
+        it 'reads true' do
+          expect(subject.schedule_manually).to eq true
+        end
+      end
+
+      context 'with false' do
+        let(:value) { false }
+
+        it 'reads false' do
+          expect(subject.schedule_manually).to eq false
         end
       end
     end
@@ -567,12 +624,12 @@ describe ::API::V3::WorkPackages::WorkPackagePayloadRepresenter do
 
     describe 'version' do
       before do
-        work_package.fixed_version_id = 1
+        work_package.version_id = 1
       end
 
       it_behaves_like 'linked resource' do
         let(:attribute_name) { 'version' }
-        let(:association_name) { 'fixed_version_id' }
+        let(:association_name) { 'version_id' }
       end
     end
 

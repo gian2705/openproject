@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,10 +31,7 @@ require 'queries/base_contract'
 
 module Queries
   class UpdateContract < BaseContract
-    def validate
-      user_allowed_to_change
-      super
-    end
+    validate :user_allowed_to_change
 
     ##
     # Check if the current user may save the changes

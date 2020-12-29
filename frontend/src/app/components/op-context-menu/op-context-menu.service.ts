@@ -7,7 +7,7 @@ import {OPContextMenuComponent} from "core-components/op-context-menu/op-context
 import {keyCodes} from 'core-app/modules/common/keyCodes.enum';
 import {FocusHelperService} from 'core-app/modules/common/focus/focus-helper';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class OPContextMenuService {
   public active:OpContextMenuHandler|null = null;
 
@@ -49,11 +49,12 @@ export class OPContextMenuService {
     });
 
     // Listen to any click and close the active context menu
-    jQuery(window).on('click', (evt:JQuery.TriggeredEvent) => {
-      if (this.active && evt.button !== 2 && !this.portalHostElement.contains(evt.target as Element)) {
-        this.close();
+    const that = this;
+    document.getElementById('wrapper')!.addEventListener('click', function(evt:Event) {
+      if (that.active &&  !that.portalHostElement.contains(evt.target as Element)) {
+        that.close();
       }
-    });
+    },  true);
   }
 
   /**

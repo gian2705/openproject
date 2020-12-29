@@ -104,6 +104,9 @@ describe 'inline create work package', js: true do
         wp_table.visit!
         filters.open
         filters.add_filter_by cf_list.name, 'is', cf_list.custom_options.second.name, cf_accessor_frontend
+
+        sleep(0.3)
+
         columns.open_modal
         columns.add(cf_list.name, save_changes: true)
 
@@ -113,6 +116,7 @@ describe 'inline create work package', js: true do
 
         type_field = wp_table.edit_field(nil, :type)
         type_field.activate!
+        sleep(0.1)
         type_field.openSelectField
         type_field.set_value cf_type.name
 

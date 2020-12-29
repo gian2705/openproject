@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectorRef, Input, SimpleChanges} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Directive, Input, SimpleChanges} from '@angular/core';
 import {CurrentProjectService} from '../../projects/current-project.service';
 import {WorkPackageStatesInitializationService} from '../../wp-list/wp-states-initialization.service';
 import {
@@ -6,13 +6,15 @@ import {
   WorkPackageTableConfigurationObject
 } from 'core-components/wp-table/wp-table-configuration';
 import {LoadingIndicatorService} from 'core-app/modules/common/loading-indicator/loading-indicator.service';
-import {QueryDmService} from 'core-app/modules/hal/dm-services/query-dm.service';
 import {UrlParamsHelperService} from 'core-components/wp-query/url-params-helper';
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
 import {WorkPackagesViewBase} from "core-app/modules/work_packages/routing/wp-view-base/work-packages-view.base";
 import {QueryResource} from "core-app/modules/hal/resources/query-resource";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
+@Directive()
 export abstract class WorkPackageEmbeddedBaseComponent extends WorkPackagesViewBase implements AfterViewInit {
   @Input('configuration') protected providedConfiguration:WorkPackageTableConfigurationObject;
   @Input() public uniqueEmbeddedTableName:string = `embedded-table-${Date.now()}`;
@@ -25,31 +27,27 @@ export abstract class WorkPackageEmbeddedBaseComponent extends WorkPackagesViewB
 
   protected initialized:boolean = false;
 
-  readonly QueryDm:QueryDmService = this.injector.get(QueryDmService);
-  readonly querySpace:IsolatedQuerySpace  = this.injector.get(IsolatedQuerySpace);
-  readonly I18n:I18nService = this.injector.get(I18nService);
-  readonly urlParamsHelper:UrlParamsHelperService = this.injector.get(UrlParamsHelperService);
-  readonly loadingIndicatorService:LoadingIndicatorService = this.injector.get(LoadingIndicatorService);
-  readonly wpStatesInitialization:WorkPackageStatesInitializationService = this.injector.get(WorkPackageStatesInitializationService);
-  readonly currentProject:CurrentProjectService = this.injector.get(CurrentProjectService);
-  readonly cdRef = this.injector.get(ChangeDetectorRef);
+  @InjectField() apiV3Service:APIV3Service;
+  @InjectField() querySpace:IsolatedQuerySpace;
+  @InjectField() I18n:I18nService;
+  @InjectField() urlParamsHelper:UrlParamsHelperService;
+  @InjectField() loadingIndicatorService:LoadingIndicatorService;
+  @InjectField() wpStatesInitialization:WorkPackageStatesInitializationService;
+  @InjectField() currentProject:CurrentProjectService;
+  @InjectField() cdRef:ChangeDetectorRef;
 
   ngOnInit() {
-    super.ngOnInit();
-
     this.configuration = new WorkPackageTableConfiguration(this.providedConfiguration);
     // Set embedded status in configuration
     this.configuration.isEmbedded = true;
     this.initialized = true;
+
+    super.ngOnInit();
   }
 
   ngAfterViewInit():void {
     // Load initially
     this.loadQuery(true, false);
-  }
-
-  ngOnDestroy():void {
-    super.ngOnInit();
   }
 
   ngOnChanges(changes:SimpleChanges) {
@@ -58,16 +56,12 @@ export abstract class WorkPackageEmbeddedBaseComponent extends WorkPackagesViewB
     }
   }
 
-  get projectIdentifier() {
-    let identifier:string|null = null;
-
+  public get projectIdentifier() {
     if (this.configuration.projectContext) {
-      identifier = this.currentProject.identifier;
+      return this.currentProject.identifier || undefined;
     } else {
-      identifier = this.configuration.projectIdentifier;
+      return this.configuration.projectIdentifier || undefined;
     }
-
-    return identifier || undefined;
   }
 
   public buildQueryProps() {
@@ -75,6 +69,13 @@ export abstract class WorkPackageEmbeddedBaseComponent extends WorkPackagesViewB
     this.wpStatesInitialization.applyToQuery(query);
 
     return this.urlParamsHelper.buildV3GetQueryFromQueryResource(query);
+  }
+
+  public buildUrlParams() {
+    const query = this.querySpace.query.value!;
+    this.wpStatesInitialization.applyToQuery(query);
+
+    return this.urlParamsHelper.encodeQueryJsonParams(query);
   }
 
   protected setLoaded() {
@@ -90,8 +91,13 @@ export abstract class WorkPackageEmbeddedBaseComponent extends WorkPackagesViewB
       pagination.offset = 1;
     }
 
-    const promise = this.QueryDm.loadResults(query, pagination)
-      .then((query) => this.wpStatesInitialization.updateQuerySpace(query, query.results));
+    const params = this.urlParamsHelper.buildV3GetQueryFromQueryResource(query, pagination);
+    const promise =
+      this
+        .wpListService
+        .loadQueryFromExisting(query, params, this.queryProjectScope)
+        .toPromise()
+        .then((query) => this.wpStatesInitialization.updateQuerySpace(query, query.results));
 
     if (visible) {
       this.loadingIndicator = promise;

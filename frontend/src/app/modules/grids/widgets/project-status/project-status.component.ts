@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2019 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,29 +23,32 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Injector, ViewChild, ElementRef} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Injector,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import {AbstractWidgetComponent} from "app/modules/grids/widgets/abstract-widget.component";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
-import {ProjectDmService} from "core-app/modules/hal/dm-services/project-dm.service";
 import {CurrentProjectService} from "core-components/projects/current-project.service";
-import {SchemaResource} from "core-app/modules/hal/resources/schema-resource";
 import {ProjectResource} from "core-app/modules/hal/resources/project-resource";
-import {PortalCleanupService} from 'core-app/modules/fields/display/display-portal/portal-cleanup.service';
 import {WorkPackageViewHighlightingService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-highlighting.service";
 import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
-import {ProjectCacheService} from "core-components/projects/project-cache.service";
-import {from, Observable} from "rxjs";
+import {Observable} from "rxjs";
 import {HalResourceEditingService} from "core-app/modules/fields/edit/services/hal-resource-editing.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   templateUrl: './project-status.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    // required by the displayField service to render the fields
-    PortalCleanupService,
     WorkPackageViewHighlightingService,
     IsolatedQuerySpace,
     HalResourceEditingService
@@ -61,15 +64,19 @@ export class WidgetProjectStatusComponent extends AbstractWidgetComponent implem
 
   constructor(protected readonly i18n:I18nService,
               protected readonly injector:Injector,
-              protected readonly projectDm:ProjectDmService,
-              protected readonly projectCache:ProjectCacheService,
+              protected readonly apiV3Service:APIV3Service,
               protected readonly currentProject:CurrentProjectService,
               protected readonly cdRef:ChangeDetectorRef) {
     super(i18n, injector);
   }
 
   ngOnInit() {
-    this.project$ = this.projectCache.requireAndStream(this.currentProject.id!);
+    this.project$ = this
+      .apiV3Service
+      .projects
+      .id(this.currentProject.id!)
+      .get();
+
     this.cdRef.detectChanges();
   }
 

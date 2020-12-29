@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,13 +23,21 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {ChangeDetectorRef, ElementRef, Inject, InjectionToken, Injector, OnDestroy, OnInit} from "@angular/core";
+import {
+  ChangeDetectorRef,
+  Directive,
+  ElementRef,
+  Inject,
+  InjectionToken,
+  Injector,
+  OnDestroy,
+  OnInit
+} from "@angular/core";
 import {EditFieldHandler} from "core-app/modules/fields/edit/editing-portal/edit-field-handler";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
-import {untilComponentDestroyed} from "ng2-rx-componentdestroyed";
 import {Field, IFieldSchema} from "core-app/modules/fields/field.base";
 import {ResourceChangeset} from "core-app/modules/fields/changeset/resource-changeset";
 import {HalResource} from "core-app/modules/hal/resources/hal-resource";
@@ -43,6 +51,7 @@ export const overflowingContainerAttribute = 'overflowingIdentifier';
 
 export const editModeClassName = '-editing';
 
+@Directive()
 export abstract class EditFieldComponent extends Field implements OnInit, OnDestroy {
   /** Self reference */
   public self = this;
@@ -58,23 +67,23 @@ export abstract class EditFieldComponent extends Field implements OnInit, OnDest
               readonly cdRef:ChangeDetectorRef,
               readonly injector:Injector) {
     super();
-    this.schema = this.schema || this.change.schema[this.name];
+    this.schema = this.schema || this.change.schema.ofProperty(this.name);
 
     if (this.change.state) {
       this.change.state
         .values$()
         .pipe(
-          untilComponentDestroyed(this)
+          this.untilDestroyed()
         )
         .subscribe((change) => {
-          const fieldSchema = change.schema[this.name];
+          const fieldSchema = change.schema.ofProperty(this.name);
 
           if (!fieldSchema) {
             return handler.deactivate(false);
           }
 
           this.change = change;
-          this.schema = change.schema[this.name];
+          this.schema = change.schema.ofProperty(this.name);
           this.initialize();
           this.cdRef.markForCheck();
         });
@@ -84,10 +93,6 @@ export abstract class EditFieldComponent extends Field implements OnInit, OnDest
   ngOnInit():void {
     this.$element = jQuery(this.elementRef.nativeElement);
     this.initialize();
-  }
-
-  ngOnDestroy() {
-    // Nothing to do
   }
 
   public get overflowingSelector() {
@@ -111,7 +116,7 @@ export abstract class EditFieldComponent extends Field implements OnInit, OnDest
   public get name() {
     // Get the mapped schema name, as this is not always the attribute
     // e.g., startDate in table for milestone => date attribute
-    return this.change.getSchemaName(this.handler.fieldName);
+    return this.change.schema.mappedName(this.handler.fieldName);
   }
 
   public set value(value:any) {

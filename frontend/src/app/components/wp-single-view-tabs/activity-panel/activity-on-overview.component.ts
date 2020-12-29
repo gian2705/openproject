@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,28 +23,26 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
-import {WorkPackageCacheService} from '../../work-packages/work-package-cache.service';
 import {ActivityPanelBaseController} from 'core-components/wp-single-view-tabs/activity-panel/activity-base.controller';
-import {Component, Inject, Input} from '@angular/core';
-import {WorkPackagesActivityService} from 'core-components/wp-single-view-tabs/activity-panel/wp-activity.service';
-import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {HalResource} from 'core-app/modules/hal/resources/hal-resource';
 import {ActivityEntryInfo} from 'core-components/wp-single-view-tabs/activity-panel/activity-entry-info';
 import {AngularTrackingHelpers} from "core-components/angular/tracking-functions";
 
 @Component({
   selector: 'newest-activity-on-overview',
-  templateUrl: './activity-on-overview.html'
+  templateUrl: './activity-on-overview.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewestActivityOnOverviewComponent extends ActivityPanelBaseController {
   @Input('workPackage') public workPackage:WorkPackageResource;
 
   public latestActivityInfo:ActivityEntryInfo[] = [];
-  public trackByHref = AngularTrackingHelpers.trackByHref;
+  public trackByHref = AngularTrackingHelpers.trackByProperty('identifier');
 
   ngOnInit() {
     this.workPackageId = this.workPackage.id!;

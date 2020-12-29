@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 require 'spec_helper'
 require_relative '../shared_expectations'
@@ -39,13 +39,13 @@ describe CustomActions::Actions::AssignedTo, type: :model do
                FactoryBot.build_stubbed(:user)]
       allow(User)
         .to receive_message_chain(:active_or_registered, :select, :order_by_name)
-              .and_return(users)
+        .and_return(users)
     else
       users = [FactoryBot.build_stubbed(:user),
                FactoryBot.build_stubbed(:group)]
       allow(Principal)
         .to receive_message_chain(:active_or_registered, :select, :order_by_name)
-              .and_return(users)
+        .and_return(users)
     end
 
     [{ value: nil, label: '-' },
@@ -105,7 +105,7 @@ describe CustomActions::Actions::AssignedTo, type: :model do
       end
 
       it 'validates the me value when executing' do
-        errors = ActiveModel::Errors.new(work_package)
+        errors = ActiveModel::Errors.new(CustomAction.new)
         subject.validate errors
         expect(errors.symbols_for(:actions)).to be_empty
       end
@@ -118,7 +118,7 @@ describe CustomActions::Actions::AssignedTo, type: :model do
       end
 
       it 'validates the me value when executing' do
-        errors = ActiveModel::Errors.new(work_package)
+        errors = ActiveModel::Errors.new(CustomAction.new)
         subject.validate errors
         expect(errors.symbols_for(:actions)).to include :not_logged_in
       end

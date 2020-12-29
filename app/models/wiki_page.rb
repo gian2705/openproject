@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,9 +28,7 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-require 'diff'
-
-class WikiPage < ActiveRecord::Base
+class WikiPage < ApplicationRecord
   belongs_to :wiki, touch: true
   has_one :project, through: :wiki
   has_one :content, class_name: 'WikiContent', foreign_key: 'page_id', dependent: :destroy
@@ -40,12 +39,12 @@ class WikiPage < ActiveRecord::Base
   acts_as_url :title,
               url_attribute: :slug,
               scope: :wiki_id, # Unique slugs per WIKI
-              sync_url: true # Keep slug updated on #rename
+              sync_url: true, # Keep slug updated on #rename
+              adapter: OpenProject::ActsAsUrl::Adapter::OpActiveRecord # use a custom adapter able to handle edge cases
 
   acts_as_watchable
   acts_as_event title: Proc.new { |o| "#{Wiki.model_name.human}: #{o.title}" },
                 description: :text,
-                datetime: :created_on,
                 url: Proc.new { |o| { controller: '/wiki', action: 'show', project_id: o.wiki.project, id: o.title } }
 
   acts_as_searchable columns: ["#{WikiPage.table_name}.title", "#{WikiContent.table_name}.text"],
@@ -66,8 +65,8 @@ class WikiPage < ActiveRecord::Base
   before_destroy :remove_redirects
 
   # eager load information about last updates, without loading text
-  scope :with_updated_on, -> {
-    select("#{WikiPage.table_name}.*, #{WikiContent.table_name}.updated_on")
+  scope :with_updated_at, -> {
+    select("#{WikiPage.table_name}.*, #{WikiContent.table_name}.updated_at")
       .joins("LEFT JOIN #{WikiContent.table_name} ON #{WikiContent.table_name}.page_id = #{WikiPage.table_name}.id")
   }
 
@@ -83,12 +82,8 @@ class WikiPage < ActiveRecord::Base
 
   after_destroy :delete_wiki_menu_item
 
-  def slug
-    read_attribute(:slug).presence || title.try(:to_url)
-  end
-
   def delete_wiki_menu_item
-    menu_item.destroy if menu_item
+    menu_item&.destroy
     # ensure there is a menu item for the wiki
     wiki.create_menu_item_for_start_page if MenuItems::WikiMenuItem.main_items(wiki).empty?
   end
@@ -138,7 +133,7 @@ class WikiPage < ActiveRecord::Base
 
     unless journal.nil? || content.version == journal.version
       content_version = WikiContent.new journal.data.attributes.except('id', 'journal_id')
-      content_version.updated_on = journal.created_at
+      content_version.updated_at = journal.created_at
       content_version.journals = content.journals.select { |j| j.version <= version.to_i }
 
       content_version
@@ -155,32 +150,32 @@ class WikiPage < ActiveRecord::Base
     content_to = content.versions.find_by(version: version_to)
     content_from = content.versions.find_by(version: version_from)
 
-    (content_to && content_from) ? WikiDiff.new(content_to, content_from) : nil
+    (content_to && content_from) ? Wikis::Diff.new(content_to, content_from) : nil
   end
 
   def annotate(version = nil)
     version = version ? version.to_i : content.version
     c = content.versions.find_by(version: version)
-    c ? WikiAnnotate.new(c) : nil
+    c ? Wikis::Annotate.new(c) : nil
   end
 
   def text
-    content.text if content
+    content&.text
   end
 
-  def updated_on
-    unless @updated_on
-      if time = read_attribute(:updated_on)
-        # content updated_on was eager loaded with the page
+  def updated_at
+    unless @updated_at
+      if (time = read_attribute(:updated_at))
+        # content updated_at was eager loaded with the page
         unless time.is_a? Time
           time = Time.zone.parse(time) rescue nil
         end
-        @updated_on = time
+        @updated_at = time
       else
-        @updated_on = content && content.updated_on
+        @updated_at = content&.updated_at
       end
     end
-    @updated_on
+    @updated_at
   end
 
   # Returns true if usr is allowed to edit the page, otherwise false
@@ -193,7 +188,7 @@ class WikiPage < ActiveRecord::Base
   end
 
   def parent_title
-    @parent_title || (parent && parent.title)
+    @parent_title || (parent&.title)
   end
 
   def parent_title=(t)
@@ -218,11 +213,7 @@ class WikiPage < ActiveRecord::Base
   end
 
   def breadcrumb_title
-    if item = menu_item
-      item.title
-    else
-      title
-    end
+    menu_item&.title || title
   end
 
   def to_param
@@ -255,55 +246,5 @@ class WikiPage < ActiveRecord::Base
 
   def validate_same_project
     errors.add(:parent_title, :not_same_project) if parent && (parent.wiki_id != wiki_id)
-  end
-end
-
-class WikiDiff < Redmine::Helpers::Diff
-  attr_reader :content_to, :content_from
-
-  def initialize(content_to, content_from)
-    @content_to = content_to
-    @content_from = content_from
-    super(content_to.data.text, content_from.data.text)
-  end
-end
-
-class WikiAnnotate
-  attr_reader :lines, :content
-
-  def initialize(content)
-    @content = content
-    current = content
-    current_lines = current.data.text.split(/\r?\n/)
-    @lines = current_lines.map { |t| [nil, nil, t] }
-    positions = []
-    current_lines.size.times do |i| positions << i end
-    while current.previous
-      d = current.previous.data.text.split(/\r?\n/).diff(current.data.text.split(/\r?\n/)).diffs.flatten
-      d.each_slice(3) do |s|
-        sign = s[0]
-        line = s[1]
-        if sign == '+' && positions[line] && positions[line] != -1
-          if @lines[positions[line]][0].nil?
-            @lines[positions[line]][0] = current.version
-            @lines[positions[line]][1] = current.data.author
-          end
-        end
-      end
-      d.each_slice(3) do |s|
-        sign = s[0]
-        line = s[1]
-        if sign == '-'
-          positions.insert(line, -1)
-        else
-          positions[line] = nil
-        end
-      end
-      positions.compact!
-      # Stop if every line is annotated
-      break unless @lines.detect { |line| line[0].nil? }
-      current = current.previous
-    end
-    @lines.each { |line| line[0] ||= current.version }
   end
 end

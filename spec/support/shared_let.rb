@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -37,6 +37,8 @@
 # than creating new records (especially, work packages).
 #
 # Since test-prof added `let_it_be` this is only a wrapper for it
+# before_all / let_it_be fixture
+require 'test_prof/recipes/rspec/before_all'
 require 'test_prof/recipes/rspec/let_it_be'
 
 def shared_let(key, reload: true, refind: false, &block)

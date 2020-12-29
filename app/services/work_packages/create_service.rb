@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -43,7 +43,7 @@ class WorkPackages::CreateService
   def call(work_package: WorkPackage.new,
            send_notifications: true,
            **attributes)
-    in_context(send_notifications) do
+    in_user_context(send_notifications) do
       create(attributes, work_package)
     end
   end
@@ -74,7 +74,7 @@ class WorkPackages::CreateService
   end
 
   def set_attributes(attributes, wp)
-    WorkPackages::SetAttributesService
+    attributes_service_class
       .new(user: user,
            model: wp,
            contract_class: contract_class)
@@ -95,5 +95,9 @@ class WorkPackages::CreateService
     end
 
     result
+  end
+
+  def attributes_service_class
+    ::WorkPackages::SetAttributesService
   end
 end

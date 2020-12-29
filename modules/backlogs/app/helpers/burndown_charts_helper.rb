@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module BurndownChartsHelper
@@ -43,7 +36,7 @@ module BurndownChartsHelper
 
     mvalue = mvalue + 1 if mvalue == 1 || ((max % 25) == 0)
 
-    labels << "[#{(mvalue) * 25}, '<span class=\"axislabel\">#{l('backlogs.points')}</span>']"
+    labels << "[#{(mvalue) * 25}, '<span class=\"axislabel\">#{I18n.t('backlogs.points')}</span>']"
 
     result = labels.join(', ')
 
@@ -67,7 +60,7 @@ module BurndownChartsHelper
     dataset = {}
     burndown.series.each do |s|
       dataset[s.first] = {
-        label: l('backlogs.' + s.first.to_s),
+        label: I18n.t('backlogs.' + s.first.to_s),
         data: s.last.enum_for(:each_with_index).map { |val, i| [i + 1, val] }
       }
     end
@@ -78,7 +71,7 @@ module BurndownChartsHelper
   def burndown_series_checkboxes(burndown)
     boxes = ''
     burndown.series(:all).map { |s| s.first.to_s }.sort.each do |series|
-      boxes += "<input class=\"series_enabled\" type=\"checkbox\" id=\"#{series}\" name=\"#{series}\" value=\"#{series}\" checked>#{l('backlogs.' + series.to_s)}<br/>"
+      boxes += "<input class=\"series_enabled\" type=\"checkbox\" id=\"#{series}\" name=\"#{series}\" value=\"#{series}\" checked>#{I18n.t('backlogs.' + series.to_s)}<br/>"
     end
     boxes.html_safe
   end

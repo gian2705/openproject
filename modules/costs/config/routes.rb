@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,16 +22,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 OpenProject::Application.routes.draw do
   scope 'projects/:project_id', as: 'projects' do
     resources :cost_entries, controller: 'costlog', only: [:new, :create]
-
-    resources :cost_objects, only: [:new, :create, :index] do
-      match :update_labor_budget_item, on: :collection, via: %i[get post]
-      match :update_material_budget_item, on: :collection, via: %i[get post]
-    end
 
     resources :hourly_rates, only: [:show, :edit, :update] do
       post :set_rate, on: :member
@@ -36,10 +40,6 @@ OpenProject::Application.routes.draw do
   end
 
   resources :cost_entries, controller: 'costlog', only: [:edit, :update, :destroy]
-
-  resources :cost_objects, only: [:show, :update, :destroy, :edit] do
-    get :copy, on: :member
-  end
 
   resources :cost_types, only: [:index, :new, :edit, :update, :create, :destroy] do
     member do

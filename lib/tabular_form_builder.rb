@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -211,8 +211,10 @@ class TabularFormBuilder < ActionView::Helpers::FormBuilder
   def text_formatting_wrapper(target_id, options)
     return ''.html_safe unless target_id.present?
 
-    helper = ::OpenProject::TextFormatting::Formats.rich_helper.new(@template)
-    helper.wikitoolbar_for target_id, options
+    ::OpenProject::TextFormatting::Formats
+      .rich_helper
+      .new(@template)
+      .wikitoolbar_for target_id, **options
   end
 
   def field_css_class(selector)
@@ -227,19 +229,20 @@ class TabularFormBuilder < ActionView::Helpers::FormBuilder
   def label_for_field(field, options = {})
     return ''.html_safe if options[:no_label]
 
-    text = get_localized_field(field, options[:label])
-    label_options = { class: 'form--label', title: text }
+    label_options = {
+      class: label_for_field_class(options[:class]),
+      title: get_localized_field(field, options[:label])
+    }
 
-    if options[:class].is_a?(Array)
-      label_options[:class] << " #{options[:class].join(' ')}"
-    elsif options[:class].is_a?(String)
-      label_options[:class] << " #{options[:class]}"
-    end
-
-    content = h(text)
+    content = h(label_options[:title])
     label_for_field_errors(content, label_options, field)
     label_for_field_for(options, label_options, field)
     label_for_field_prefix(content, options)
+
+    # Render a help text icon
+    if options[:help_text]
+      content << content_tag('attribute-help-text', '', data: options[:help_text])
+    end
 
     label_options[:lang] = options[:lang]
     label_options.reject! do |_k, v|
@@ -268,15 +271,26 @@ class TabularFormBuilder < ActionView::Helpers::FormBuilder
     end
   end
 
+  def label_for_field_class(klass)
+    case klass
+    when Array
+      "form--label #{klass.join(' ')}"
+    when String
+      "form--label #{klass}"
+    else
+      "form--label"
+    end
+  end
+
   def get_localized_field(field, label)
     if label.is_a?(Symbol)
-      l(label)
+      I18n.t(label)
     elsif label
       label
     elsif @object.class.respond_to?(:human_attribute_name)
       @object.class.human_attribute_name(field)
     else
-      l(field)
+      I18n.t(field)
     end
   end
 
@@ -286,7 +300,7 @@ class TabularFormBuilder < ActionView::Helpers::FormBuilder
 
   def extract_from(options)
     label_options = options.dup.except(:class)
-    input_options = options.dup.except(:for, :label, :no_label, :prefix, :suffix, :label_options)
+    input_options = options.dup.except(:for, :label, :no_label, :prefix, :suffix, :label_options, :help_text)
 
     label_options.merge!(options.delete(:label_options) || {})
 

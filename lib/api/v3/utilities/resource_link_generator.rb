@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -39,8 +39,6 @@ module API
               path_method = determine_path_method(record)
               record_identifier = record.id
               api_v3_paths.send(path_method, record_identifier)
-            elsif record.is_a?(String)
-              api_v3_paths.string_object(record)
             end
           rescue NoMethodError
             nil

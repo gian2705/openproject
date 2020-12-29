@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -63,6 +63,23 @@ describe MailHandler, type: :model do
 
     subject do
       submit_email('wp_on_given_project.eml', **submit_options)
+    end
+  end
+
+  shared_context 'wp_on_given_project_case_insensitive' do
+    let(:permissions) { %i[add_work_packages assign_versions] }
+    let!(:user) do
+      FactoryBot.create(:user,
+                        mail: 'JSmith@somenet.foo',
+                        firstname: 'John',
+                        lastname: 'Smith',
+                        member_in_project: project,
+                        member_with_permissions: permissions)
+    end
+    let(:submit_options) { {allow_override: 'version'} }
+
+    subject do
+      submit_email('wp_on_given_project_case_insensitive.eml', **submit_options)
     end
   end
 
@@ -129,7 +146,7 @@ describe MailHandler, type: :model do
         let!(:version) { FactoryBot.create(:version, name: 'alpha', project: project) }
 
         include_context 'wp_on_given_project' do
-          let(:submit_options) { {allow_override: 'fixed_version'} }
+          let(:submit_options) { { allow_override: 'version' } }
         end
 
         it_behaves_like 'work package created'
@@ -180,7 +197,7 @@ describe MailHandler, type: :model do
         end
 
         it 'sets the version' do
-          expect(subject.fixed_version)
+          expect(subject.version)
             .to eql(version)
         end
 
@@ -276,18 +293,19 @@ describe MailHandler, type: :model do
         end
 
         it 'rejects if unknown_user=accept and permission check is present' do
-
           expected =
             'MailHandler: work_package could not be created by Anonymous due to ' \
-          '#["may not be accessed.", "Type is not writable.", "Project is not writable.", ' \
-          '"Subject is not writable.", "Description is not writable."]'
+          '#["may not be accessed.", "Type was attempted to be written but is not writable.", ' \
+          '"Project was attempted to be written but is not writable.", ' \
+          '"Subject was attempted to be written but is not writable.", ' \
+          '"Description was attempted to be written but is not writable."]'
 
           expect(Rails.logger)
-            .to(receive(:error))
+            .to receive(:error)
             .with(expected)
 
           result = submit_email 'ticket_by_unknown_user.eml',
-                                issue: {project: project.identifier},
+                                issue: { project: project.identifier },
                                 unknown_user: 'accept'
 
           expect(result).to eq false
@@ -295,7 +313,7 @@ describe MailHandler, type: :model do
 
         it 'accepts if unknown_user=accept and no_permission_check' do
           work_package = submit_email 'ticket_by_unknown_user.eml',
-                                      issue: {project: project.identifier},
+                                      issue: { project: project.identifier },
                                       unknown_user: 'accept',
                                       no_permission_check: 1
 
@@ -341,6 +359,23 @@ describe MailHandler, type: :model do
         it 'assigns the status to the created work package' do
           expect(subject.status)
             .to eql(status)
+        end
+      end
+
+      context 'wp with status case insensitive' do
+        let!(:status) { FactoryBot.create(:status, name: 'Resolved') }
+        let!(:priority_low) { FactoryBot.create(:priority_low, name: 'Low', is_default: true) }
+        let!(:version) { FactoryBot.create(:version, name: 'alpha', project: project) }
+
+        # This email contains: 'Project: onlinestore' and 'Status: resolved'
+        include_context 'wp_on_given_project_case_insensitive'
+
+        it_behaves_like 'work package created'
+
+        it 'assigns the status to the created work package' do
+          expect(subject.status).to eq(status)
+          expect(subject.version).to eq(version)
+          expect(subject.priority).to eq priority_low
         end
       end
     end

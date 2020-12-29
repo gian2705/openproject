@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -81,7 +81,7 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
   let(:embedded) { true }
   let(:representer) do
     described_class.create(schema,
-                           self_link,
+                           self_link: self_link,
                            form_embedded: embedded,
                            base_schema_link: base_schema_link,
                            current_user: current_user)
@@ -90,6 +90,10 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
 
   before do
     login_as(current_user)
+    allow(schema.project)
+      .to receive(:module_enabled?)
+      .and_return(true)
+
     allow(schema).to receive(:writable?).and_call_original
   end
 
@@ -242,7 +246,7 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
       context 'lockVersion disabled' do
         let(:representer) do
           described_class.create(schema,
-                                 nil,
+                                 self_link: nil,
                                  current_user: current_user,
                                  hide_lock_version: true)
         end
@@ -285,6 +289,17 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
         let(:type) { 'Formattable' }
         let(:name) { I18n.t('attributes.description') }
         let(:required) { false }
+        let(:writable) { true }
+      end
+    end
+
+    describe 'scheduleManually' do
+      it_behaves_like 'has basic schema properties' do
+        let(:path) { 'scheduleManually' }
+        let(:type) { 'Boolean' }
+        let(:name) { I18n.t('activerecord.attributes.work_package.schedule_manually') }
+        let(:required) { false }
+        let(:has_default) { true }
         let(:writable) { true }
       end
     end
@@ -436,9 +451,64 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
       end
     end
 
+    describe 'derivedStartDate' do
+      let(:is_milestone) { false }
+
+      before do
+        allow(schema)
+          .to receive(:milestone?)
+          .and_return(is_milestone)
+      end
+
+      it_behaves_like 'has basic schema properties' do
+        let(:path) { 'derivedStartDate' }
+        let(:type) { 'Date' }
+        let(:name) { I18n.t('attributes.derived_start_date') }
+        let(:required) { false }
+        let(:writable) { false }
+      end
+
+      context 'when the work package is a milestone' do
+        let(:is_milestone) { true }
+
+        it 'has no date attribute' do
+          is_expected.to_not have_json_path('derivedStartDate')
+        end
+      end
+    end
+
+    describe 'derivedDueDate' do
+      let(:is_milestone) { false }
+
+      before do
+        allow(schema)
+          .to receive(:milestone?)
+          .and_return(is_milestone)
+      end
+
+      it_behaves_like 'has basic schema properties' do
+        let(:path) { 'derivedDueDate' }
+        let(:type) { 'Date' }
+        let(:name) { I18n.t('attributes.derived_due_date') }
+        let(:required) { false }
+        let(:writable) { false }
+      end
+
+      context 'when the work package is a milestone' do
+        let(:is_milestone) { true }
+
+        it 'has no date attribute' do
+          is_expected.to_not have_json_path('derivedDueDate')
+        end
+      end
+    end
+
     describe 'estimatedTime' do
       before do
-        allow(schema).to receive(:writable?).with(:estimated_time).and_return true
+        allow(schema)
+          .to receive(:writable?)
+          .with(:estimated_time)
+          .and_return true
       end
 
       it_behaves_like 'has basic schema properties' do
@@ -451,7 +521,10 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
 
       context 'not writable' do
         before do
-          allow(schema).to receive(:writable?).with(:estimated_time).and_return false
+          allow(schema)
+            .to receive(:writable?)
+            .with(:estimated_time)
+            .and_return false
         end
 
         it_behaves_like 'has basic schema properties' do
@@ -464,13 +537,19 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
       end
     end
 
+    describe 'derivedDstimatedTime' do
+      it_behaves_like 'has basic schema properties' do
+        let(:path) { 'derivedEstimatedTime' }
+        let(:type) { 'Duration' }
+        let(:name) { I18n.t('attributes.derived_estimated_time') }
+        let(:required) { false }
+        let(:writable) { false }
+      end
+    end
+
     describe 'spentTime' do
-      context 'with \'time_tracking\' enabled' do
-        before do
-          allow(project)
-            .to receive(:module_enabled?)
-            .and_return(true)
-        end
+      context 'with the view_time_entries permission' do
+        let(:permissions) { %i[edit_work_packages view_time_entries] }
 
         it_behaves_like 'has basic schema properties' do
           let(:path) { 'spentTime' }
@@ -481,15 +560,20 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
         end
       end
 
-      context 'with \'time_tracking\' disabled' do
-        before do
-          allow(project)
-            .to receive(:module_enabled?) do |name|
-            name != 'time_tracking'
-          end
-        end
+      context 'with the view_own_time_entries permission' do
+        let(:permissions) { %i[edit_work_packages view_own_time_entries] }
 
-        it 'has no date attribute' do
+        it_behaves_like 'has basic schema properties' do
+          let(:path) { 'spentTime' }
+          let(:type) { 'Duration' }
+          let(:name) { I18n.t('activerecord.attributes.work_package.spent_time') }
+          let(:required) { false }
+          let(:writable) { false }
+        end
+      end
+
+      context 'without any view time_entries permission' do
+        it 'has no spentTime attribute' do
           is_expected.to_not have_json_path('spentTime')
         end
       end
@@ -700,7 +784,7 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
         it_behaves_like 'has basic schema properties' do
           let(:path) { 'version' }
           let(:type) { 'Version' }
-          let(:name) { I18n.t('activerecord.attributes.work_package.fixed_version') }
+          let(:name) { I18n.t('activerecord.attributes.work_package.version') }
           let(:required) { false }
           let(:writable) { true }
         end
@@ -718,7 +802,7 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
         it_behaves_like 'has basic schema properties' do
           let(:path) { 'version' }
           let(:type) { 'Version' }
-          let(:name) { I18n.t('activerecord.attributes.work_package.fixed_version') }
+          let(:name) { I18n.t('activerecord.attributes.work_package.version') }
           let(:required) { false }
           let(:writable) { false }
         end
@@ -734,7 +818,7 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
         let(:path) { 'priority' }
         let(:type) { 'Priority' }
         let(:name) { I18n.t('activerecord.attributes.work_package.priority') }
-        let(:required) { false }
+        let(:required) { true }
         let(:writable) { true }
         let(:has_default) { true }
       end
@@ -754,7 +838,7 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
           let(:path) { 'priority' }
           let(:type) { 'Priority' }
           let(:name) { I18n.t('activerecord.attributes.work_package.priority') }
-          let(:required) { false }
+          let(:required) { true }
           let(:writable) { false }
           let(:has_default) { true }
         end
@@ -827,6 +911,32 @@ describe ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter do
           it_behaves_like 'does not link to allowed values' do
             let(:path) { 'responsible' }
           end
+        end
+      end
+    end
+
+    describe 'budget' do
+      context 'user allowed to view_budgets' do
+        let(:permissions) { %i[edit_work_packages view_budgets] }
+
+        it_behaves_like 'has basic schema properties' do
+          let(:path) { 'budget' }
+          let(:type) { 'Budget' }
+          let(:name) { I18n.t('attributes.budget') }
+          let(:required) { false }
+          let(:writable) { true }
+        end
+
+        it_behaves_like 'has a collection of allowed values' do
+          let(:json_path) { 'budget' }
+          let(:href_path) { 'budgets' }
+          let(:factory) { :budget }
+        end
+      end
+
+      context 'user not allowed to view_budgets' do
+        it 'has no schema for budget' do
+          is_expected.not_to have_json_path('budget')
         end
       end
     end

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -41,8 +41,55 @@ module OpenProject
         (self['attachments_storage'] || 'file').to_sym
       end
 
+      ##
+      # We only allow direct uploads to S3 as we are using the carrierwave_direct
+      # gem which only supports S3 for the time being.
+      def direct_uploads
+        return false unless remote_storage?
+        return false unless remote_storage_aws?
+
+        self['direct_uploads']
+      end
+
+      def direct_uploads?
+        direct_uploads
+      end
+
+      # Augur connect host
+      def enterprise_trial_creation_host
+        if Rails.env.production?
+          self['enterprise_trial_creation_host']
+        else
+          'https://augur.openproject-edge.com'
+        end
+      end
+
       def file_storage?
         attachments_storage == :file
+      end
+
+      def remote_storage?
+        attachments_storage == :fog
+      end
+
+      def remote_storage_aws?
+        fog_credentials[:provider] == "AWS"
+      end
+
+      def remote_storage_upload_host
+        if remote_storage_aws?
+          "#{fog_directory}.s3.amazonaws.com"
+        end
+      end
+
+      def remote_storage_download_host
+        if remote_storage_aws?
+          "#{fog_directory}.s3.#{fog_credentials[:region]}.amazonaws.com"
+        end
+      end
+
+      def remote_storage_hosts
+        [remote_storage_upload_host, remote_storage_download_host].compact
       end
 
       def attachments_storage_path
@@ -80,9 +127,8 @@ module OpenProject
       ##
       # Whether we're running a bim edition
       def bim?
-        ENV['OPENPROJECT_EDITION'] == 'bim'
+        self['edition'] == 'bim'
       end
-
 
       def available_file_uploaders
         uploaders = {
@@ -98,6 +144,11 @@ module OpenProject
         uploaders
       end
 
+      def ldap_tls_options
+        val = self['ldap_tls_options']
+        val.presence || {}
+      end
+
       private
 
       ##
@@ -105,7 +156,7 @@ module OpenProject
       # Either the value already is an array or a string with values separated by spaces.
       # In the latter case the string will be split and the values returned as an array.
       def array(value)
-        if value =~ / /
+        if value.is_a?(String) && value =~ / /
           value.split ' '
         else
           Array(value)

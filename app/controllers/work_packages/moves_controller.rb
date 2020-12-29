@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -85,12 +86,12 @@ class WorkPackages::MovesController < ApplicationController
 
   def set_flash_from_bulk_work_package_save(work_packages, unsaved_work_package_ids)
     if unsaved_work_package_ids.empty? and not work_packages.empty?
-      flash[:notice] = @copy ? l(:notice_successful_create) : l(:notice_successful_update)
+      flash[:notice] = @copy ? I18n.t(:notice_successful_create) : I18n.t(:notice_successful_update)
     else
-      flash[:error] = l(:notice_failed_to_save_work_packages,
-                        count: unsaved_work_package_ids.size,
-                        total: work_packages.size,
-                        ids: '#' + unsaved_work_package_ids.join(', #'))
+      flash[:error] = I18n.t(:notice_failed_to_save_work_packages,
+                             count: unsaved_work_package_ids.size,
+                             total: work_packages.size,
+                             ids: '#' + unsaved_work_package_ids.join(', #'))
     end
   end
 
@@ -99,7 +100,7 @@ class WorkPackages::MovesController < ApplicationController
   def dependent_error_ids(parent_id, service_call)
     ids = service_call
       .results_with_errors(include_self: false)
-      .map { |result| result.context[:copied_from]&.id }
+      .map { |result| result.state.copied_from_work_package_id }
       .compact
 
     if ids.present?
@@ -111,7 +112,7 @@ class WorkPackages::MovesController < ApplicationController
   end
 
   def default_breadcrumb
-    l(:label_move_work_package)
+    I18n.t(:label_move_work_package)
   end
 
   private
@@ -132,6 +133,7 @@ class WorkPackages::MovesController < ApplicationController
     @target_project = @allowed_projects.detect { |p| p.id.to_s == params[:new_project_id].to_s } if params[:new_project_id]
     @target_project ||= @project
     @types = @target_project.types
+    @available_versions = @target_project.shared_versions.order_by_semver_name
     @available_statuses = Workflow.available_statuses(@project)
     @notes = params[:notes]
     @notes ||= ''
@@ -160,6 +162,7 @@ class WorkPackages::MovesController < ApplicationController
               :start_date,
               :due_date,
               :status_id,
+              :version_id,
               :priority_id)
       .to_h
       .reject { |_, v| v.blank? }

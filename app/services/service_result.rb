@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,27 +30,27 @@
 
 class ServiceResult
   attr_accessor :success,
-                :errors,
                 :result,
-                :message,
+                :errors,
                 :message_type,
-                :context,
+                :state,
                 :dependent_results
 
   def initialize(success: false,
                  errors: nil,
                  message: nil,
                  message_type: nil,
-                 context: {},
+                 state: ::Shared::ServiceState.new,
                  dependent_results: [],
                  result: nil)
     self.success = success
     self.result = result
-    self.context = context
-    self.dependent_results = dependent_results
+    self.state = state
 
     initialize_errors(errors)
-    initialize_message(message)
+    @message = message
+
+    self.dependent_results = dependent_results
   end
 
   alias success? :success
@@ -59,9 +59,19 @@ class ServiceResult
     !success?
   end
 
-  def merge!(other)
-    merge_success!(other)
+  ##
+  # Merge another service result into this instance
+  # allowing optionally to skip updating its service
+  def merge!(other, without_success: false)
+    merge_success!(other) unless without_success
+    merge_errors!(other)
     merge_dependent!(other)
+  end
+
+  ##
+  # Rollback the state if possible
+  def rollback!
+    state.rollback!
   end
 
   ##
@@ -82,6 +92,15 @@ class ServiceResult
 
   def all_errors
     [errors] + dependent_results.map(&:errors)
+  end
+
+  ##
+  # Test whether the returned errors respond
+  # to the search key
+  def includes_error?(attribute, error_key)
+    all_errors.any? do |error|
+      error.symbols_for(attribute).include?(error_key)
+    end
   end
 
   ##
@@ -115,12 +134,48 @@ class ServiceResult
     self.dependent_results += inner_results
   end
 
-  def on_success
-    yield(self) if success?
+  def on_success(&block)
+    tap(&block) if success?
+    self
   end
 
-  def on_failure
-    yield(self) if failure?
+  def on_failure(&block)
+    tap(&block) if failure?
+    self
+  end
+
+  def tap
+    yield(self)
+    self
+  end
+
+  def each
+    yield result if success?
+    self
+  end
+
+  def map
+    return self if failure?
+
+    dup.tap do |new_result|
+      new_result.result = yield result
+    end
+  end
+
+  def to_a
+    if success?
+      [result]
+    else
+      []
+    end
+  end
+
+  def message
+    if @message
+      @message
+    elsif failure? && errors.is_a?(ActiveModel::Errors)
+      errors.full_messages.join(" ")
+    end
   end
 
   private
@@ -136,14 +191,6 @@ class ServiceResult
       end
   end
 
-  def initialize_message(message)
-    self.message =
-      if message
-        message
-      elsif failure? && errors.is_a?(ActiveModel::Errors)
-        errors.full_messages.join("")
-      end
-  end
 
   def get_message_type
     if message_type.present?
@@ -157,6 +204,10 @@ class ServiceResult
 
   def merge_success!(other)
     self.success &&= other.success
+  end
+
+  def merge_errors!(other)
+    self.errors.merge! other.errors
   end
 
   def merge_dependent!(other)

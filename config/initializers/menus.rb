@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,7 +32,13 @@ require 'redmine/menu_manager'
 Redmine::MenuManager.map :top_menu do |menu|
   # projects menu will be added by
   # Redmine::MenuManager::TopMenuHelper#render_projects_top_menu_node
-
+  menu.push :projects,
+            { controller: '/projects', project_id: nil, action: 'index' },
+            context: :modules,
+            caption: I18n.t('label_projects_menu'),
+            if: Proc.new {
+              (User.current.logged? || !Setting.login_required?)
+            }
   menu.push :work_packages,
             { controller: '/work_packages', project_id: nil, state: nil, action: 'index' },
             context: :modules,
@@ -41,23 +47,16 @@ Redmine::MenuManager.map :top_menu do |menu|
               (User.current.logged? || !Setting.login_required?) &&
                 User.current.allowed_to?(:view_work_packages, nil, global: true)
             }
-
   menu.push :news,
             { controller: '/news', project_id: nil, action: 'index' },
             context: :modules,
+            caption: I18n.t('label_news_plural'),
             if: Proc.new {
               (User.current.logged? || !Setting.login_required?) &&
                 User.current.allowed_to?(:view_news, nil, global: true)
             }
-  menu.push :time_sheet,
-            { controller: '/timelog', project_id: nil, action: 'index' },
-            context: :modules,
-            caption: I18n.t('label_time_sheet_menu'),
-            if: Proc.new {
-              (User.current.logged? || !Setting.login_required?) &&
-                User.current.allowed_to?(:view_time_entries, nil, global: true)
-            }
-  menu.push :help, OpenProject::Static::Links.help_link,
+  menu.push :help,
+            OpenProject::Static::Links.help_link,
             last: true,
             caption: '',
             icon: 'icon5 icon-help',
@@ -99,7 +98,7 @@ Redmine::MenuManager.map :my_menu do |menu|
   menu_push
   menu.push :settings,
             { controller: '/my', action: 'settings' },
-            caption: :label_settings,
+            caption: :label_setting_plural,
             icon: 'icon2 icon-settings2'
   menu.push :password,
             { controller: '/my', action: 'password' },
@@ -137,7 +136,7 @@ Redmine::MenuManager.map :admin_menu do |menu|
 
   menu.push :user_settings,
             { controller: '/users_settings' },
-            caption: :label_settings,
+            caption: :label_setting_plural,
             parent: :users_and_permissions
 
   menu.push :users,
@@ -167,7 +166,7 @@ Redmine::MenuManager.map :admin_menu do |menu|
 
   menu.push :work_packages_setting,
             { controller: '/work_packages/settings' },
-            caption: :label_settings,
+            caption: :label_setting_plural,
             parent: :admin_work_packages
 
   menu.push :types,
@@ -200,7 +199,7 @@ Redmine::MenuManager.map :admin_menu do |menu|
   menu.push :attribute_help_texts,
             { controller: '/attribute_help_texts' },
             caption: :'attribute_help_texts.label_plural',
-            parent: :admin_work_packages,
+            icon: 'icon2 icon-help2',
             if: Proc.new {
               EnterpriseToken.allows_to?(:attribute_help_texts)
             }
@@ -210,9 +209,31 @@ Redmine::MenuManager.map :admin_menu do |menu|
             icon: 'icon2 icon-enumerations'
 
   menu.push :settings,
-            { controller: '/settings' },
+            { controller: '/settings/general', action: 'show' },
             caption: :label_system_settings,
             icon: 'icon2 icon-settings2'
+
+  SettingsHelper.system_settings_tabs.each do |node|
+    menu.push :"settings_#{node[:name]}",
+              node[:action],
+              caption: node[:label],
+              parent: :settings
+  end
+
+  menu.push :email,
+            { controller: '/admin/mail_notifications', action: 'show' },
+            caption: :'attributes.mail',
+            icon: 'icon2 icon-mail1'
+
+  menu.push :mail_notifications,
+            { controller: '/admin/mail_notifications', action: 'show' },
+            caption: :'activerecord.attributes.user.mail_notification',
+            parent: :email
+
+  menu.push :incoming_mails,
+            { controller: '/admin/incoming_mails', action: 'show' },
+            caption: :label_incoming_emails,
+            parent: :email
 
   menu.push :authentication,
             { controller: '/authentication', action: 'authentication_settings' },
@@ -221,7 +242,7 @@ Redmine::MenuManager.map :admin_menu do |menu|
 
   menu.push :authentication_settings,
             { controller: '/authentication', action: 'authentication_settings' },
-            caption: :label_settings,
+            caption: :label_setting_plural,
             parent: :authentication
 
   menu.push :ldap_authentication,
@@ -255,38 +276,38 @@ Redmine::MenuManager.map :admin_menu do |menu|
 
   menu.push :custom_style,
             { controller: '/custom_styles', action: 'show' },
-            caption:    :label_custom_style,
+            caption: :label_custom_style,
             icon: 'icon2 icon-design'
 
   menu.push :colors,
             { controller: '/colors', action: 'index' },
-            caption:    :'timelines.admin_menu.colors',
+            caption: :'timelines.admin_menu.colors',
             icon: 'icon2 icon-status'
 
   menu.push :enterprise,
             { controller: '/enterprises', action: 'show' },
-            caption:    :label_enterprise_edition,
+            caption: :label_enterprise_edition,
             icon: 'icon2 icon-headset',
             if: proc { OpenProject::Configuration.ee_manager_visible? }
 
   menu.push :admin_costs,
-            { controller: '/settings', action: 'plugin', id: :openproject_costs },
-            caption:    :label_cost_object_plural,
+            { controller: '/settings', action: 'plugin', id: :costs },
+            caption: :project_module_costs,
             icon: 'icon2 icon-budget'
 
   menu.push :costs_setting,
-            { controller: '/settings', action: 'plugin', id: :openproject_costs },
-            caption:    :label_settings,
+            { controller: '/settings', action: 'plugin', id: :costs },
+            caption: :label_setting_plural,
             parent: :admin_costs
 
   menu.push :admin_backlogs,
             { controller: '/settings', action: 'plugin', id: :openproject_backlogs },
-            caption:    :label_backlogs,
+            caption: :label_backlogs,
             icon: 'icon2 icon-backlogs'
 
   menu.push :backlogs_settings,
             { controller: '/settings', action: 'plugin', id: :openproject_backlogs },
-            caption:    :label_settings,
+            caption: :label_setting_plural,
             parent: :admin_backlogs
 end
 
@@ -336,7 +357,6 @@ Redmine::MenuManager.map :project_menu do |menu|
   menu.push :forums,
             { controller: '/forums', action: 'index', id: nil },
             param: :project_id,
-            if: Proc.new { |p| p.forums.any? },
             caption: :label_forum_plural,
             icon: 'icon2 icon-ticket-note'
 
@@ -348,22 +368,26 @@ Redmine::MenuManager.map :project_menu do |menu|
 
   # Wiki menu items are added by WikiMenuItemHelper
 
-  menu.push :time_entries,
-            { controller: '/timelog', action: 'index' },
-            param: :project_id,
-            if: -> (project) { User.current.allowed_to?(:view_time_entries, project) },
-            caption: :label_time_sheet_menu,
-            icon: 'icon2 icon-cost-reports'
-
   menu.push :members,
             { controller: '/members', action: 'index' },
             param: :project_id,
             caption: :label_member_plural,
+            before: :settings,
             icon: 'icon2 icon-group'
 
   menu.push :settings,
-            { controller: '/project_settings', action: 'show' },
+            { controller: '/project_settings/generic', action: 'show' },
             caption: :label_project_settings,
             last: true,
-            icon: 'icon2 icon-settings2'
+            icon: 'icon2 icon-settings2',
+            allow_deeplink: true
+
+  ProjectSettingsHelper.project_settings_tabs.each do |node|
+    menu.push :"settings_#{node[:name]}",
+              node[:action],
+              caption: node[:label],
+              parent: :settings,
+              last: node[:last],
+              if: node[:if]
+  end
 end

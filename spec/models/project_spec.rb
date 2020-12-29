@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,11 +31,11 @@ require File.expand_path('../../support/shared/become_member', __FILE__)
 
 describe Project, type: :model do
   include BecomeMember
+  using_shared_fixtures :admin
 
   let(:active) { true }
   let(:project) { FactoryBot.create(:project, active: active) }
   let(:build_project) { FactoryBot.build_stubbed(:project, active: active) }
-  let(:admin) { FactoryBot.create(:admin) }
   let(:user) { FactoryBot.create(:user) }
 
   describe '#active?' do
@@ -179,8 +179,20 @@ describe Project, type: :model do
 
       project.destroy!
 
-      expect(Project::Status.where(id: status.id))
+      expect(Projects::Status.where(id: status.id))
         .not_to exist
+    end
+  end
+
+  describe 'name' do
+    let(:project) { FactoryBot.build_stubbed :project, name: '     Hello    World   '}
+
+    before do
+      project.valid?
+    end
+
+    it 'trims the name' do
+      expect(project.name).to eql('Hello World')
     end
   end
 

@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2019 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,12 +25,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module BaseServices
-  class BaseContracted
-    include Concerns::Contracted
+  class BaseContracted < BaseCallable
+    include Contracted
     include Shared::ServiceContext
 
     attr_reader :user
@@ -41,26 +41,39 @@ module BaseServices
       self.contract_options = contract_options
     end
 
-    def call(params = nil)
-      in_context(false) do
-        perform(params)
-      end
+    protected
+
+    ##
+    # Reference to a resource that we're servicing
+    attr_accessor :model
+
+    ##
+    # Determine the type of context
+    # this service is running in
+    # e.g., within a resource lock or just executing as the given user
+    def service_context(&block)
+      in_context(model, true, &block)
     end
 
-    private
+    def perform(params = nil)
+      service_context do
+        service_call = before_perform(params)
 
-    def perform(params)
-      service_call = before_perform(params)
+        service_call = validate_contract(service_call) if service_call.success?
+        service_call = after_validate(params, service_call) if service_call.success?
+        service_call = persist(service_call) if service_call.success?
+        service_call = after_perform(service_call) if service_call.success?
 
-      service_call = validate_contract(service_call) if service_call.success?
-      service_call = persist(service_call) if service_call.success?
-      service_call = after_perform(service_call) if service_call.success?
-
-      service_call
+        service_call
+      end
     end
 
     def before_perform(_params)
       ServiceResult.new(success: true, result: model)
+    end
+
+    def after_validate(_params, contract_call)
+      contract_call
     end
 
     def validate_contract(call)
@@ -87,6 +100,10 @@ module BaseServices
 
     def default_contract_class
       raise NotImplementedError
+    end
+
+    def namespace
+      self.class.name.deconstantize.pluralize
     end
   end
 end

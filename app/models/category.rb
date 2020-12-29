@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,19 +27,19 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Category < ActiveRecord::Base
+class Category < ApplicationRecord
   belongs_to :project
   belongs_to :assigned_to, class_name: 'Principal', foreign_key: 'assigned_to_id'
   has_many :work_packages, foreign_key: 'category_id', dependent: :nullify
 
   validates :name,
-            uniqueness: { scope: [:project_id], case_sensitive: true },
+            uniqueness: { scope: [:project_id], case_sensitive: false },
             length: { maximum: 255 }
 
   # validates that assignee is member of the issue category's project
   validates_each :assigned_to_id do |record, attr, value|
     if value # allow nil
-      record.errors.add(attr, l(:error_must_be_project_member)) unless record.project.principals.map(&:id).include? value
+      record.errors.add(attr, I18n.t(:error_must_be_project_member)) unless record.project.principals.map(&:id).include? value
     end
   end
 

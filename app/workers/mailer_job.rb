@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,7 +24,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 ##
@@ -45,6 +45,11 @@
 class MailerJob < ApplicationJob
   queue_as { ActionMailer::Base.deliver_later_queue_name }
 
+  # Retry mailing jobs three times with exponential backoff
+  retry_on StandardError, wait: :exponentially_longer, attempts: 3
+
+  # If exception is handled in mail handler
+  # retry_on will be ignored
   rescue_from StandardError, with: :handle_exception_with_mailer_class
 
   def perform(mailer, mail_method, delivery_method, *args)

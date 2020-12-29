@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {HttpClientModule} from '@angular/common/http';
@@ -42,7 +42,6 @@ import {OpenProject} from "core-app/globals/openproject";
 import {OpIcon} from "core-app/modules/common/icon/op-icon";
 import {WorkPackageViewSortByService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-sort-by.service";
 import {ConfigurationService} from "core-app/modules/common/config/configuration.service";
-import {ConfigurationDmService} from "core-app/modules/hal/dm-services/configuration-dm.service";
 
 function setupMocks(paginationService:PaginationService) {
   const options:IPaginationOptions = {
@@ -91,7 +90,6 @@ describe('wpTablePagination Directive', () => {
         WorkPackageViewPaginationService,
         HalResourceService,
         ConfigurationService,
-        ConfigurationDmService,
         IsolatedQuerySpace,
         I18nService
       ]

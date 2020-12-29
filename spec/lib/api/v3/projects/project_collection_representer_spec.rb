@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -33,7 +33,7 @@ describe ::API::V3::Projects::ProjectCollectionRepresenter do
   let(:projects) { FactoryBot.build_list(:project, 3) }
   let(:current_user) { FactoryBot.build(:user) }
   let(:representer) {
-    described_class.new(projects, self_link, current_user: current_user)
+    described_class.new(projects, self_link: self_link, current_user: current_user)
   }
 
   context 'generation' do

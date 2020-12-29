@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,15 +23,16 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {Injectable} from '@angular/core';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
-import {ConfigurationDmService} from "core-app/modules/hal/dm-services/configuration-dm.service";
 import {ConfigurationResource} from "core-app/modules/hal/resources/configuration-resource";
+import * as moment from "moment";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ConfigurationService {
   // fetches configuration from the ApiV3 endpoint
   // TODO: this currently saves the request between page reloads,
@@ -40,7 +41,7 @@ export class ConfigurationService {
   public initialized:Promise<Boolean>;
 
   public constructor(readonly I18n:I18nService,
-                     readonly configurationDm:ConfigurationDmService) {
+                     readonly apiV3Service:APIV3Service) {
     this.initialized = this.loadConfiguration().then(() => true).catch(() => false);
   }
 
@@ -56,12 +57,20 @@ export class ConfigurationService {
     return this.userPreference('autoHidePopups');
   }
 
-  public isTimezoneSet()  {
+  public isTimezoneSet() {
     return !!this.timezone();
   }
 
-  public timezone()  {
+  public timezone() {
     return this.userPreference('timeZone');
+  }
+
+  public isDirectUploads() {
+    return !!this.prepareAttachmentURL;
+  }
+
+  public get prepareAttachmentURL() {
+    return _.get(this.configuration, ['prepareAttachment', 'href']);
   }
 
   public get maximumAttachmentFileSize() {
@@ -72,51 +81,50 @@ export class ConfigurationService {
     return this.systemPreference('perPageOptions');
   }
 
-  public dateFormatPresent()  {
+  public dateFormatPresent() {
     return !!this.systemPreference('dateFormat');
   }
 
-  public dateFormat()  {
+  public dateFormat() {
     return this.systemPreference('dateFormat');
   }
 
-  public timeFormatPresent()  {
+  public timeFormatPresent() {
     return !!this.systemPreference('timeFormat');
   }
 
-  public timeFormat()  {
+  public timeFormat() {
     return this.systemPreference('timeFormat');
   }
 
-  public startOfWeekPresent()  {
+  public startOfWeekPresent() {
     return !!this.systemPreference('startOfWeek');
   }
 
-  public startOfWeek()  {
+  public startOfWeek() {
     if (this.startOfWeekPresent()) {
       return this.systemPreference('startOfWeek');
-    } else if (I18n.locale === 'en') {
-      return 1;
-    } else if (I18n.locale === 'de') {
-      // This if/else statement is used because
-      // jquery regionals have different start day for German locale
-      return 0;
     } else {
-      return null;
+      return moment.localeData(I18n.locale).firstDayOfWeek();
     }
   }
 
   private loadConfiguration() {
-    return this.configurationDm.load().toPromise().then((configuration) => {
-      this.configuration = configuration;
-    });
+    return this
+      .apiV3Service
+      .configuration
+      .get()
+      .toPromise()
+      .then((configuration) => {
+        this.configuration = configuration;
+      });
   }
 
   private userPreference(pref:string) {
-    return this.configuration.userPreferences[pref];
+    return _.get(this.configuration, ['userPreferences', pref]);
   }
 
   private systemPreference(pref:string) {
-    return this.configuration[pref];
+    return _.get(this.configuration, pref);
   }
 }

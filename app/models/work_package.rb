@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,23 +28,25 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class WorkPackage < ActiveRecord::Base
+class WorkPackage < ApplicationRecord
   include WorkPackage::Validations
   include WorkPackage::SchedulingRules
   include WorkPackage::StatusTransitions
   include WorkPackage::AskBeforeDestruction
-  include WorkPackage::TimeEntries
+  include WorkPackage::TimeEntriesCleaner
   include WorkPackage::Ancestors
   prepend WorkPackage::Parent
   include WorkPackage::TypedDagDefaults
-  include WorkPackage::CustomActions
+  include WorkPackage::CustomActioned
   include WorkPackage::Hooks
+  include WorkPackages::DerivedDates
+  include WorkPackages::SpentTime
+  include WorkPackages::Costs
+  include ::Scopes::Scoped
 
   include OpenProject::Journal::AttachmentHelper
 
   DONE_RATIO_OPTIONS = %w(field status disabled).freeze
-  ATTRIBS_WITH_VALUES_FROM_CHILDREN =
-    %w(start_date due_date estimated_hours done_ratio).freeze
 
   belongs_to :project
   belongs_to :type
@@ -52,7 +54,7 @@ class WorkPackage < ActiveRecord::Base
   belongs_to :author, class_name: 'User', foreign_key: 'author_id'
   belongs_to :assigned_to, class_name: 'Principal', foreign_key: 'assigned_to_id'
   belongs_to :responsible, class_name: 'Principal', foreign_key: 'responsible_id'
-  belongs_to :fixed_version, class_name: 'Version', foreign_key: 'fixed_version_id'
+  belongs_to :version
   belongs_to :priority, class_name: 'IssuePriority', foreign_key: 'priority_id'
   belongs_to :category, class_name: 'Category', foreign_key: 'category_id'
 
@@ -62,7 +64,7 @@ class WorkPackage < ActiveRecord::Base
     order("#{Changeset.table_name}.committed_on ASC, #{Changeset.table_name}.id ASC")
   }
 
-  scope :recently_updated, ->() {
+  scope :recently_updated, -> {
     order(updated_at: :desc)
   }
 
@@ -84,7 +86,7 @@ class WorkPackage < ActiveRecord::Base
     end
   }
 
-  scope :with_status_open, ->() {
+  scope :with_status_open, -> {
     includes(:status)
       .where(statuses: { is_closed: false })
   }
@@ -104,7 +106,7 @@ class WorkPackage < ActiveRecord::Base
   }
 
   scope :without_version, -> {
-    where(fixed_version_id: nil)
+    where(version_id: nil)
   }
 
   scope :with_query, ->(query) {
@@ -114,6 +116,11 @@ class WorkPackage < ActiveRecord::Base
   scope :with_author, ->(author) {
     where(author_id: author.id)
   }
+
+  scope_classes WorkPackages::Scopes::ForScheduling,
+                WorkPackages::Scopes::IncludeSpentTime,
+                WorkPackages::Scopes::IncludeDerivedDates,
+                WorkPackages::Scopes::LeftJoinSelfAndDescendants
 
   acts_as_watchable
 
@@ -158,7 +165,8 @@ class WorkPackage < ActiveRecord::Base
                      order: "#{Attachment.table_name}.file",
                      add_on_new_permission: :add_work_packages,
                      add_on_persisted_permission: :edit_work_packages,
-                     modification_blocked: ->(*) { readonly_status? }
+                     modification_blocked: ->(*) { readonly_status? },
+                     extract_tsv: true
 
   after_validation :set_attachments_error_details,
                    if: lambda { |work_package| work_package.errors.messages.has_key? :attachments }
@@ -263,8 +271,8 @@ class WorkPackage < ActiveRecord::Base
   #     (to make sure, that you can still update closed tickets)
   def assignable_versions
     @assignable_versions ||= begin
-      current_version = fixed_version_id_changed? ? Version.find_by(id: fixed_version_id_was) : fixed_version
-      ((project&.assignable_versions || []) + [current_version]).compact.uniq.sort
+      current_version = version_id_changed? ? Version.find_by(id: version_id_was) : version
+      ((project&.assignable_versions || []) + [current_version]).compact.uniq
     end
   end
 
@@ -283,10 +291,6 @@ class WorkPackage < ActiveRecord::Base
     status.present? && status.is_readonly?
   end
 
-  def closed_version_and_status?
-    fixed_version&.closed? && status.is_closed?
-  end
-
   # Returns true if the work_package is overdue
   def overdue?
     !due_date.nil? && (due_date < Date.today) && !closed?
@@ -296,23 +300,6 @@ class WorkPackage < ActiveRecord::Base
     type&.is_milestone?
   end
   alias_method :is_milestone?, :milestone?
-
-  # Returns an array of status that user is able to apply
-  def new_statuses_allowed_to(user, include_default = false)
-    return Status.where('1=0') if status.nil?
-
-    current_status = Status.where(id: status_id)
-
-    return current_status if closed_version_and_status?
-
-    statuses = new_statuses_allowed_by_workflow_to(user)
-               .or(current_status)
-
-    statuses = statuses.or(Status.where_default) if include_default
-    statuses = statuses.where(is_closed: false) if blocked?
-
-    statuses.order_by_position
-  end
 
   # Returns users that should be notified
   def recipients
@@ -401,40 +388,10 @@ class WorkPackage < ActiveRecord::Base
   end
 
   # check if user is allowed to edit WorkPackage Journals.
-  # see Redmine::Acts::Journalized::Permissions#journal_editable_by
-  def editable_by?(user)
-    project = self.project
+  # see Acts::Journalized::Permissions#journal_editable_by
+  def journal_editable_by?(journal, user)
     user.allowed_to?(:edit_work_package_notes, project, global: project.present?) ||
-      user.allowed_to?(:edit_own_work_package_notes, project, global: project.present?)
-  end
-
-  # Adds the 'virtual' attribute 'hours' to the result set.  Using the
-  # patch in config/initializers/eager_load_with_hours, the value is
-  # returned as the #hours attribute on each work package.
-  def self.include_spent_hours(user)
-    WorkPackage::SpentTime
-      .new(user)
-      .scope
-      .select('SUM(time_entries.hours) AS hours')
-  end
-
-  # Returns the total number of hours spent on this work package and its descendants.
-  # The result can be a subset of the actual spent time in cases where the user's permissions
-  # are limited, i.e. he lacks the view_time_entries and/or view_work_packages permission.
-  #
-  # Example:
-  #   spent_hours => 0.0
-  #   spent_hours => 50.2
-  #
-  #   The value can stem from either eager loading the value via
-  #   WorkPackage.include_spent_hours in which case the work package has an
-  #   #hours attribute or it is loaded on calling the method.
-  def spent_hours(user = User.current)
-    if respond_to?(:hours)
-      hours.to_f
-    else
-      compute_spent_hours(user)
-    end || 0.0
+      user.allowed_to?(:edit_own_work_package_notes, project, global: project.present?) && journal.user_id == user.id
   end
 
   # Returns a scope for the projects
@@ -452,7 +409,7 @@ class WorkPackage < ActiveRecord::Base
   # Unassigns issues from +version+ if it's no longer shared with issue's project
   def self.update_versions_from_sharing_change(version)
     # Update issues assigned to the version
-    update_versions(["#{WorkPackage.table_name}.fixed_version_id = ?", version.id])
+    update_versions(["#{WorkPackage.table_name}.version_id = ?", version.id])
   end
 
   # Unassigns issues from versions that are no longer shared
@@ -476,7 +433,7 @@ class WorkPackage < ActiveRecord::Base
 
   def self.by_version(project)
     count_and_group_by project: project,
-                       field: 'fixed_version_id',
+                       field: 'version_id',
                        joins: Version.table_name
   end
 
@@ -593,34 +550,6 @@ class WorkPackage < ActiveRecord::Base
       .select("#{table_name}.*, COALESCE(max_depth.depth, 0)")
   end
 
-  def self.self_and_descendants_of_condition(work_package)
-    relation_subquery = Relation
-                        .with_type_columns_not(hierarchy: 0)
-                        .select(:to_id)
-                        .where(from_id: work_package.id)
-    "#{table_name}.id IN (#{relation_subquery.to_sql}) OR #{table_name}.id = #{work_package.id}"
-  end
-
-  def self.hierarchy_tree_following(work_packages)
-    following = Relation
-                .where(to: work_packages)
-                .hierarchy_or_follows
-
-    following_from_hierarchy = Relation
-                               .hierarchy
-                               .where(from_id: following.select(:from_id))
-                               .select("to_id common_id")
-
-    following_from_self = following.select("from_id common_id")
-
-    # Using a union here for performance.
-    # Using or would yield the same results and be less complicated
-    # but it will require two orders of magnitude more time.
-    sub_query = [following_from_hierarchy, following_from_self].map(&:to_sql).join(" UNION ")
-
-    where("id IN (SELECT common_id FROM (#{sub_query}) following_relations)")
-  end
-
   # Overrides Redmine::Acts::Customizable::ClassMethods#available_custom_fields
   def self.available_custom_fields(work_package)
     WorkPackage::AvailableCustomFields.for(work_package.project, work_package.type)
@@ -643,15 +572,6 @@ class WorkPackage < ActiveRecord::Base
     time_entries.build(attributes)
   end
 
-  def new_statuses_allowed_by_workflow_to(user)
-    status.new_statuses_allowed_to(
-      user.roles_for_project(project),
-      type,
-      author == user,
-      assigned_to_id_changed? ? assigned_to_id_was == user.id : assigned_to_id == user.id
-    )
-  end
-
   ##
   # Checks if the time entry defined by the given attributes is blank.
   # A time entry counts as blank despite a selected activity if that activity
@@ -670,28 +590,28 @@ class WorkPackage < ActiveRecord::Base
     default_id && attributes.except(key).values.all?(&:blank?)
   end
 
-  def self.having_fixed_version_from_other_project
+  def self.having_version_from_other_project
     where(
-      "#{WorkPackage.table_name}.fixed_version_id IS NOT NULL" +
+      "#{WorkPackage.table_name}.version_id IS NOT NULL" +
       " AND #{WorkPackage.table_name}.project_id <> #{Version.table_name}.project_id" +
       " AND #{Version.table_name}.sharing <> 'system'"
     )
   end
-  private_class_method :having_fixed_version_from_other_project
+  private_class_method :having_version_from_other_project
 
   # Update issues so their versions are not pointing to a
-  # fixed_version that is not shared with the issue's project
+  # version that is not shared with the issue's project
   def self.update_versions(conditions = nil)
-    # Only need to update issues with a fixed_version from
+    # Only need to update issues with a version from
     # a different project and that is not systemwide shared
-    having_fixed_version_from_other_project
+    having_version_from_other_project
       .where(conditions)
-      .includes(:project, :fixed_version)
+      .includes(:project, :version)
       .references(:versions).each do |issue|
-      next if issue.project.nil? || issue.fixed_version.nil?
+      next if issue.project.nil? || issue.version.nil?
 
-      unless issue.project.shared_versions.include?(issue.fixed_version)
-        issue.fixed_version = nil
+      unless issue.project.shared_versions.include?(issue.version)
+        issue.version = nil
         issue.save
       end
     end
@@ -725,8 +645,8 @@ class WorkPackage < ActiveRecord::Base
   def override_last_journal_notes_and_user_of!(other_work_package)
     journal = other_work_package.journals.last
     # Same user and notes
-    journal.user = current_journal.user
-    journal.notes = current_journal.notes
+    journal.user = last_journal.user
+    journal.notes = last_journal.notes
 
     journal.save
   end
@@ -767,15 +687,6 @@ class WorkPackage < ActiveRecord::Base
     if invalid_attachment = attachments.detect { |a| !a.valid? }
       errors.messages[:attachments].first << " - #{invalid_attachment.errors.full_messages.first}"
     end
-  end
-
-  def compute_spent_hours(user)
-    WorkPackage::SpentTime
-      .new(user, self)
-      .scope
-      .where(id: id)
-      .pluck(Arel.sql('SUM(hours)'))
-      .first
   end
 
   def attribute_users

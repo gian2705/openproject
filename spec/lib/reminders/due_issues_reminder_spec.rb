@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -55,7 +55,7 @@ describe OpenProject::Reminders::DueIssuesReminder do
       end
 
       context 'with work package assigned to group' do
-        let!(:group) { FactoryBot.create(:group, lastname: "Managers", users: [user]) }
+        let!(:group) { FactoryBot.create(:group, lastname: "Managers", members: user) }
         let!(:group_wp) do
           FactoryBot.create(:work_package, due_date: Date.tomorrow, assigned_to: group, subject: 'some group issue')
         end

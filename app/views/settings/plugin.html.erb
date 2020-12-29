@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -30,6 +30,6 @@ See docs/COPYRIGHT.rdoc for more details.
 <div id="settings">
   <%= styled_form_tag({action: 'plugin'}) do %>
     <%= render partial: @partial, locals: {settings: @settings}%>
-    <%= styled_submit_tag l(:button_apply), class: '-highlight' %>
+    <%= styled_submit_tag t(:button_apply), class: '-highlight' %>
   <% end %>
 </div>

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -42,9 +42,6 @@ describe 'Authentication Stages', type: :feature do
 
   after do
     Capybara.ignore_hidden_elements = @capybara_ignore_elements
-    User.delete_all
-    User.current = nil
-
     OpenProject::Authentication::Stage.deregister :dummy_step
   end
 

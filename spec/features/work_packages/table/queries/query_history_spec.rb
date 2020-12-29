@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -61,7 +61,7 @@ describe 'Going back and forth through the browser history', type: :feature, js:
     FactoryBot.create(:work_package,
                        project: project,
                        type: type,
-                       fixed_version: version)
+                       version: version)
   end
   let(:assignee_query) do
     query = FactoryBot.create(:query,
@@ -80,7 +80,7 @@ describe 'Going back and forth through the browser history', type: :feature, js:
                                project: project,
                                user: user)
 
-    query.add_filter('fixed_version_id', '=', [version.id])
+    query.add_filter('version_id', '=', [version.id])
     query.save!
 
     query

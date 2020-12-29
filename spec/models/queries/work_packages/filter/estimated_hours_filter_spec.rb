@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -46,5 +46,21 @@ describe Queries::WorkPackages::Filter::EstimatedHoursFilter, type: :model do
     end
 
     it_behaves_like 'non ar filter'
+
+    describe '#where' do
+      let!(:work_package_zero_hour) {FactoryBot.create(:work_package, estimated_hours: 0)}
+      let!(:work_package_no_hours) {FactoryBot.create(:work_package, estimated_hours: nil)}
+      let!(:work_package_with_hours) {FactoryBot.create(:work_package, estimated_hours: 1)}
+
+      context 'with the operator being "none"' do
+        before do
+          instance.operator = Queries::Operators::None.to_sym.to_s
+        end
+        it 'finds zero and none values' do
+          expect(WorkPackage.where(instance.where)).to match_array [work_package_zero_hour, work_package_no_hours]
+        end
+      end
+    end
   end
+  
 end

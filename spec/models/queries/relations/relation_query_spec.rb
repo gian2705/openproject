@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,7 +30,7 @@ require 'spec_helper'
 
 describe Queries::Relations::RelationQuery, type: :model do
   let(:instance) { described_class.new }
-  let(:base_scope) { Relation.direct }
+  let(:base_scope) { Relation.direct.order(id: :desc) }
 
   context 'without a filter' do
     describe '#results' do
@@ -91,6 +91,15 @@ describe Queries::Relations::RelationQuery, type: :model do
                           .where("from_id IN ('1') AND to_id IN (#{visible_sql})"))
 
         expect(instance.results.to_sql).to eql expected.to_sql
+      end
+    end
+  end
+
+  context 'with an order by id asc' do
+    describe '#results' do
+      it 'returns all visible relations ordered by id asc' do
+        expect(instance.order(id: :asc).results.to_sql)
+          .to eql base_scope.visible.except(:order).order(id: :asc).to_sql
       end
     end
   end

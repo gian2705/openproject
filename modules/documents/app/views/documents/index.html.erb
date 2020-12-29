@@ -1,15 +1,12 @@
 <%#-- copyright
-OpenProject Documents Plugin
-
-Former OpenProject Core functionality extracted into a plugin.
-
-Copyright (C) 2009-2014 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
 
 OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-Copyright (C) 2006-2013 Jean-Philippe Lang
+Copyright (C) 2006-2017 Jean-Philippe Lang
 Copyright (C) 2010-2013 the ChiliProject Team
 
 This program is free software; you can redistribute it and/or
@@ -26,13 +23,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-See doc/COPYRIGHT.rdoc for more details.
+See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 
-<%= stylesheet_link_tag 'documents/documents.css' %>
-
-<%= toolbar title: l(:label_document_plural) do %>
+<%= toolbar title: t(:label_document_plural) do %>
   <% if authorize_for(:documents, :new) %>
     <li class="toolbar-item">
       <%= link_to({:controller => '/documents', :action => 'new', :project_id => @project},
@@ -63,7 +58,7 @@ See doc/COPYRIGHT.rdoc for more details.
 <% content_for :sidebar do %>
   <%= form_tag({}, :method => :get, class: 'sidebar--document-sort') do %>
     <fieldset class="form--fieldset">
-      <legend class="form--fieldset-legend"><%= l(:label_group_by, '') %></legend>
+      <legend class="form--fieldset-legend"><%= t(:label_group_by) %></legend>
       <p>
         <%= radio_button_tag 'group_by', 'category', (@group_by == 'category'), class: 'submit-this-form' %>
       <label for="group_by_category">
@@ -71,7 +66,7 @@ See doc/COPYRIGHT.rdoc for more details.
       </label><br />
         <%= radio_button_tag 'group_by', 'date', (@group_by == 'date'), class: 'submit-this-form' %>
       <label for="group_by_date">
-        <%= l(:label_date) %>
+        <%= t(:label_date) %>
       </label><br />
         <%= radio_button_tag 'group_by', 'title', (@group_by == 'title'), class: 'submit-this-form' %>
       <label for="group_by_title">
@@ -94,4 +89,4 @@ See doc/COPYRIGHT.rdoc for more details.
   });
 <% end %>
 
-<% html_title(l(:label_document_plural)) -%>
+<% html_title(t(:label_document_plural)) -%>

@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {
@@ -34,7 +34,6 @@ import {
   HostListener,
   Injector,
   Input,
-  OnDestroy,
   OnInit
 } from '@angular/core';
 import {AuthorisationService} from 'core-app/modules/common/model-auth/model-auth.service';
@@ -50,20 +49,21 @@ import {
   inlineCreateRowClassName
 } from './inline-create-row-builder';
 import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
-import {componentDestroyed, untilComponentDestroyed} from 'ng2-rx-componentdestroyed';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
-import {FocusHelperService} from 'core-app/modules/common/focus/focus-helper';
 import {WorkPackageInlineCreateService} from "core-components/wp-inline-create/wp-inline-create.service";
 import {Subscription} from 'rxjs';
 import {WorkPackageViewColumnsService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-columns.service";
 import {WorkPackageChangeset} from "core-components/wp-edit/work-package-changeset";
 import {EditForm} from "core-app/modules/fields/edit/edit-form/edit-form";
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+import {componentDestroyed} from "@w11k/ngx-componentdestroyed";
+import {SchemaCacheService} from "core-components/schemas/schema-cache.service";
 
 @Component({
   selector: '[wpInlineCreate]',
   templateUrl: './wp-inline-create.component.html'
 })
-export class WorkPackageInlineCreateComponent implements OnInit, AfterViewInit, OnDestroy {
+export class WorkPackageInlineCreateComponent extends UntilDestroyedMixin implements OnInit, AfterViewInit {
 
   @Input('wp-inline-create--table') table:WorkPackageTable;
   @Input('wp-inline-create--project-identifier') projectIdentifier:string;
@@ -79,17 +79,21 @@ export class WorkPackageInlineCreateComponent implements OnInit, AfterViewInit, 
 
   public text = this.wpInlineCreate.buttonTexts;
 
-  private currentWorkPackage:WorkPackageResource | null;
+  private currentWorkPackage:WorkPackageResource|null;
 
-  private workPackageEditForm:EditForm | undefined;
+  private workPackageEditForm:EditForm|undefined;
 
   private editingSubscription:Subscription|undefined;
 
   private $element:JQuery;
 
+  get isActive():boolean {
+    return this.mode !== 'inactive';
+  }
+
   constructor(public readonly injector:Injector,
               protected readonly elementRef:ElementRef,
-              protected readonly FocusHelper:FocusHelperService,
+              protected readonly schemaCache:SchemaCacheService,
               protected readonly I18n:I18nService,
               protected readonly querySpace:IsolatedQuerySpace,
               protected readonly cdRef:ChangeDetectorRef,
@@ -98,32 +102,28 @@ export class WorkPackageInlineCreateComponent implements OnInit, AfterViewInit, 
               protected readonly wpTableColumns:WorkPackageViewColumnsService,
               protected readonly wpTableFocus:WorkPackageViewFocusService,
               protected readonly authorisationService:AuthorisationService) {
-  }
-
-  ngOnDestroy() {
-    // Compliance
+    super();
   }
 
   ngOnInit() {
     this.$element = jQuery(this.elementRef.nativeElement);
-
-    this.authorisationService
-      .observeUntil(componentDestroyed(this))
-      .subscribe(() => {
-          this.canReference = this.hasReferenceClass && this.wpInlineCreate.canReference;
-          this.canAdd = this.wpInlineCreate.canAdd;
-          this.cdRef.detectChanges();
-      });
-  }
-
-  get isActive():boolean {
-    return this.mode !== 'inactive';
   }
 
   ngAfterViewInit() {
-    // Mirror the row height in timeline
-    const container = jQuery(this.table.timelineBody);
-    container.addClass('-inline-create-mirror');
+    this.authorisationService
+      .observeUntil(componentDestroyed(this))
+      .subscribe(() => {
+        this.canReference = this.hasReferenceClass && this.wpInlineCreate.canReference;
+        this.canAdd = this.wpInlineCreate.canAdd;
+        this.cdRef.detectChanges();
+
+        if (this.canAdd || this.canReference) {
+          // Add this row's height as a padding to the timeline
+          // so the table and the timeline keep aligned
+          const container = jQuery(this.table.timelineBody);
+          container.addClass('-inline-create-mirror');
+        }
+      });
 
     // Register callback on newly created work packages
     this.registerCreationCallback();
@@ -159,7 +159,7 @@ export class WorkPackageInlineCreateComponent implements OnInit, AfterViewInit, 
       .updates$()
       .pipe(
         filter(() => this.isActive), // Take only when row is inserted
-        untilComponentDestroyed(this),
+        this.untilDestroyed()
       )
       .subscribe(() => this.refreshRow());
   }
@@ -171,7 +171,9 @@ export class WorkPackageInlineCreateComponent implements OnInit, AfterViewInit, 
   private registerCreationCallback() {
     this.wpCreate
       .onNewWorkPackage()
-      .pipe(untilComponentDestroyed(this))
+      .pipe(
+        this.untilDestroyed()
+      )
       .subscribe((wp:WorkPackageResource) => {
         if (this.currentWorkPackage && this.currentWorkPackage.__initialized_at === wp.__initialized_at) {
           // Remove row and focus
@@ -218,22 +220,22 @@ export class WorkPackageInlineCreateComponent implements OnInit, AfterViewInit, 
       .createOrContinueWorkPackage(this.projectIdentifier)
       .then((change:WorkPackageChangeset) => {
 
-      const wp = this.currentWorkPackage = change.projectedResource;
+        const wp = this.currentWorkPackage = change.projectedResource;
 
-      this.editingSubscription = this
-        .wpCreate
-        .changesetUpdates$()
-        .pipe(
-          filter(() => !!this.currentWorkPackage),
-        ).subscribe((form) => {
-          if (!this.isActive) {
-            this.insertRow(wp);
-          } else {
-            this.currentWorkPackage!.overriddenSchema = form!.schema;
-            this.refreshRow();
-          }
+        this.editingSubscription = this
+          .wpCreate
+          .changesetUpdates$()
+          .pipe(
+            filter(() => !!this.currentWorkPackage),
+          ).subscribe((form) => {
+            if (!this.isActive) {
+              this.insertRow(wp);
+            } else {
+              this.schemaCache.update(this.currentWorkPackage!, form!.schema);
+              this.refreshRow();
+            }
+          });
       });
-    });
   }
 
   private insertRow(wp:WorkPackageResource) {
@@ -269,7 +271,7 @@ export class WorkPackageInlineCreateComponent implements OnInit, AfterViewInit, 
     const builder = new InlineCreateRowBuilder(this.injector, this.table);
     const form = this.table.editing.startEditing(wp, builder.classIdentifier(wp));
 
-    const [row, ] = builder.buildNew(wp, form);
+    const [row,] = builder.buildNew(wp, form);
     this.$element.append(row);
 
     return form;

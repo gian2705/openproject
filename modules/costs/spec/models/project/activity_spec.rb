@@ -1,11 +1,18 @@
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,24 +22,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'spec_helper'
 
-describe Project::Activity, type: :model do
+describe Projects::Activity, type: :model do
   let(:project) do
     FactoryBot.create(:project)
   end
 
   let(:initial_time) { Time.now }
 
-  let(:cost_object) do
-    FactoryBot.create(:cost_object,
+  let(:budget) do
+    FactoryBot.create(:budget,
                        project: project)
   end
 
-  let(:cost_object2) do
-    FactoryBot.create(:cost_object,
+  let(:budget2) do
+    FactoryBot.create(:budget,
                        project: project)
   end
 
@@ -46,35 +55,35 @@ describe Project::Activity, type: :model do
   end
 
   describe '.with_latest_activity' do
-    it 'is the latest cost_object update' do
-      cost_object.update_attribute(:updated_on, initial_time - 10.seconds)
-      cost_object2.update_attribute(:updated_on, initial_time - 20.seconds)
-      cost_object.reload
-      cost_object2.reload
+    it 'is the latest budget update' do
+      budget.update_attribute(:updated_at, initial_time - 10.seconds)
+      budget2.update_attribute(:updated_at, initial_time - 20.seconds)
+      budget.reload
+      budget2.reload
 
-      expect(latest_activity).to eql cost_object.updated_on
+      expect(latest_activity).to eql budget.updated_at
     end
 
     it 'takes the time stamp of the latest activity across models' do
       work_package.update_attribute(:updated_at, initial_time - 10.seconds)
-      cost_object.update_attribute(:updated_on, initial_time - 20.seconds)
+      budget.update_attribute(:updated_at, initial_time - 20.seconds)
 
       work_package.reload
-      cost_object.reload
+      budget.reload
 
       # Order:
       # work_package
-      # cost_object
+      # budget
 
       expect(latest_activity).to eql work_package.updated_at
 
-      work_package.update_attribute(:updated_at, cost_object.updated_on - 10.seconds)
+      work_package.update_attribute(:updated_at, budget.updated_at - 10.seconds)
 
       # Order:
-      # cost_object
+      # budget
       # work_package
 
-      expect(latest_activity).to eql cost_object.updated_on
+      expect(latest_activity).to eql budget.updated_at
     end
   end
 end

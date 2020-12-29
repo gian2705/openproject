@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -34,7 +34,7 @@
 # We envision a repository management wrapper that covers transactional
 # creation and deletion of repositories BOTH on the database and filesystem.
 # Until then, a synchronous process is more failsafe.
-class Scm::DeleteRemoteRepositoryJob < Scm::RemoteRepositoryJob
+class SCM::DeleteRemoteRepositoryJob < SCM::RemoteRepositoryJob
 
   def perform(repository)
     super

@@ -1,17 +1,11 @@
 #-- copyright
-#OpenProject Backlogs Plugin
-#Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-#Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-#Copyright (C)2010-2011 friflaj
-#Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-#Copyright (C)2009-2010 Mark Maglana
-#Copyright (C)2009 Joe Heck, Nate Lowrie
-#This program is free software; you can redistribute it and/or modify it under
-#the terms of the GNU General Public License version 3.
-#OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-#The copyright follows:
-#Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-#Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
+#This program is free software; you can redistribute it and/or
+#modify it under the terms of the GNU General Public License version 3.
+#OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+#Copyright (C) 2006-2017 Jean-Philippe Lang
+#Copyright (C) 2010-2013 the ChiliProject Team
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
 #as published by the Free Software Foundation; either version 2
@@ -23,15 +17,14 @@
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#See doc/COPYRIGHT.rdoc for more details.
+#See docs/COPYRIGHT.rdoc for more details.
 #++
-#---
 es:
   activerecord:
     attributes:
       work_package:
         position: "Posición"
-        remaining_hours: "Horas Restantes"
+        remaining_hours: "Horas restantes"
         remaining_time: "Horas restantes"
         story_points: "Puntos de Historia"
         backlogs_work_package_type: "Tipo de Backlog"
@@ -43,22 +36,16 @@ es:
               can_only_contain_work_packages_of_current_sprint: "solo puede conter IDs de paquetes de trabajo en el sprint actual."
               must_block_at_least_one_work_package: "debe contener el ID de por lo menos un ticket."
             parent_id:
+              parent_child_relationship_across_projects: "no es valido porque el paquete de trabjo '%{work_package_name}' es una tarea de backlog y por lo tanto no puede tener un padre fuera del proyecto actual."
               type_must_be_one_of_the_following: "El tipo debe ser uno de lo siguientes: %{type_names}."
+            version_id:
+              task_version_must_be_the_same_as_story_version: "debe coincidir con la versión de la historia principal."
         sprint:
           cannot_end_before_it_starts: "El sprint no puede terminar antes del inicio."
-  activemodel:
-    errors:
-      models:
-        work_package:
-          attributes:
-            fixed_version_id:
-              task_version_must_be_the_same_as_story_version: "debe coincidir con la versión de la historia principal."
-            parent_id:
-              parent_child_relationship_across_projects: "no es valido porque el paquete de trabjo '%{work_package_name}' es una tarea de backlog y por lo tanto no puede tener un padre fuera del proyecto actual."
   backlogs:
     add_new_story: "Nueva historia"
     any: "cualquiera"
-    backlog_settings: "Ajusted de Backlog"
+    backlog_settings: "Configuración de trabajos pendientes"
     burndown_graph: "Grafico de Trabajo Pendiente"
     card_paper_size: "Tamaño de papel para la impresión de tarjetas"
     chart_options: "Opciones de gráfico"

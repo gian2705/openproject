@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -63,12 +63,10 @@ describe WikiContent, type: :model do
   end
 
   it 'should fetch history' do
-    wiki_content_journal = FactoryBot.build(:wiki_content_journal,
-                                             journable_id: @page.content.id)
-    wiki_content_journal.data.page_id = @page.id
-    wiki_content_journal.data.text = ''
+    wiki_content_journal = FactoryBot.create(:wiki_content_journal,
+                                             journable: @page.content)
+    wiki_content_journal.data.update_attributes(page_id: @page.id, text: '')
 
-    @page.content.journals << wiki_content_journal
     assert !@page.content.journals.empty?
     @page.content.journals.each do |journal|
       assert_kind_of String, journal.data.text

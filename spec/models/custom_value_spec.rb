@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -93,6 +93,17 @@ describe CustomValue do
       context 'date format', with_settings: { date_format: '%Y/%m/%d' } do
         it { expect(subject.formatted_value).to eq('2016/12/01') }
       end
+    end
+  end
+
+  describe 'trying to use a custom field that does not exist' do
+    subject { FactoryBot.build(:custom_value, custom_field_id: 123412341, value: 'my value') }
+
+    it 'returns an empty placeholder' do
+      expect(subject.custom_field).to be_nil
+      expect(subject.send(:strategy)).to be_kind_of CustomValue::EmptyStrategy
+      expect(subject.typed_value).to eq 'my value not found'
+      expect(subject.formatted_value).to eq 'my value not found'
     end
   end
 

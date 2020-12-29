@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -38,9 +38,7 @@ describe ::API::V3::Users::PaginatedUserCollectionRepresenter do
 
   let(:users) do
     users = FactoryBot.build_stubbed_list(:user,
-                                          actual_count,
-                                          created_on: Time.now,
-                                          updated_on: Time.now)
+                                          actual_count)
     allow(users)
       .to receive(:per_page)
       .with(page_size)
@@ -56,7 +54,7 @@ describe ::API::V3::Users::PaginatedUserCollectionRepresenter do
 
   let(:representer) do
     described_class.new(users,
-                        '/api/v3/users',
+                        self_link: '/api/v3/users',
                         per_page: page_size,
                         page: page,
                         current_user: users.first)

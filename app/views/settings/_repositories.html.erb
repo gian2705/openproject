@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -26,7 +26,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
-<%= styled_form_tag({action: 'edit', tab: 'repositories'}) do %>
+<%= toolbar title: t(:label_repository_plural) %>
+
+<%= styled_form_tag(update_repositories_settings_path, method: :patch) do %>
   <section class="form--section">
     <div class="form--field">
       <%= setting_check_box :autofetch_changesets %>
@@ -45,7 +47,9 @@ See docs/COPYRIGHT.rdoc for more details.
     </div>
     <div class="form--field">
       <%= setting_check_box :sys_api_enabled %>
-      <% csp_onclick("jQuery('#settings_sys_api_key').prop('disabled', !this.checked)", '#settings_sys_api_enabled') %>
+      <% csp_onclick("jQuery('#settings_sys_api_key').prop('disabled', !this.checked)",
+                     '#settings_sys_api_enabled',
+                     prevent_default: false) %>
       <div class="form--field-instructions">
         <%= t(:setting_sys_api_description) %>
       </div>
@@ -55,19 +59,12 @@ See docs/COPYRIGHT.rdoc for more details.
                                         disabled: !Setting.sys_api_enabled?,
                                         label: :setting_mail_handler_api_key,
                                         container_class: '-middle' %>
-      <span class="form--field-extra-actions">
-        <%= link_to_function t(:label_generate_key),
-                             %{ if (!jQuery('#settings_sys_api_key').prop('disabled')) {
-                                  jQuery('#settings_sys_api_key').val(randomKey(20))
-                                }
-                             } %>
-      </span>
     </div>
     <%
-    available_scms = OpenProject::Scm::Manager.registered
+    available_scms = OpenProject::SCM::Manager.registered
       .map {|vendor, klass| [klass.vendor_name, vendor.to_s] }
 
-    manageable_scms = OpenProject::Scm::Manager.manageable
+    manageable_scms = OpenProject::SCM::Manager.manageable
       .map {|vendor, klass| [klass.vendor_name, vendor.to_s, { disabled: !klass.enabled? }]}
     %>
     <div class="form--field">

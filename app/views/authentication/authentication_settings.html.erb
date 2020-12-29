@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -26,9 +26,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
-<% html_title l(:label_administration), l(:label_authentication) -%>
+<% html_title t(:label_administration), t(:label_authentication) -%>
 
-<%= toolbar title: l(:label_authentication) %>
+<%= toolbar title: t(:label_authentication) %>
 
 <%= styled_form_tag({ action: :edit }) do %>
   <section class="form--section">
@@ -36,10 +36,10 @@ See docs/COPYRIGHT.rdoc for more details.
       <legend class="form--fieldset-legend"><%= I18n.t(:general, scope: [:settings]) %></legend>
       <div class="form--field"><%= setting_check_box :login_required %></div>
 
-      <div class="form--field"><%= setting_select :self_registration, [[t(:label_disabled), "0"],
-                                                [t(:label_registration_activation_by_email), "1"],
-                                                [t(:label_registration_manual_activation), "2"],
-                                                [t(:label_registration_automatic_activation), "3"]],
+      <div class="form--field"><%= setting_select :self_registration, [[t(:label_disabled), Setting::SelfRegistration.disabled.to_s],
+                                                [t(:label_registration_activation_by_email), Setting::SelfRegistration.by_email.to_s],
+                                                [t(:label_registration_manual_activation), Setting::SelfRegistration.manual.to_s],
+                                                [t(:label_registration_automatic_activation), Setting::SelfRegistration.automatic.to_s]],
                                                 container_class: '-middle' %>
       </div>
 
@@ -63,10 +63,12 @@ See docs/COPYRIGHT.rdoc for more details.
       <legend class="form--fieldset-legend"><%= I18n.t(:passwords, scope: [:settings]) %></legend>
       <% if !OpenProject::Configuration.disable_password_login? %>
         <div class="form--field -wide-label"><%= setting_text_field :password_min_length, size: 6, container_class: '-xslim' %></div>
-        <div class="form--field -wide-label"><%= setting_multiselect :password_active_rules,
-                  OpenProject::Passwords::Evaluator.known_rules.map do |r|
-                    [t("label_password_rule_#{r}"), r]
-                  end %></div>
+        <div class="form--field -wide-label">
+          <% rules = OpenProject::Passwords::Evaluator.known_rules.map do |rule|
+            [t("label_password_rule_#{rule}"), rule]
+          end %>
+          <%= setting_multiselect :password_active_rules, rules %>
+        </div>
         <div class="form--field -wide-label"><%= setting_text_field :password_min_adhered_rules, size: 6, container_class: '-xslim' %></div>
         <div class="form--field -wide-label"><%= setting_text_field :password_days_valid, size: 6, container_class: '-xslim' %>
           <span class="form--field-instructions">

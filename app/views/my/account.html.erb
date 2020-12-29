@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -27,10 +27,10 @@ See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 
-<% html_title(l(:label_my_account), l(:label_profile)) -%>
+<% html_title(t(:label_my_account), t(:label_profile)) -%>
 
-<% breadcrumb_paths(l(:label_my_account), l(:label_profile)) %>
-<%= toolbar title: l(:label_profile) %>
+<% breadcrumb_paths(t(:label_my_account), t(:label_profile)) %>
+<%= toolbar title: t(:label_profile) %>
 <%= error_messages_for 'user' %>
 
 <%= password_confirmation_form_for @user,
@@ -48,8 +48,19 @@ See docs/COPYRIGHT.rdoc for more details.
         <%= @user.login %>
       </div>
     </div>
-    <div class="form--field -required"><%= f.text_field :firstname, required: true, container_class: '-middle' %></div>
-    <div class="form--field -required"><%= f.text_field :lastname, required: true, container_class: '-middle' %></div>
+    <% login_via_provider = !!@user.identity_url %>
+    <div class="form--field -required">
+      <%= f.text_field :firstname, required: true, container_class: '-middle', disabled: login_via_provider %>
+      <% if login_via_provider %>
+        <span class="form--field-instructions"><%= t('user.text_change_disabled_for_provider_login') %></span>
+      <% end %>
+    </div>
+    <div class="form--field -required">
+      <%= f.text_field :lastname, required: true, container_class: '-middle', disabled: login_via_provider %>
+      <% if login_via_provider %>
+        <span class="form--field-instructions"><%= t('user.text_change_disabled_for_provider_login') %></span>
+      <% end %>
+    </div>
     <div class="form--field -required"><%= f.text_field :mail, required: true, container_class: '-middle' %></div>
 
     <%= fields_for :pref, @user.pref, builder: TabularFormBuilder, lang: current_language do |pref_fields| %>
@@ -64,5 +75,5 @@ See docs/COPYRIGHT.rdoc for more details.
                locals: { form: f, input_size: :middle } %>
   </section>
 
-  <%= styled_button_tag l(:button_save), class: '-highlight -with-icon icon-checkmark' %>
+  <%= styled_button_tag t(:button_save), class: '-highlight -with-icon icon-checkmark' %>
 <% end %>

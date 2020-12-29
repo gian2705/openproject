@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,5 +29,18 @@
 class Queries::Projects::ProjectQuery < Queries::BaseQuery
   def self.model
     Project
+  end
+
+  def default_scope
+    # Cannot simply use .visible here as it would
+    # filter out archived projects for everybody.
+    if User.current.admin?
+      super
+    else
+      # Directly appending the .visible scope adds a
+      # distinct which then requires every column used e.g. for ordering
+      # to be in select.
+      super.where(id: Project.visible)
+    end
   end
 end

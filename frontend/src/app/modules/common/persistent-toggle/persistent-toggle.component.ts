@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -27,10 +27,11 @@
 //++
 
 import {Component, ElementRef, OnInit} from "@angular/core";
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
+
+export const persistentToggleSelector = 'persistent-toggle';
 
 @Component({
-  selector: 'persistent-toggle',
+  selector: persistentToggleSelector,
   template: ''
 })
 export class PersistentToggleComponent implements OnInit {
@@ -92,5 +93,3 @@ export class PersistentToggleComponent implements OnInit {
     }
   }
 }
-
-DynamicBootstrapper.register({ cls: PersistentToggleComponent, selector: 'persistent-toggle' });

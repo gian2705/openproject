@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -27,6 +27,7 @@ See docs/COPYRIGHT.rdoc for more details.
 
 ++#%>
 <% html_title t(:label_administration), t('oauth.application.singular'), h(@application.name) -%>
+<% local_assigns[:additional_breadcrumb] = h(@application.name) %>
 
 <%= toolbar title: "#{t('oauth.application.singular')} - #{h(@application.name)}",
             title_class: 'no-padding-bottom' do %>
@@ -105,6 +106,25 @@ See docs/COPYRIGHT.rdoc for more details.
       <div class="attributes-key-value--value -text">
         <span>
           <%= safe_join @application.redirect_uri.split("\n"), '<br/>'.html_safe %>
+        </span>
+      </div>
+    </div>
+    <% if !@application.client_credentials_user_id %>
+      <div class="attributes-key-value--key"><%= I18n.t(:'doorkeeper.auth_url') %></div>
+      <div class="attributes-key-value--value-container">
+        <div class="attributes-key-value--value -text">
+          <span>
+            <%= oauth_authorization_url %>
+          </span>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="attributes-key-value--key"><%= I18n.t(:'doorkeeper.access_token_url') %></div>
+    <div class="attributes-key-value--value-container">
+      <div class="attributes-key-value--value -text">
+        <span>
+          <%= oauth_token_url %>
         </span>
       </div>
     </div>

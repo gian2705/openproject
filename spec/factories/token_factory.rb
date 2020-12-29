@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -33,11 +33,11 @@ FactoryBot.define do
     user
   end
 
-  factory :api_token, class: ::Token::Api do
+  factory :api_token, class: ::Token::API do
     user
   end
 
-  factory :rss_token, class: ::Token::Rss do
+  factory :rss_token, class: ::Token::RSS do
     user
   end
 

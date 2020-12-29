@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -58,10 +58,10 @@ class ColorsController < ApplicationController
     @color = Color.new(permitted_params.color)
 
     if @color.save
-      flash[:notice] = l(:notice_successful_create)
+      flash[:notice] = I18n.t(:notice_successful_create)
       redirect_to colors_path
     else
-      flash.now[:error] = l('timelines.color_could_not_be_saved')
+      flash.now[:error] = I18n.t('timelines.color_could_not_be_saved')
       render action: 'new'
     end
   end
@@ -77,10 +77,10 @@ class ColorsController < ApplicationController
     @color = Color.find(params[:id])
 
     if @color.update(permitted_params.color)
-      flash[:notice] = l(:notice_successful_update)
+      flash[:notice] = I18n.t(:notice_successful_update)
       redirect_to colors_path
     else
-      flash.now[:error] = l('timelines.color_could_not_be_saved')
+      flash.now[:error] = I18n.t('timelines.color_could_not_be_saved')
       render action: 'edit'
     end
   end
@@ -96,7 +96,7 @@ class ColorsController < ApplicationController
     @color = Color.find(params[:id])
     @color.destroy
 
-    flash[:notice] = l(:notice_successful_delete)
+    flash[:notice] = I18n.t(:notice_successful_delete)
     redirect_to colors_path
   end
 

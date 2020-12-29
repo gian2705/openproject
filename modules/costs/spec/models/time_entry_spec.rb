@@ -1,11 +1,20 @@
+#-- encoding: UTF-8
+
 #-- copyright
-# OpenProject Costs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C) 2009 - 2014 the OpenProject Foundation (OPF)
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# version 3.
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,24 +24,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require 'spec_helper'
 
 describe TimeEntry, type: :model do
-  include Cost::PluginSpecHelper
   let(:project) { FactoryBot.create(:project_with_types, public: false) }
   let(:project2) { FactoryBot.create(:project_with_types, public: false) }
-  let(:work_package) {
+  let(:work_package) do
     FactoryBot.create(:work_package, project: project,
-                                      type: project.types.first,
-                                      author: user)
-  }
-  let(:work_package2) {
+                      type: project.types.first,
+                      author: user)
+  end
+  let(:work_package2) do
     FactoryBot.create(:work_package, project: project2,
-                                      type: project2.types.first,
-                                      author: user2)
-  }
+                      type: project2.types.first,
+                      author: user2)
+  end
   let(:user) { FactoryBot.create(:user) }
   let(:user2) { FactoryBot.create(:user) }
   let(:date) { Date.today }
@@ -45,23 +55,59 @@ describe TimeEntry, type: :model do
   let!(:default_hourly_five) { FactoryBot.create(:default_hourly_rate, valid_from: 6.days.ago, project: project, user: user2) }
   let(:hours) { 5.0 }
   let(:time_entry) do
-    FactoryBot.create(:time_entry, project: project,
-                                    work_package: work_package,
-                                    spent_on: date,
-                                    hours: hours,
-                                    user: user,
-                                    rate: hourly_one,
-                                    comments: 'lorem')
+    FactoryBot.create(:time_entry,
+                      project: project,
+                      work_package: work_package,
+                      spent_on: date,
+                      hours: hours,
+                      user: user,
+                      rate: hourly_one,
+                      comments: 'lorem')
   end
 
   let(:time_entry2) do
-    FactoryBot.create(:time_entry, project: project,
-                                    work_package: work_package,
-                                    spent_on: date,
-                                    hours: hours,
-                                    user: user,
-                                    rate: hourly_one,
-                                    comments: 'lorem')
+    FactoryBot.create(:time_entry,
+                      project: project,
+                      work_package: work_package,
+                      spent_on: date,
+                      hours: hours,
+                      user: user,
+                      rate: hourly_one,
+                      comments: 'lorem')
+  end
+
+  def is_member(project, user, permissions)
+    FactoryBot.create(:member,
+                      project: project,
+                      user: user,
+                      roles: [FactoryBot.create(:role, permissions: permissions)])
+  end
+
+  describe '#hours' do
+    formats = { '2' => 2.0,
+                '21.1' => 21.1,
+                '2,1' => 2.1,
+                '1,5h' => 1.5,
+                '7:12' => 7.2,
+                '10h' => 10.0,
+                '10 h' => 10.0,
+                '45m' => 0.75,
+                '45 m' => 0.75,
+                '3h15' => 3.25,
+                '3h 15' => 3.25,
+                '3 h 15' => 3.25,
+                '3 h 15m' => 3.25,
+                '3 h 15 m' => 3.25,
+                '3 hours' => 3.0,
+                '12min' => 0.2 }
+
+    formats.each do |from, to|
+      it "formats '#{from}'" do
+        t = TimeEntry.new(hours: from)
+        expect(t.hours)
+          .to eql to
+      end
+    end
   end
 
   it 'should always prefer overridden_costs' do
@@ -246,7 +292,7 @@ describe TimeEntry, type: :model do
 
     describe '#costs_visible_by?' do
       before do
-        project.enabled_module_names = project.enabled_module_names << 'costs_module'
+        project.enabled_module_names = project.enabled_module_names << 'costs'
       end
 
       describe "WHEN the time_entry is assigned to the user
@@ -317,7 +363,7 @@ describe TimeEntry, type: :model do
     end
 
     context 'when having the view_own_time_entries permission ' +
-      'and being the owner of the time entry' do
+            'and being the owner of the time entry' do
       before do
         is_member(project, user, [:view_own_time_entries])
 
@@ -330,7 +376,7 @@ describe TimeEntry, type: :model do
     end
 
     context 'when having the view_own_time_entries permission ' +
-      'and not being the owner of the time entry' do
+            'and not being the owner of the time entry' do
       before do
         is_member(project, user, [:view_own_time_entries])
 
@@ -339,130 +385,6 @@ describe TimeEntry, type: :model do
 
       it 'is visible' do
         expect(time_entry.visible_by?(user)).to be_falsey
-      end
-    end
-  end
-
-  describe 'class' do
-    describe '#visible' do
-      describe "WHEN having the view_time_entries permission
-                WHEN querying for a project
-                WHEN a time entry from another user is defined" do
-        before do
-          is_member(project, user2, [:view_time_entries])
-
-          time_entry.save!
-        end
-
-        it { expect(TimeEntry.visible(user2, project)).to match_array([time_entry]) }
-      end
-
-      describe "WHEN not having the view_time_entries permission
-                WHEN querying for a project
-                WHEN a time entry from another user is defined" do
-        before do
-          is_member(project, user2, [])
-
-          time_entry.save!
-        end
-
-        it { expect(TimeEntry.visible(user2, project)).to match_array([]) }
-      end
-
-      describe "WHEN having the view_own_time_entries permission
-                WHEN querying for a project
-                WHEN a time entry from another user is defined" do
-        before do
-          is_member(project, user2, [:view_own_time_entries])
-          # don't understand why memberships get loaded on the user
-          time_entry2.user.memberships.reload
-
-          time_entry.save!
-        end
-
-        it { expect(TimeEntry.visible(user2, project)).to match_array([]) }
-      end
-
-      describe "WHEN having the view_own_time_entries permission
-                WHEN querying for a project
-                WHEN a time entry from the user is defined" do
-        before do
-          is_member(project, time_entry2.user, [:view_own_time_entries])
-          # don't understand why memberships get loaded on the user
-          time_entry2.user.memberships.reload
-
-          time_entry2.save!
-        end
-
-        it { expect(TimeEntry.visible(time_entry2.user, project)).to match_array([time_entry2]) }
-      end
-    end
-
-    context 'calculate dates' do
-      let(:my_role) { FactoryBot.create(:role, permissions: [:view_own_time_entries]) }
-      let(:user3) do
-        FactoryBot.create(:user, member_in_project: project, member_through_role: my_role)
-      end
-
-      let(:late_time_entry) do
-        FactoryBot.create(:time_entry,
-                           project: project,
-                           work_package: work_package,
-                           spent_on: 2.days.ago,
-                           hours: hours,
-                           user: user3,
-                           rate: hourly_one,
-                           comments: 'ipsum')
-      end
-      let(:early_time_entry) do
-        FactoryBot.create(:time_entry,
-                           project: project,
-                           work_package: work_package,
-                           spent_on: 4.days.ago,
-                           hours: hours,
-                           user: user3,
-                           rate: hourly_one,
-                           comments: 'dolor')
-      end
-      let(:other_time_entry) do
-        FactoryBot.create(:time_entry,
-                           project: project,
-                           work_package: work_package,
-                           spent_on: 6.days.ago,
-                           hours: hours,
-                           user: user2,
-                           rate: hourly_one,
-                           comments: 'dolor')
-      end
-      let(:another_time_entry) do
-        FactoryBot.create(:time_entry,
-                           project: project,
-                           work_package: work_package,
-                           spent_on: 1.days.ago,
-                           hours: hours,
-                           user: user2,
-                           rate: hourly_one,
-                           comments: 'dolor')
-      end
-
-      before do
-        early_time_entry.save!
-        late_time_entry.save!
-        other_time_entry.save!
-        another_time_entry.save!
-
-        allow(User).to receive(:current).and_return(user3)
-      end
-      describe '#earliest_date_for_project' do
-        it 'returns the earliest date' do
-          expect(TimeEntry.earliest_date_for_project(project)).to eq(early_time_entry.spent_on)
-        end
-      end
-
-      describe '#latest_date_for_project' do
-        it 'returns the latest date' do
-          expect(TimeEntry.latest_date_for_project(project)).to eq(late_time_entry.spent_on)
-        end
       end
     end
   end

@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,8 +32,6 @@ require 'work_packages/base_contract'
 
 module WorkPackages
   class CreateContract < BaseContract
-    # TODO: Think about whether this can be removed
-    # as it is unwriteable. So why bother checking for the correct author
     attribute :author_id,
               writeable: false do
       errors.add :author_id, :invalid if model.author != user
@@ -41,11 +39,7 @@ module WorkPackages
 
     default_attribute_permission :add_work_packages
 
-    def validate
-      user_allowed_to_add
-
-      super
-    end
+    validate :user_allowed_to_add
 
     private
 

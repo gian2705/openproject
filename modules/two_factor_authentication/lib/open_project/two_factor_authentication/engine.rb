@@ -7,7 +7,7 @@ module OpenProject::TwoFactorAuthentication
     include OpenProject::Plugins::ActsAsOpEngine
 
     register 'openproject-two_factor_authentication',
-             author_url: 'http://openproject.com',
+             author_url: 'https://www.openproject.com',
              settings: {
                default: {
                  # Only app-based 2FA allowed per default
@@ -36,23 +36,12 @@ module OpenProject::TwoFactorAuthentication
                     if: ->(*) { ::OpenProject::TwoFactorAuthentication::TokenStrategyManager.configurable_by_ui? }
              end
 
-    initializer 'two_factor_authentication.precompile_assets' do |app|
-      app.config.assets.precompile += %w(two_factor_authentication/two_factor_authentication.css two_factor_authentication/two_factor_authentication.js two_factor_authentication/two_factor_authentication.css)
-    end
-
-    initializer 'two_factor_authentication.precompile_assets' do |app|
-      app.config.assets.precompile += %w(
-        two_factor_authentication/two_factor_authentication.css
-        two_factor_authentication/two_factor_authentication.js
-        two_factor_authentication/two_factor_authentication.css
-      )
-    end
-
     patches %i[User]
 
     add_tab_entry :user,
                   name: 'two_factor_authentication',
                   partial: 'users/two_factor_authentication',
+                  path: ->(params) { tab_edit_user_path(params[:user], tab: :two_factor_authentication) },
                   label: 'two_factor_authentication.label_two_factor_authentication',
                   only_if: ->(*) { OpenProject::TwoFactorAuthentication::TokenStrategyManager.enabled? }
 

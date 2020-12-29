@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,9 +30,10 @@ require 'spec_helper'
 
 describe 'Projects index page',
          type: :feature,
+         clear_cache: true,
          js: true,
          with_settings: { login_required?: false } do
-  let!(:admin) { FactoryBot.create :admin }
+  using_shared_fixtures :admin
 
   let!(:manager)   { FactoryBot.create :role, name: 'Manager' }
   let!(:developer) { FactoryBot.create :role, name: 'Developer' }
@@ -168,7 +169,7 @@ describe 'Projects index page',
           expect(page)
             .to have_selector('th', text: 'LATEST ACTIVITY AT')
           expect(page)
-            .to have_selector('td', text: news.created_on.strftime('%m/%d/%Y'))
+            .to have_selector('td', text: news.created_at.strftime('%m/%d/%Y'))
         end
       end
 
@@ -202,7 +203,15 @@ describe 'Projects index page',
       allow_enterprise_edition
     end
 
-    scenario 'CF columns and filters are visible' do
+    scenario 'CF columns and filters are not visible by default' do
+      load_and_open_filters admin
+
+      # CF's columns are not shown due to setting
+      expect(page).to_not have_text(custom_field.name.upcase)
+    end
+
+    scenario 'CF columns and filters are visible when added to settings' do
+      Setting.enabled_projects_columns += ["cf_#{custom_field.id}", "cf_#{invisible_custom_field.id}"]
       load_and_open_filters admin
 
       # CF's column is present:
@@ -340,10 +349,6 @@ describe 'Projects index page',
 
         # value selection defaults to "active"'
         expect(page).to have_selector('li[filter-name="active"]')
-
-        # Filter has three operators 'all', 'active' and 'archived'
-        expect(page.find('li[filter-name="active"] select[name="operator"] option[value="="]')).to have_text('is')
-        expect(page.find('li[filter-name="active"] select[name="operator"] option[value="!"]')).to have_text('is not')
 
         expect(page).to have_text(parent_project.name)
         expect(page).to have_text(child_project.name)
@@ -802,7 +807,7 @@ describe 'Projects index page',
         expect(page)
           .to have_no_selector('th', text: 'LATEST ACTIVITY AT')
         expect(page)
-          .to have_no_selector('td', text: news.created_on.strftime('%m/%d/%Y'))
+          .to have_no_selector('td', text: news.created_at.strftime('%m/%d/%Y'))
       end
     end
   end
@@ -815,6 +820,11 @@ describe 'Projects index page',
       FactoryBot.create(:project,
                         parent: project,
                         name: "Z Child")
+    end
+    let!(:child_project_m) do
+      FactoryBot.create(:project,
+                        parent: project,
+                        name: "m Child") # intentionally written lowercase to test for case insensitive sorting
     end
     let!(:child_project_a) do
       FactoryBot.create(:project,
@@ -835,15 +845,20 @@ describe 'Projects index page',
       public_project.save!
       child_project_z.custom_field_values = { integer_custom_field.id => 4 }
       child_project_z.save!
+      child_project_m.custom_field_values = { integer_custom_field.id => 4 }
+      child_project_m.save!
       child_project_a.custom_field_values = { integer_custom_field.id => 4 }
       child_project_a.save!
     end
 
     scenario 'allows to alter the order in which projects are displayed' do
+      Setting.enabled_projects_columns += ["cf_#{integer_custom_field.id}"]
+
       # initially, ordered by name asc on each hierarchical level
       expect_projects_in_order(development_project,
                                project,
                                child_project_a,
+                               child_project_m,
                                child_project_z,
                                public_project)
 
@@ -852,6 +867,7 @@ describe 'Projects index page',
       # Projects ordered by name asc
       expect_projects_in_order(child_project_a,
                                development_project,
+                               child_project_m,
                                project,
                                public_project,
                                child_project_z)
@@ -862,6 +878,7 @@ describe 'Projects index page',
       expect_projects_in_order(child_project_z,
                                public_project,
                                project,
+                               child_project_m,
                                development_project,
                                child_project_a)
 
@@ -872,6 +889,7 @@ describe 'Projects index page',
                                development_project,
                                public_project,
                                child_project_z,
+                               child_project_m,
                                child_project_a)
 
       click_link('Sort by "Project hierarchy"')
@@ -880,18 +898,19 @@ describe 'Projects index page',
       expect_projects_in_order(development_project,
                                project,
                                child_project_a,
+                               child_project_m,
                                child_project_z,
                                public_project)
     end
+  end
 
-    feature 'blacklisted filters' do
-      scenario 'are not visible' do
-        load_and_open_filters admin
+  feature 'blacklisted filters' do
+    scenario 'are not visible' do
+      load_and_open_filters admin
 
-        expect(page).to_not have_select('add_filter_select', with_options: ["Principal"])
-        expect(page).to_not have_select('add_filter_select', with_options: ["ID"])
-        expect(page).to_not have_select('add_filter_select', with_options: ["Subproject of"])
-      end
+      expect(page).to_not have_select('add_filter_select', with_options: ["Principal"])
+      expect(page).to_not have_select('add_filter_select', with_options: ["ID"])
+      expect(page).to_not have_select('add_filter_select', with_options: ["Subproject of"])
     end
   end
 end

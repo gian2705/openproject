@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,20 +23,23 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {Moment} from 'moment';
 import {QueryFilterInstanceResource} from 'core-app/modules/hal/resources/query-filter-instance-resource';
 import {TimezoneService} from 'core-components/datetime/timezone.service';
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
-import {OnInit} from '@angular/core';
+import { OnInit, Directive } from '@angular/core';
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
 
-export abstract class AbstractDateTimeValueController implements OnInit {
+@Directive()
+export abstract class AbstractDateTimeValueController extends UntilDestroyedMixin implements OnInit {
   public filter:QueryFilterInstanceResource;
 
   constructor(protected I18n:I18nService,
               protected timezoneService:TimezoneService) {
+    super();
   }
 
   ngOnInit() {
@@ -44,6 +47,7 @@ export abstract class AbstractDateTimeValueController implements OnInit {
   }
 
   public abstract get lowerBoundary():Moment|null;
+
   public abstract get upperBoundary():Moment|null;
 
   public isoDateParser(data:any) {
@@ -68,22 +72,24 @@ export abstract class AbstractDateTimeValueController implements OnInit {
     if (!value) {
       return false;
     } else {
-      return value.hours() !== 0 || value.minutes() !== 0;
+      return value.hours() !== 0 || value.minutes() !== 0;
     }
   }
 
   public get timeZoneText() {
     if (this.lowerBoundary && this.upperBoundary) {
       return this.I18n.t('js.filter.time_zone_converted.two_values',
-                         { from: this.lowerBoundary.format('YYYY-MM-DD HH:mm'),
-                           to: this.upperBoundary.format('YYYY-MM-DD HH:mm') });
+        {
+          from: this.lowerBoundary.format('YYYY-MM-DD HH:mm'),
+          to: this.upperBoundary.format('YYYY-MM-DD HH:mm')
+        });
     } else if (this.upperBoundary) {
       return this.I18n.t('js.filter.time_zone_converted.only_end',
-                         { to: this.upperBoundary.format('YYYY-MM-DD HH:mm') });
+        { to: this.upperBoundary.format('YYYY-MM-DD HH:mm') });
 
-    } else if(this.lowerBoundary) {
+    } else if (this.lowerBoundary) {
       return this.I18n.t('js.filter.time_zone_converted.only_start',
-                         { from: this.lowerBoundary.format('YYYY-MM-DD HH:mm') });
+        { from: this.lowerBoundary.format('YYYY-MM-DD HH:mm') });
 
     }
 

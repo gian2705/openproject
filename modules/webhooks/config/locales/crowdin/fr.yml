@@ -16,6 +16,9 @@ fr:
   webhooks:
     singular: Webhook
     plural: Webhooks
+    resources:
+      time_entry:
+        name: "Saisie du temps"
     outgoing:
       no_results_table: Aucun webhook n'a encore été défini.
       label_add_new: Ajouter un nouveau webhook

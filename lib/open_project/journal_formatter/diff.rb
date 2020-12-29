@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -54,13 +54,11 @@ class OpenProject::JournalFormatter::Diff < JournalFormatter::Base
     label = label(key, options[:no_html])
 
     if value.blank?
-      l(:text_journal_deleted_with_diff, label: label, link: link)
+      I18n.t(:text_journal_deleted_with_diff, label: label, link: link)
+    elsif old_value.present?
+      I18n.t(:text_journal_changed_with_diff, label: label, link: link)
     else
-      if old_value.present?
-        l(:text_journal_changed_with_diff, label: label, link: link)
-      else
-        l(:text_journal_set_with_diff, label: label, link: link)
-      end
+      I18n.t(:text_journal_set_with_diff, label: label, link: link)
     end
   end
 
@@ -80,7 +78,7 @@ class OpenProject::JournalFormatter::Diff < JournalFormatter::Base
     if options[:no_html]
       url_for url_attr
     else
-      link_to(l(:label_details),
+      link_to(I18n.t(:label_details),
               url_attr,
               class: 'description-details')
     end

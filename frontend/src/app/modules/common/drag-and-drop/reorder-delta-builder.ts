@@ -1,5 +1,5 @@
-import {QueryOrder} from "core-app/modules/hal/dm-services/query-order-dm.service";
 import {debugLog, timeOutput} from "core-app/helpers/debug_output";
+import {QueryOrder} from "core-app/modules/apiv3/endpoints/queries/apiv3-query-order";
 
 // min allowed position
 export const MIN_ORDER = -2147483647;
@@ -231,7 +231,8 @@ export class ReorderDeltaBuilder {
    * @param wpId
    */
   private livePosition(wpId:string):number|undefined {
-    return this.delta[wpId] || this.positions[wpId];
+    // Explicitly check for undefined here as the delta might be 0 which is falsey.
+    return this.delta[wpId] === undefined ? this.positions[wpId] : this.delta[wpId];
   }
 
   /**

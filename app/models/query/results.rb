@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,12 +28,9 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-require_dependency 'query/group_by'
-require_dependency 'query/sums'
-
 class ::Query::Results
-  include ::Query::Grouping
-  include ::Query::Sums
+  include ::Query::Results::GroupBy
+  include ::Query::Results::Sums
   include Redmine::I18n
 
   attr_accessor :query
@@ -54,6 +51,7 @@ class ::Query::Results
     raise ::Query::StatementInvalid.new(e.message)
   end
 
+  # Returns the work packages adhering to the filters and ordered by the provided criteria (grouping and sorting)
   def work_packages
     work_package_scope
       .where(query.statement)
@@ -61,22 +59,15 @@ class ::Query::Results
       .joins(all_joins)
       .order(order_option)
       .references(:projects)
-  end
-
-  # Same as :work_packages, but returns a result sorted by the sort_criteria defined in the query.
-  # Note: It escapes me, why this is not the default behaviour.
-  # If there is a reason: This is a somewhat DRY way of using the sort criteria.
-  # If there is no reason: The :work_package method can die over time and be replaced by this one.
-  def sorted_work_packages
-    work_packages.order(sort_criteria_array)
+      .order(sort_criteria_array)
   end
 
   def versions
     scope = Version
             .visible
 
-    if query.project
-      scope.where(query.project_limiting_filter.where)
+    if query.project && (limiting_filter = query.project_limiting_filter)
+      scope.where(limiting_filter.where)
     end
 
     scope
@@ -142,7 +133,7 @@ class ::Query::Results
   end
 
   def sort_criteria_array
-    criteria = SortHelper::SortCriteria.new
+    criteria = ::Query::SortCriteria.new query.sortable_columns
     criteria.available_criteria = aliased_sorting_by_column_name
     criteria.criteria = query.sort_criteria
     criteria.map_each { |criteria| criteria.map { |raw| Arel.sql raw } }
@@ -154,7 +145,13 @@ class ::Query::Results
     aliases = include_aliases
 
     reflection_includes.each do |inc|
-      sorting_by_column_name[inc.to_s] = Array(sorting_by_column_name[inc.to_s]).map { |column| "#{aliases[inc]}.#{column}" }
+      sorting_by_column_name[inc.to_s] = Array(sorting_by_column_name[inc.to_s]).map do |column|
+        if column.respond_to?(:call)
+          column.call(aliases[inc])
+        else
+          "#{aliases[inc]}.#{column}"
+        end
+      end
     end
 
     sorting_by_column_name

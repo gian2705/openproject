@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,7 +28,6 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-require 'diff'
 require 'htmldiff'
 
 # The WikiController follows the Rails REST controller pattern but with
@@ -54,11 +53,9 @@ class WikiController < ApplicationController
                                               diff
                                               annotate
                                               destroy]
+  before_action :find_wiki_page, only: %i[show]
+  before_action :handle_new_wiki_page, only: %i[show]
   before_action :build_wiki_page_and_content, only: %i[new create]
-
-  verify method: :post, only: [:protect], redirect_to: { action: :show }
-  verify method: :get,  only: %i[new new_child], render: { nothing: true, status: :method_not_allowed }
-  verify method: :post, only: :create, render: { nothing: true, status: :method_not_allowed }
 
   include AttachmentsHelper
   include PaginationHelper
@@ -90,7 +87,7 @@ class WikiController < ApplicationController
   # List of page, by last update
   def date_index
     load_pages_for_index
-    @pages_by_date = @pages.group_by { |p| p.updated_on.to_date }
+    @pages_by_date = @pages.group_by { |p| p.updated_at.to_date }
   end
 
   def new; end
@@ -115,9 +112,8 @@ class WikiController < ApplicationController
     @page.attach_files(permitted_params.attachments.to_h)
 
     if @page.save
-      render_attachment_warning_if_needed(@page)
       call_hook(:controller_wiki_edit_after_save, params: params, page: @page)
-      flash[:notice] = l(:notice_successful_create)
+      flash[:notice] = I18n.t(:notice_successful_create)
       redirect_to_show
     else
       render action: 'new'
@@ -126,17 +122,6 @@ class WikiController < ApplicationController
 
   # display a page (in editing mode if it doesn't exist)
   def show
-    @page = @wiki.find_or_new_page(wiki_page_title)
-    if @page.new_record?
-      if User.current.allowed_to?(:edit_wiki_pages, @project) && editable?
-        edit
-        render action: 'new'
-      else
-        render_404
-      end
-      return
-    end
-
     # Set the related page ID to make it the parent of new links
     flash[:_related_wiki_page_id] = @page.id
 
@@ -192,16 +177,15 @@ class WikiController < ApplicationController
     @content.add_journal User.current, params['content']['comments']
 
     if @page.save_with_content
-      render_attachment_warning_if_needed(@page)
       call_hook(:controller_wiki_edit_after_save, params: params, page: @page)
-      flash[:notice] = l(:notice_successful_update)
+      flash[:notice] = I18n.t(:notice_successful_update)
       redirect_to_show
     else
       render action: 'edit'
     end
   rescue ActiveRecord::StaleObjectError
     # Optimistic locking exception
-    flash.now[:error] = l(:notice_locking_conflict)
+    flash.now[:error] = I18n.t(:notice_locking_conflict)
     render action: 'edit'
   end
 
@@ -249,14 +233,16 @@ class WikiController < ApplicationController
 
   def edit_parent_page
     return render_403 unless editable?
+
     @parent_pages = @wiki.pages.includes(:parent) - @page.self_and_descendants
   end
 
   def update_parent_page
     return render_403 unless editable?
+
     @page.parent_id = params[:wiki_page][:parent_id]
     if @page.save
-      flash[:notice] = l(:notice_successful_update)
+      flash[:notice] = I18n.t(:notice_successful_update)
       redirect_to_show
     else
       @parent_pages = @wiki.pages.includes(:parent) - @page.self_and_descendants
@@ -299,12 +285,11 @@ class WikiController < ApplicationController
     render_404 unless @annotate
   end
 
-  verify method: :delete, only: [:destroy], redirect_to: { action: :show }
   # Removes a wiki page and its history
   # Children can be either set as root pages, removed or reassigned to another parent page
   def destroy
     unless editable?
-      flash[:error] = l(:error_unable_delete_wiki)
+      flash[:error] = I18n.t(:error_unable_delete_wiki)
       return render_403
     end
 
@@ -331,10 +316,10 @@ class WikiController < ApplicationController
     @page.destroy
 
     if page = @wiki.find_page(@wiki.start_page) || @wiki.pages.first
-      flash[:notice] = l(:notice_successful_delete)
+      flash[:notice] = I18n.t(:notice_successful_delete)
       redirect_to action: 'index', project_id: @project, id: page
     else
-      flash[:notice] = l(:notice_successful_delete)
+      flash[:notice] = I18n.t(:notice_successful_delete)
       redirect_to project_path(@project)
     end
   end
@@ -368,7 +353,7 @@ class WikiController < ApplicationController
   def locked?
     return false if editable?
 
-    flash[:error] = l(:error_unable_update_wiki)
+    flash[:error] = I18n.t(:error_unable_update_wiki)
     render_403
     true
   end
@@ -395,6 +380,27 @@ class WikiController < ApplicationController
     render_404
   end
 
+  # Finds or created the wiki page associated
+  # to the wiki
+  def find_wiki_page
+    @page = @wiki.find_or_new_page(wiki_page_title)
+  end
+
+  # Handles new pages for non-editable permissions
+  def handle_new_wiki_page
+    return unless @page.new_record?
+
+    if User.current.allowed_to?(:edit_wiki_pages, @project) && editable?
+      edit
+      render action: :new
+    elsif params[:id] == 'wiki'
+      flash[:info] = I18n.t('wiki.page_not_editable_index')
+      redirect_to action: :index
+    else
+      render_404
+    end
+  end
+
   # Finds the requested page and returns a 404 error if it doesn't exist
   def find_existing_page
     @page = @wiki.find_page(wiki_page_title.presence || params[:id])
@@ -418,7 +424,7 @@ class WikiController < ApplicationController
   end
 
   def load_pages_for_index
-    @pages = @wiki.pages.with_updated_on.order(Arel.sql('title')).includes(wiki: :project)
+    @pages = @wiki.pages.with_updated_at.order(Arel.sql('title')).includes(wiki: :project)
   end
 
   def default_breadcrumb

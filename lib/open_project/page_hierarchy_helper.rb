@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -72,8 +72,8 @@ module OpenProject
     end
 
     def hierarchy_item_title(options, page)
-      if options[:timestamp] && page.updated_on
-        ::I18n.t(:label_updated_time, value: distance_of_time_in_words(Time.now, page.updated_on))
+      if options[:timestamp] && page.updated_at
+        ::I18n.t(:label_updated_time, value: distance_of_time_in_words(Time.now, page.updated_at))
       end
     end
 

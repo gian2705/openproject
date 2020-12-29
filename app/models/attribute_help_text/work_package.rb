@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -43,10 +43,6 @@ class AttributeHelpText::WorkPackage < AttributeHelpText
 
   validates_inclusion_of :attribute_name, in: ->(*) { available_attributes.keys }
 
-  def attribute_scope
-    'WorkPackage'
-  end
-
   def type_caption
     I18n.t(:label_work_package)
   end
@@ -57,7 +53,8 @@ class AttributeHelpText::WorkPackage < AttributeHelpText
                        .pluck(:id)
                        .map { |id| "custom_field_#{id}" }
 
-    where(attribute_name: visible_cf_names)
-      .or(where.not("attribute_name LIKE 'custom_field_%'"))
+    ::AttributeHelpText
+      .where(attribute_name: visible_cf_names)
+      .or(::AttributeHelpText.where.not("attribute_name LIKE 'custom_field_%'"))
   end
 end

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -24,7 +24,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 
 require 'spec_helper'
 require 'rack/test'
@@ -137,17 +137,17 @@ describe API::V3::WorkPackages::WorkPackagesByProjectAPI, type: :request do
         let(:work_packages) do
           [
             FactoryBot.create(:work_package,
-                               project: project,
-                               priority: priority1,
-                               estimated_hours: 1),
+                              project: project,
+                              priority: priority1,
+                              estimated_hours: 1),
             FactoryBot.create(:work_package,
-                               project: project,
-                               priority: priority2,
-                               estimated_hours: 2),
+                              project: project,
+                              priority: priority2,
+                              estimated_hours: 2),
             FactoryBot.create(:work_package,
-                               project: project,
-                               priority: priority1,
-                               estimated_hours: 3)
+                              project: project,
+                              priority: priority1,
+                              estimated_hours: 3)
           ]
         end
         let(:expected_group1) do
@@ -219,7 +219,12 @@ describe API::V3::WorkPackages::WorkPackagesByProjectAPI, type: :request do
               value: priority1.name,
               count: 2,
               sums: {
-                estimatedTime: 'PT4H'
+                estimatedTime: 'PT4H',
+                laborCosts: "0.00 EUR",
+                materialCosts: "0.00 EUR",
+                overallCosts: "0.00 EUR",
+                remainingTime: nil,
+                storyPoints: nil
               }
             }
           end
@@ -237,7 +242,12 @@ describe API::V3::WorkPackages::WorkPackagesByProjectAPI, type: :request do
               value: priority2.name,
               count: 1,
               sums: {
-                estimatedTime: 'PT2H'
+                estimatedTime: 'PT2H',
+                laborCosts: "0.00 EUR",
+                materialCosts: "0.00 EUR",
+                overallCosts: "0.00 EUR",
+                remainingTime: nil,
+                storyPoints: nil
               }
             }
           end
@@ -265,7 +275,12 @@ describe API::V3::WorkPackages::WorkPackagesByProjectAPI, type: :request do
 
         it 'contains the sum element' do
           expected = {
-            estimatedTime: 'PT3H'
+            estimatedTime: 'PT3H',
+            laborCosts: "0.00 EUR",
+            materialCosts: "0.00 EUR",
+            overallCosts: "0.00 EUR",
+            remainingTime: nil,
+            storyPoints: nil
           }
 
           expect(subject.body).to be_json_eql(expected.to_json).at_path('totalSums')

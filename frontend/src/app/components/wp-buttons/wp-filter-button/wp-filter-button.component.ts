@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,22 +23,22 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {AbstractWorkPackageButtonComponent} from 'core-components/wp-buttons/wp-buttons.module';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {WorkPackageFiltersService} from 'core-components/filters/wp-filters/wp-filters.service';
-import {componentDestroyed, untilComponentDestroyed} from 'ng2-rx-componentdestroyed';
 import {WorkPackageViewFiltersService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-filters.service";
+import {componentDestroyed} from "@w11k/ngx-componentdestroyed";
 
 @Component({
   selector: 'wp-filter-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './wp-filter-button.html'
 })
-export class WorkPackageFilterButtonComponent extends AbstractWorkPackageButtonComponent implements OnInit, OnDestroy  {
+export class WorkPackageFilterButtonComponent extends AbstractWorkPackageButtonComponent implements OnInit {
   public count:number;
   public initialized:boolean = false;
 
@@ -54,10 +54,6 @@ export class WorkPackageFilterButtonComponent extends AbstractWorkPackageButtonC
 
   ngOnInit():void {
     this.setupObserver();
-  }
-
-  ngOnDestroy():void {
-    // Empty
   }
 
   public get labelKey():string {
@@ -88,13 +84,13 @@ export class WorkPackageFilterButtonComponent extends AbstractWorkPackageButtonC
     this.wpTableFilters
       .live$()
       .pipe(
-        untilComponentDestroyed(this)
+        this.untilDestroyed()
       )
       .subscribe(() => {
-      this.count = this.wpTableFilters.currentlyVisibleFilters.length;
-      this.initialized = true;
-      this.cdRef.detectChanges();
-    });
+        this.count = this.wpTableFilters.currentlyVisibleFilters.length;
+        this.initialized = true;
+        this.cdRef.detectChanges();
+      });
 
     this.wpFiltersService
       .observeUntil(componentDestroyed(this))

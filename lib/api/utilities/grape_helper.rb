@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -49,7 +49,7 @@ module API
         end
       end
 
-      def error_response(rescued_error, error = nil, rescue_subclasses: nil, headers: ->() { {} }, log: true)
+      def error_response(rescued_error, error = nil, rescue_subclasses: nil, headers: -> { {} }, log: true)
         error_response_lambda = default_error_response(headers, log)
 
         response =
@@ -67,9 +67,9 @@ module API
       def default_error_response(headers, log)
         lambda { |e|
           original_exception = $!
-          representer = ::API::V3::Errors::ErrorRepresenter.new e
+          representer = error_representer.new e
           resp_headers = instance_exec &headers
-          env['api.format'] = 'hal+json'
+          env['api.format'] = error_content_type
 
           if log == true
             OpenProject.logger.error original_exception, reference: :APIv3

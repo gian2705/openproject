@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,16 +23,15 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {StateService} from '@uirouter/core';
 import {OPContextMenuService} from "core-components/op-context-menu/op-context-menu.service";
-import {Directive, ElementRef, Inject, Input} from "@angular/core";
+import {Directive, ElementRef, Input} from "@angular/core";
 import {OpContextMenuTrigger} from "core-components/op-context-menu/handlers/op-context-menu-trigger.directive";
 
 import {HalResourceEditingService} from "core-app/modules/fields/edit/services/hal-resource-editing.service";
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
 import {WorkPackageResource} from "core-app/modules/hal/resources/work-package-resource";
 import {HalResource} from 'core-app/modules/hal/resources/hal-resource';
 import {CollectionResource} from 'core-app/modules/hal/resources/collection-resource';
@@ -92,7 +91,6 @@ export class WorkPackageStatusDropdownDirective extends OpContextMenuTrigger {
         .save(change)
         .then(() => {
           this.workPackageNotificationService.showSave(this.workPackage);
-          this.halEvents.push(this.workPackage, { eventType: 'updated' });
         });
     }
   }

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -49,7 +49,7 @@ describe ::API::V3::WorkPackages::WorkPackageCollectionRepresenter do
   let(:representer) do
     described_class.new(
       work_packages,
-      self_base_link,
+      self_link: self_base_link,
       query: query,
       project: project,
       groups: groups,
@@ -387,7 +387,9 @@ describe ::API::V3::WorkPackages::WorkPackageCollectionRepresenter do
       let(:total_sums) { OpenStruct.new(estimated_hours: 1) }
 
       it 'renders the groups object as json' do
-        expected = { 'estimatedTime': 'PT1H' }
+        expected = { 'estimatedTime': 'PT1H',
+                     'remainingTime': nil,
+                     'storyPoints': nil }
         is_expected.to be_json_eql(expected.to_json).at_path('totalSums')
       end
 

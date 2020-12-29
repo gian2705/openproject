@@ -1,10 +1,18 @@
 #-- copyright
-# OpenProject Meeting Plugin
-#
-# Copyright (C) 2011-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.md for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'spec_helper'
@@ -26,9 +34,15 @@ describe MeetingContentsController do
   shared_let(:author) { FactoryBot.create(:user, member_in_project: project, member_through_role: role) }
   shared_let(:watcher1) { FactoryBot.create(:user, member_in_project: project, member_through_role: role) }
   shared_let(:watcher2) { FactoryBot.create(:user, member_in_project: project, member_through_role: role) }
-  shared_let(:meeting) { FactoryBot.create(:meeting, author: author, project: project) }
+  shared_let(:meeting) do
+    User.execute_as author do
+      FactoryBot.create(:meeting, author: author, project: project)
+    end
+  end
   shared_let(:meeting_agenda) do
-    FactoryBot.create(:meeting_agenda, meeting: meeting)
+    User.execute_as author do
+      FactoryBot.create(:meeting_agenda, meeting: meeting)
+    end
   end
 
   before(:each) do
@@ -43,7 +57,7 @@ describe MeetingContentsController do
   end
 
   shared_examples_for 'delivered by mail' do
-    before { put action,  params: { meeting_id: meeting.id } }
+    before { put action, params: { meeting_id: meeting.id } }
 
     it { expect(ActionMailer::Base.deliveries.count).to eql(mail_count) }
   end

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -205,7 +205,7 @@ END_DESC
     def options_from_env
       { issue: {} }.tap do |options|
         default_fields = (ENV['default_fields'] || '').split
-        default_fields |= %w[project status type category priority assigned_to fixed_version]
+        default_fields |= %w[project status type category priority assigned_to version]
         default_fields.each do |field| options[:issue][field.to_sym] = ENV[field] if ENV[field] end
 
         options[:allow_override] = ENV['allow_override'] if ENV['allow_override']

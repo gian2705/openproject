@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,7 +32,7 @@ require 'open3'
 
 module OpenProject
   module VERSION #:nodoc:
-    MAJOR = 10
+    MAJOR = 11
     MINOR = 2
     PATCH = 0
     TINY  = PATCH # Redmine compat
@@ -65,6 +65,15 @@ module OpenProject
       def product_version
         cached_or_block(:@product_version) do
           path = Rails.root.join('config', 'PRODUCT_VERSION')
+          if File.exists? path
+            File.read(path)
+          end
+        end
+      end
+
+      def core_version
+        cached_or_block(:@core_version) do
+          path = Rails.root.join('config', 'CORE_VERSION')
           if File.exists? path
             File.read(path)
           end

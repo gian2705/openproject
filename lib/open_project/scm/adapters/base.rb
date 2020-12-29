@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,7 +31,7 @@ require 'open_project/scm/adapters'
 require 'pathname'
 
 module OpenProject
-  module Scm
+  module SCM
     module Adapters
       class Base
         include CheckoutInstructions
@@ -62,7 +62,7 @@ module OpenProject
         def available?
           check_availability!
           true
-        rescue Exceptions::ScmError => e
+        rescue Exceptions::SCMError => e
           logger.error("Failed to retrieve availability of repository: #{e.message}")
           false
         end

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -36,7 +36,7 @@ module API
         resources :help_texts do
           get do
             @entries = AttributeHelpText.visible(current_user)
-            HelpTextCollectionRepresenter.new(@entries, api_v3_paths.help_texts, current_user: current_user)
+            HelpTextCollectionRepresenter.new(@entries, self_link: api_v3_paths.help_texts, current_user: current_user)
           end
 
           route_param :id, type: Integer, desc: 'Help text ID' do
@@ -47,6 +47,8 @@ module API
             get do
               HelpTextRepresenter.new(@help_text, current_user: current_user)
             end
+
+            mount ::API::V3::Attachments::AttachmentsByHelpTextAPI
           end
         end
       end

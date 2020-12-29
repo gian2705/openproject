@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -27,16 +27,16 @@
 //++
 
 
-import {Directive, ElementRef, HostListener, Input, OnInit} from "@angular/core";
+import {Component, ElementRef, OnInit} from "@angular/core";
 import {NotificationsService} from "core-app/modules/common/notifications/notifications.service";
 import {ConfigurationService} from "core-app/modules/common/config/configuration.service";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
-import {Component} from "@angular/core";
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
+
+export const copyToClipboardSelector = 'copy-to-clipboard';
 
 @Component({
   template: '',
-  selector: 'copy-to-clipboard'
+  selector: copyToClipboardSelector
 })
 export class CopyToClipboardDirective implements OnInit {
   public clickTarget:string;
@@ -94,4 +94,4 @@ export class CopyToClipboardDirective implements OnInit {
   }
 }
 
-DynamicBootstrapper.register({ selector: 'copy-to-clipboard', cls: CopyToClipboardDirective });
+

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -43,15 +43,19 @@ module Pages
       FullWorkPackage.new(work_package, project)
     end
 
-    def closed?
+    def expect_closed
       expect(page).to have_no_selector(@selector)
+    end
+
+    def close
+      find('.work-packages--details-close-icon').click
     end
 
     def container
       find(@selector)
     end
 
-    private
+    protected
 
     def path(tab = 'overview')
       state = "#{work_package.id}/#{tab}"

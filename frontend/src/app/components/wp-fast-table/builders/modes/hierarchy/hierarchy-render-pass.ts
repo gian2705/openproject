@@ -1,5 +1,4 @@
 import {Injector} from '@angular/core';
-import {WorkPackageCacheService} from 'core-components/work-packages/work-package-cache.service';
 import {additionalHierarchyRowClassName, SingleHierarchyRowBuilder} from './single-hierarchy-row-builder';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {PrimaryRenderPass, RowRenderInfo} from "core-components/wp-fast-table/builders/primary-render-pass";
@@ -13,16 +12,18 @@ import {
 import {WorkPackageViewHierarchies} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-table-hierarchies";
 import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
 import {WorkPackageViewHierarchiesService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-hierarchy.service";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 export class HierarchyRenderPass extends PrimaryRenderPass {
 
-  protected readonly querySpace = this.injector.get(IsolatedQuerySpace);
-  protected readonly states = this.injector.get(States);
-  protected readonly wpCacheService = this.injector.get(WorkPackageCacheService);
-  protected readonly wpTableHierarchies = this.injector.get(WorkPackageViewHierarchiesService);
+  @InjectField() querySpace:IsolatedQuerySpace;
+  @InjectField() states:States;
+  @InjectField() apiV3Service:APIV3Service;
+  @InjectField() wpTableHierarchies:WorkPackageViewHierarchiesService;
 
   // Remember which rows were already rendered
-  private rendered:{ [workPackageId:string]:boolean } = {};
+  readonly rendered:{ [workPackageId:string]:boolean } = {};
 
   // Remember additional parents inserted that are not part of the results table
   private additionalParents:{ [workPackageId:string]:WorkPackageResource } = {};
@@ -125,7 +126,7 @@ export class HierarchyRenderPass extends PrimaryRenderPass {
         let elements = this.deferred[parent.id!] || [];
         // Append to them the child and all children below
         let newElements:WorkPackageResource[] = ancestorChain.slice(i + 1, ancestorChain.length);
-        newElements = newElements.map(child => this.wpCacheService.state(child.id!).value!);
+        newElements = newElements.map(child => this.apiV3Service.work_packages.cache.state(child.id!).value!);
         // Append all new elements
         elements = elements.concat(newElements);
         // Remove duplicates (Regression #29652)
@@ -151,7 +152,7 @@ export class HierarchyRenderPass extends PrimaryRenderPass {
     // If the work package has deferred children to render,
     // run them through the callback
     deferredChildren.forEach((child:WorkPackageResource) => {
-      this.insertUnderParent(this.getOrBuildRow(child), child.parent);
+      this.insertUnderParent(this.getOrBuildRow(child), child.parent || workPackage);
 
       // Descend into any children the child WP might have and callback
       this.renderAllDeferredChildren(child);

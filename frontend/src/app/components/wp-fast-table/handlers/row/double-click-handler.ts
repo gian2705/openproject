@@ -6,20 +6,22 @@ import {States} from '../../../states.service';
 import {tdClassName} from '../../builders/cell-builder';
 import {tableRowClassName} from '../../builders/rows/single-row-builder';
 import {WorkPackageTable} from '../../wp-fast-table';
-import {TableEventHandler} from '../table-handler-registry';
+import {TableEventComponent, TableEventHandler} from '../table-handler-registry';
 import {LinkHandling} from "core-app/modules/common/link-handling/link-handling";
 import {WorkPackageViewSelectionService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-selection.service";
+import {displayClassName} from "core-app/modules/fields/display/display-field-renderer";
+import {activeFieldClassName} from "core-app/modules/fields/edit/edit-form/edit-form";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 export class RowDoubleClickHandler implements TableEventHandler {
 
   // Injections
-  public $state:StateService = this.injector.get(StateService);
-  public states:States = this.injector.get(States);
-  public wpTableSelection:WorkPackageViewSelectionService = this.injector.get(WorkPackageViewSelectionService);
-  public wpTableFocus:WorkPackageViewFocusService = this.injector.get(WorkPackageViewFocusService);
+  @InjectField() public $state:StateService;
+  @InjectField() public states:States;
+  @InjectField() public wpTableSelection:WorkPackageViewSelectionService;
+  @InjectField() public wpTableFocus:WorkPackageViewFocusService;
 
-  constructor(public readonly injector:Injector,
-              table:WorkPackageTable) {
+  constructor(public readonly injector:Injector) {
   }
 
   public get EVENT() {
@@ -30,11 +32,11 @@ export class RowDoubleClickHandler implements TableEventHandler {
     return `.${tdClassName}`;
   }
 
-  public eventScope(table:WorkPackageTable) {
-    return jQuery(table.tbody);
+  public eventScope(view:TableEventComponent) {
+    return jQuery(view.workPackageTable.tbody);
   }
 
-  public handleEvent(table:WorkPackageTable, evt:JQuery.TriggeredEvent) {
+  public handleEvent(view:TableEventComponent, evt:JQuery.TriggeredEvent) {
     let target = jQuery(evt.target);
 
     // Skip clicks with modifiers
@@ -44,7 +46,7 @@ export class RowDoubleClickHandler implements TableEventHandler {
 
     // Shortcut to any clicks within a cell
     // We don't want to handle these.
-    if (target.parents(`.${tdClassName}`).length) {
+    if (target.hasClass(`${displayClassName}`) || target.hasClass(`${activeFieldClassName}`)) {
       debugLog('Skipping click on inner cell');
       return true;
     }
@@ -61,10 +63,7 @@ export class RowDoubleClickHandler implements TableEventHandler {
     // Save the currently focused work package
     this.wpTableFocus.updateFocus(wpId);
 
-    this.$state.go(
-      'work-packages.show',
-      {workPackageId: wpId}
-    );
+    view.itemClicked.emit({ workPackageId: wpId, double: true });
 
     return false;
   }

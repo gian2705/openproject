@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,6 +28,112 @@
 
 require 'spec_helper'
 require 'rack/test'
+
+shared_examples 'it supports direct uploads' do
+  include Rack::Test::Methods
+  include API::V3::Utilities::PathHelper
+  include FileHelpers
+
+  let(:container_href) { raise "define me!" }
+  let(:request_path) { raise "define me!" }
+
+  before do
+    allow(User).to receive(:current).and_return current_user
+  end
+
+  describe 'POST /prepare', with_settings: { attachment_max_size: 512 } do
+    let(:request_parts) { { metadata: metadata, file: file } }
+    let(:metadata) { { fileName: 'cat.png', fileSize: file.size }.to_json }
+    let(:file) { mock_uploaded_file(name: 'original-filename.txt') }
+
+    def request!
+      post request_path, request_parts
+    end
+
+    subject(:response) { last_response }
+
+    context 'with local storage' do
+      before do
+        request!
+      end
+
+      it 'should respond with HTTP Not Found' do
+        expect(subject.status).to eq(404)
+      end
+    end
+    
+    context 'with remote AWS storage', with_direct_uploads: true do
+      before do
+        request!
+      end
+
+      context 'with no filesize metadata' do
+        let(:metadata) { { fileName: 'cat.png' }.to_json }
+
+        it 'should respond with 422 due to missing file size metadata' do
+          expect(subject.status).to eq(422)
+          expect(subject.body).to include 'fileSize'
+        end
+      end
+
+      context 'with the correct parameters' do
+        let(:json) { JSON.parse subject.body }
+
+        it 'should prepare a direct upload' do
+          expect(subject.status).to eq 201
+
+          expect(json["_type"]).to eq "AttachmentUpload"
+          expect(json["fileName"]).to eq "cat.png"
+        end
+
+        describe 'response' do
+          describe '_links' do
+            describe 'container' do
+              let(:link) { json.dig "_links", "container" }
+
+              before do
+                expect(link).to be_present
+              end
+
+              it "it points to the expected container" do
+                expect(link["href"]).to eq container_href
+              end
+            end
+
+            describe 'addAttachment' do
+              let(:link) { json.dig "_links", "addAttachment" }
+
+              before do
+                expect(link).to be_present
+              end
+
+              it 'should point to AWS' do
+                expect(link["href"]).to eq "https://#{MockCarrierwave.bucket}.s3.amazonaws.com/"
+              end
+
+              it 'should have the method POST' do
+                expect(link["method"]).to eq "post"
+              end
+
+              it 'should include form fields' do
+                fields = link["form_fields"]
+
+                expect(fields).to be_present
+                expect(fields).to include(
+                  "key", "acl", "policy",
+                  "X-Amz-Signature", "X-Amz-Credential", "X-Amz-Algorithm", "X-Amz-Date",
+                  "success_action_status"
+                )
+
+                expect(fields["key"]).to end_with "cat.png"
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end
 
 shared_examples 'an APIv3 attachment resource', type: :request, content_type: :json do |include_by_container = true|
   include Rack::Test::Methods
@@ -105,7 +211,7 @@ shared_examples 'an APIv3 attachment resource', type: :request, content_type: :j
   end
 
   describe '#post' do
-    let(:permissions) { %i[edit_wiki_pages] }
+    let(:permissions) { Array(update_permission) }
 
     let(:request_path) { api_v3_paths.attachments }
     let(:request_parts) { { metadata: metadata, file: file } }
@@ -173,7 +279,20 @@ shared_examples 'an APIv3 attachment resource', type: :request, content_type: :j
     end
 
     context 'missing permissions' do
-      let(:permissions) { [] }
+      let(:permissions) do
+        # Some attachables use public permissions
+        # which more or less allows everybody to upload attachments.
+        # This messes with the tests.
+        # However, it might make sense to reevaluate the necessity of this test.
+        allow(Redmine::Acts::Attachable)
+          .to receive(:attachables)
+          .and_return(Redmine::Acts::Attachable.attachables.select do |a|
+            permission = OpenProject::AccessControl.permission(a.attachable_options[:add_on_new_permission])
+            !permission || !permission.public?
+          end)
+
+        []
+      end
 
       it_behaves_like 'unauthorized access'
     end
@@ -200,7 +319,13 @@ shared_examples 'an APIv3 attachment resource', type: :request, content_type: :j
 
     shared_examples_for 'does not delete the attachment' do |status = 403|
       it "responds with #{status}" do
-        expect(subject.status).to eq status
+        if permissions.any? || read_permission.nil?
+          expect(subject.status).to eq status
+        else
+          # In case no permissions are left, the user is not allowed to see the attachment
+          # and will thus receive a 404.
+          expect(subject.status).to eq 404
+        end
       end
 
       it 'does not delete the attachment' do
@@ -257,7 +382,7 @@ shared_examples 'an APIv3 attachment resource', type: :request, content_type: :j
         let(:content_disposition) { raise "define content_disposition" }
 
         let(:attachment) do
-          att = FactoryBot.create(:attachment, container: container, file: mock_file)
+          att = FactoryBot.create(:attachment, container: container, file: mock_file, author: current_user)
 
           att.file.store!
           att.send :write_attribute, :file, mock_file.original_filename
@@ -270,12 +395,20 @@ shared_examples 'an APIv3 attachment resource', type: :request, content_type: :j
           expect(subject.status).to eq 200
         end
 
-        it 'has the necessary headers' do
+        it 'has the necessary headers for content and caching' do
           expect(subject.headers['Content-Disposition'])
             .to eql content_disposition
 
           expect(subject.headers['Content-Type'])
             .to eql mock_file.content_type
+
+          expect(subject.headers["Cache-Control"]).to eq "public, max-age=604799"
+          expect(subject.headers["Expires"]).to be_present
+
+          expires_time = Time.parse response.headers["Expires"]
+
+          expect(expires_time < Time.now.utc + 604799).to be_truthy
+          expect(expires_time > Time.now.utc + 604799 - 60).to be_truthy
         end
 
         it 'sends the file in binary' do
@@ -298,11 +431,22 @@ shared_examples 'an APIv3 attachment resource', type: :request, content_type: :j
         end
       end
 
+      context 'for a local json file' do
+        it_behaves_like 'for a local file' do
+          let(:mock_file) do
+            FileHelpers.mock_uploaded_file(name: 'foobar.json',
+                                           content_type: "application/json",
+                                           content: '{"id": "12342"}')
+          end
+          let(:content_disposition) { "attachment; filename=foobar.json" }
+        end
+      end
+
       context 'for a remote file' do
         let(:external_url) { 'http://some_service.org/blubs.gif' }
         let(:mock_file) { FileHelpers.mock_uploaded_file name: 'foobar.txt' }
         let(:attachment) do
-          FactoryBot.create(:attachment, container: container, file: mock_file) do |a|
+          FactoryBot.create(:attachment, container: container, file: mock_file, author: current_user).tap do
             # need to mock here to avoid dependency on external service
             allow_any_instance_of(Attachment)
               .to receive(:external_url)
@@ -314,12 +458,25 @@ shared_examples 'an APIv3 attachment resource', type: :request, content_type: :j
           expect(subject.status).to eq 302
           expect(subject.headers['Location'])
             .to eql external_url
+
+          expect(subject.headers["Cache-Control"]).to eq "public, max-age=604799"
+          expect(subject.headers["Expires"]).to be_present
+
+          expires_time = Time.parse response.headers["Expires"]
+
+          expect(expires_time < Time.now.utc + 604799).to be_truthy
+          expect(expires_time > Time.now.utc + 604799 - 60).to be_truthy
         end
       end
     end
   end
 
   context 'by container', if: include_by_container do
+    it_behaves_like 'it supports direct uploads' do
+      let(:request_path) { "/api/v3/#{attachment_type}s/#{container.id}/attachments/prepare" }
+      let(:container_href) { "/api/v3/#{attachment_type}s/#{container.id}" }
+    end
+
     subject(:response) { last_response }
 
     describe '#get' do

@@ -1,10 +1,18 @@
 #-- copyright
-# OpenProject Meeting Plugin
-#
-# Copyright (C) 2011-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,16 +23,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.md for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 #
 
-require_dependency 'wiki_page'
-
-# Because of the WikiDiff class defined therein
-require 'wiki_page'
-
-class MeetingContent < ActiveRecord::Base
+class MeetingContent < ApplicationRecord
   include OpenProject::Journal::AttachmentHelper
 
   belongs_to :meeting
@@ -67,7 +70,7 @@ class MeetingContent < ActiveRecord::Base
     content_to = journals.find_by_version(version_to)
     content_from = journals.find_by_version(version_from)
 
-    (content_to && content_from) ? ::WikiDiff.new(content_to, content_from) : nil
+    content_to && content_from ? Wikis::Diff.new(content_to, content_from) : nil
   end
 
   def at_version(version)
@@ -75,11 +78,6 @@ class MeetingContent < ActiveRecord::Base
       .joins("JOIN meeting_contents ON meeting_contents.id = journals.journable_id AND meeting_contents.type='#{self.class}'")
       .where(version: version)
       .first.data
-  end
-
-  # Compatibility for mailer.rb
-  def updated_on
-    updated_at
   end
 
   # Show the project on activity and search views

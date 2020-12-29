@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,7 +25,7 @@
 #
 # See docs/COPYRIGHT.rdoc for more details.
 #++
-class EnterpriseToken < ActiveRecord::Base
+class EnterpriseToken < ApplicationRecord
   class << self
     def current
       RequestStore.fetch(:current_ee_token) do
@@ -56,14 +56,16 @@ class EnterpriseToken < ActiveRecord::Base
 
   validates_presence_of :encoded_token
   validate :valid_token_object
+  validate :valid_domain
 
   before_save :unset_current_token
   before_destroy :unset_current_token
 
   delegate :will_expire?,
-           :expired?,
            :subscriber,
            :mail,
+           :company,
+           :domain,
            :issued_at,
            :starts_at,
            :expires_at,
@@ -84,6 +86,18 @@ class EnterpriseToken < ActiveRecord::Base
     RequestStore.delete :current_ee_token
   end
 
+  def expired?
+    token_object.expired? || invalid_domain?
+  end
+
+  ##
+  # The domain is only validated for tokens from version 2.0 onwards.
+  def invalid_domain?
+    return false unless token_object&.validate_domain?
+
+    token_object.domain != Setting.host_name
+  end
+
   private
 
   def load_token!
@@ -95,5 +109,9 @@ class EnterpriseToken < ActiveRecord::Base
 
   def valid_token_object
     errors.add(:encoded_token, :unreadable) unless load_token!
+  end
+
+  def valid_domain
+    errors.add :domain, :invalid if invalid_domain?
   end
 end

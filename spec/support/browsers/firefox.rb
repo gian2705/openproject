@@ -1,47 +1,92 @@
-Capybara.register_driver :firefox_headless do |app|
+# Force the latest version of geckodriver using the webdriver gem
+require 'webdrivers/geckodriver'
+require 'socket'
+
+::Webdrivers.logger.level = :DEBUG
+
+if ENV['CI']
+  ::Webdrivers::Geckodriver.update
+end
+
+
+def register_firefox(language, name: :"firefox_#{language}")
   require 'selenium/webdriver'
 
-  Selenium::WebDriver::Firefox::Binary.path = ENV['FIREFOX_BINARY_PATH'] ||
-    Selenium::WebDriver::Firefox::Binary.path
+  Capybara.register_driver name do |app|
+    if ENV['CI']
+      client = Selenium::WebDriver::Remote::Http::Default.new
+      client.timeout = 180
+    end
 
-  capabilities = Selenium::WebDriver::Remote::Capabilities.firefox(marionette: true)
-  capabilities["elementScrollBehavior"] = 1
+    profile = Selenium::WebDriver::Firefox::Profile.new
+    profile['intl.accept_languages'] = language
+    profile['browser.download.dir'] = DownloadedFile::PATH.to_s
+    profile['browser.download.folderList'] = 2
+    profile['browser.helperApps.neverAsk.saveToDisk'] = 'text/csv'
 
-  client = Selenium::WebDriver::Remote::Http::Default.new
-  client.timeout = 180
+    # prevent stale firefoxCP processes
+    profile['browser.tabs.remote.autostart'] = false
+    profile['browser.tabs.remote.autostart.2'] = false
 
-  profile = Selenium::WebDriver::Firefox::Profile.new
-  profile['intl.accept_languages'] = 'en'
-  profile['browser.download.dir'] = DownloadedFile::PATH.to_s
-  profile['browser.download.folderList'] = 2
-  profile['browser.helperApps.neverAsk.saveToDisk'] = 'text/csv'
+    # only one FF process
+    profile['dom.ipc.processCount'] = 1
 
-  # prevent stale firefoxCP processes
-  profile['browser.tabs.remote.autostart'] = false
-  profile['browser.tabs.remote.autostart.2'] = false
+    # use native instead of synthetic events
+    # https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
+    profile.native_events = true
 
-  # only one FF process
-  profile['dom.ipc.processCount'] = 1
+    options = Selenium::WebDriver::Firefox::Options.new(profile: profile)
 
-  # use native instead of synthetic events
-  # https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
-  profile.native_events = true
+    capabilities = Selenium::WebDriver::Remote::Capabilities.firefox(
+      loggingPrefs: { browser: 'ALL' }
+    )
 
-  options = Selenium::WebDriver::Firefox::Options.new
-  options.profile = profile
+    yield(profile, options, capabilities) if block_given?
 
-  unless ActiveRecord::Type::Boolean.new.cast(ENV['OPENPROJECT_TESTING_NO_HEADLESS'])
-    options.args << "--headless"
+    unless ActiveRecord::Type::Boolean.new.cast(ENV['OPENPROJECT_TESTING_NO_HEADLESS'])
+      options.args << "--headless"
+    end
+
+    if ENV['SELENIUM_GRID_URL']
+      driver = Capybara::Selenium::Driver.new(
+        app,
+        browser: :remote,
+        url: ENV['SELENIUM_GRID_URL'],
+        desired_capabilities: capabilities,
+        options: options
+      )
+    else
+      driver = Capybara::Selenium::Driver.new(
+        app,
+        browser: :firefox,
+        desired_capabilities: capabilities,
+        options: options,
+        http_client: client
+      )
+    end
+
+    Capybara::Screenshot.register_driver(name) do |driver, path|
+      driver.browser.save_screenshot(path)
+    end
+
+    driver
   end
+end
 
-  # If you need to trace the webdriver commands, un-comment this line
-  # Selenium::WebDriver.logger.level = :info
+register_firefox 'en'
+# Register german locale for custom field decimal test
+register_firefox 'de'
 
-  Capybara::Selenium::Driver.new(
-    app,
-    browser: :firefox,
-    options: options,
-    http_client: client,
-    desired_capabilities: capabilities
-  )
+# Register mocking proxy driver
+register_firefox 'en', name: :firefox_billy do |profile, options, capabilities|
+  profile.assume_untrusted_certificate_issuer = false
+
+  ip_address = Socket.ip_address_list.find { |ai| ai.ipv4? && !ai.ipv4_loopback? }.ip_address
+  hostname = ENV['CAPYBARA_DYNAMIC_HOSTNAME'].present? ? ip_address : ENV.fetch('CAPYBARA_APP_HOSTNAME', Billy.proxy.host)
+
+  profile.proxy = Selenium::WebDriver::Proxy.new(
+    http: "#{hostname}:#{Billy.proxy.port}",
+    ssl: "#{hostname}:#{Billy.proxy.port}")
+
+  capabilities[:accept_insecure_certs] = true
 end

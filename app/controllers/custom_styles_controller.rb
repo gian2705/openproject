@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -37,6 +37,8 @@ class CustomStylesController < ApplicationController
 
   def show
     @custom_style = CustomStyle.current || CustomStyle.new
+    @current_theme = @custom_style.theme
+    @theme_options = options_for_theme_select
   end
 
   def upsale; end
@@ -52,7 +54,7 @@ class CustomStylesController < ApplicationController
   end
 
   def update
-    @custom_style = CustomStyle.current
+    @custom_style = get_or_create_custom_style
     if @custom_style.update(custom_style_params)
       redirect_to custom_style_path
     else
@@ -88,19 +90,26 @@ class CustomStylesController < ApplicationController
   def update_colors
     variable_params = params[:design_colors].first
 
-    variable_params.each do |param_variable, param_hexcode|
-      if design_color = DesignColor.find_by(variable: param_variable)
-        if param_hexcode.blank?
-          design_color.destroy
-        elsif design_color.hexcode != param_hexcode
-          design_color.hexcode = param_hexcode
-          design_color.save
-        end
-      else
-        # create that design_color
-        design_color = DesignColor.new variable: param_variable, hexcode: param_hexcode
-        design_color.save
-      end
+    ::Design::UpdateDesignService
+      .new(colors: variable_params, theme: params[:theme])
+      .call
+
+    redirect_to action: :show
+  end
+
+  def update_themes
+    theme = OpenProject::CustomStyles::ColorThemes.themes.find { |t| t[:theme] == params[:theme] }
+
+    call = ::Design::UpdateDesignService
+      .new(theme)
+      .call
+
+    call.on_success do
+      flash[:notice] = I18n.t(:notice_successful_update)
+    end
+
+    call.on_failure do
+      flash[:error] = call.message
     end
 
     redirect_to action: :show
@@ -111,6 +120,17 @@ class CustomStylesController < ApplicationController
   end
 
   private
+
+  def options_for_theme_select
+    options = OpenProject::CustomStyles::ColorThemes.themes.map { |val| val[:theme] }
+    options << [t('admin.custom_styles.color_theme_custom'), '', selected: true, disabled: true] unless @current_theme.present?
+
+    options
+  end
+
+  def get_or_create_custom_style
+    CustomStyle.current || CustomStyle.create!
+  end
 
   def require_ee_token
     unless EnterpriseToken.allows_to?(:define_custom_style)

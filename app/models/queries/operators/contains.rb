@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,17 +30,9 @@
 
 module Queries::Operators
   class Contains < Base
+    include Concerns::ContainsAllValues
+
     label 'contains'
     set_symbol '~'
-
-    def self.sql_for_field(values, db_table, db_field)
-      like_query =
-        values.first.split(/\s+/)
-        .map { |substr| connection.quote_string(substr.downcase) }
-        .join("%")
-
-      "COALESCE(LOWER(#{db_table}.#{db_field}), '') LIKE " +
-        "'%#{like_query}%'"
-    end
   end
 end

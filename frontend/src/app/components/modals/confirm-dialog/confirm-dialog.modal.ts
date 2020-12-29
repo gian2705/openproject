@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {OpModalComponent} from "core-components/op-modals/op-modal.component";
@@ -42,6 +42,8 @@ export interface ConfirmDialogOptions {
   closeByEscape?:boolean;
   showClose?:boolean;
   closeByDocument?:boolean;
+  passedData?:string[];
+  dangerHighlighting?:boolean;
 }
 
 @Component({
@@ -63,18 +65,23 @@ export class ConfirmDialogModal extends OpModalComponent {
     close_popup: this.I18n.t('js.close_popup_title')
   };
 
+  public passedData:string[];
+
+  public dangerHighlighting:boolean;
+
   constructor(readonly elementRef:ElementRef,
               @Inject(OpModalLocalsToken) public locals:OpModalLocalsMap,
               readonly cdRef:ChangeDetectorRef,
               readonly I18n:I18nService) {
 
     super(locals, cdRef, elementRef);
-
     this.options = locals.options || {};
+
+    this.dangerHighlighting = _.defaultTo(this.options.dangerHighlighting, false);
+    this.passedData = _.defaultTo(this.options.passedData, []);
     this.closeOnEscape = _.defaultTo(this.options.closeByEscape, true);
     this.closeOnOutsideClick = _.defaultTo(this.options.closeByDocument, true);
     this.showClose = _.defaultTo(this.options.showClose, true);
-
     // override default texts if any
     this.text = _.defaults(this.options.text, this.text);
   }

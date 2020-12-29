@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -28,11 +28,7 @@ See docs/COPYRIGHT.rdoc for more details.
 ++#%>
 <%= error_messages_for 'message' %>
 <% replying ||= false %>
-<% representer_object = if replying
-                          f.object.parent
-                        else
-                          f.object
-                        end %>
+<% representer_object = f.object %>
 <% resource = message_attachment_representer(representer_object) %>
 
 <div class="form--field -required">
@@ -57,6 +53,7 @@ See docs/COPYRIGHT.rdoc for more details.
                   label: t(:description_message_content),
                   class: 'wiki-edit',
                   container_class: '-xxwide',
+                  label_options: { class: '-top' },
                   with_text_formatting: true,
                   resource: resource,
                   preview_context: preview_context(representer_object) %>

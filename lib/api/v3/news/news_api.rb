@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -40,7 +40,7 @@ module API
 
             if query.valid?
               NewsCollectionRepresenter.new(query.results,
-                                            api_v3_paths.newses,
+                                            self_link: api_v3_paths.newses,
                                             page: to_i_or_nil(params[:offset]),
                                             per_page: resolve_page_size(params[:pageSize]),
                                             current_user: current_user)

@@ -1,15 +1,12 @@
 #-- copyright
-# OpenProject Documents Plugin
-#
-# Former OpenProject Core functionality extracted into a plugin.
-#
-# Copyright (C) 2009-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
 # OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
@@ -26,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'spec_helper'
@@ -68,32 +65,32 @@ describe ApplicationHelper do
     context "Simple Document links" do
       let(:document_link) {
         link_to('Test document',
-                                     { controller: 'documents', action: 'show', id: document.id },
-                                     class: 'document')
+                { controller: 'documents', action: 'show', id: document.id },
+                class: 'document op-uc-link')
       }
 
       context "Plain link" do
         subject { format_text("document##{document.id}") }
 
-        it { is_expected.to eq("<p>#{document_link}</p>") }
+        it { is_expected.to eq("<p class=\"op-uc-p\">#{document_link}</p>") }
       end
 
       context "Link with document name" do
         subject { format_text("document##{document.id}") }
 
-        it { is_expected.to eq("<p>#{document_link}</p>") }
+        it { is_expected.to eq("<p class=\"op-uc-p\">#{document_link}</p>") }
       end
 
       context "Escaping plain link" do
         subject { format_text("!document##{document.id}") }
 
-        it { is_expected.to eq("<p>document##{document.id}</p>") }
+        it { is_expected.to eq("<p class=\"op-uc-p\">document##{document.id}</p>") }
       end
 
       context "Escaping link with document name" do
         subject { format_text('!document:"Test document"') }
 
-        it { is_expected.to eq('<p>document:"Test document"</p>') }
+        it { is_expected.to eq('<p class="op-uc-p">document:"Test document"</p>') }
       end
     end
 
@@ -103,25 +100,25 @@ describe ApplicationHelper do
       context "By name without project" do
         subject { format_text("document:\"#{document.title}\"", project: the_other_project) }
 
-        it { is_expected.to eq('<p>document:"Test document"</p>') }
+        it { is_expected.to eq('<p class="op-uc-p">document:"Test document"</p>') }
       end
 
       context "By id and given project" do
         subject { format_text("#{identifier}:document##{document.id}", project: the_other_project) }
 
-        it { is_expected.to eq("<p><a class=\"document\" href=\"/documents/#{document.id}\">Test document</a></p>") }
+        it { is_expected.to eq("<p class=\"op-uc-p\"><a class=\"document op-uc-link\" href=\"/documents/#{document.id}\">Test document</a></p>") }
       end
 
       context "By name and given project" do
         subject { format_text("#{identifier}:document:\"#{document.title}\"", project: the_other_project) }
 
-        it { is_expected.to eq("<p><a class=\"document\" href=\"/documents/#{document.id}\">Test document</a></p>") }
+        it { is_expected.to eq("<p class=\"op-uc-p\"><a class=\"document op-uc-link\" href=\"/documents/#{document.id}\">Test document</a></p>") }
       end
 
       context "Invalid link" do
         subject { format_text("invalid:document:\"Test document\"", project: the_other_project) }
 
-        it { is_expected.to eq('<p>invalid:document:"Test document"</p>') }
+        it { is_expected.to eq('<p class="op-uc-p">invalid:document:"Test document"</p>') }
       end
     end
   end

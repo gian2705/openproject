@@ -77,55 +77,87 @@ describe 'Upload attachment to work package', js: true do
     end
 
     context 'on a new page' do
-      let!(:new_page) { Pages::FullWorkPackageCreate.new }
-      let!(:type) { FactoryBot.create(:type_task) }
-      let!(:status) { FactoryBot.create(:status, is_default: true) }
-      let!(:priority) { FactoryBot.create(:priority, is_default: true) }
-      let!(:project) do
-        FactoryBot.create(:project, types: [type])
-      end
-
-      before do
-        visit new_project_work_packages_path(project.identifier, type: type.id)
-      end
-
-      it 'can upload an image via drag & drop (Regression #28189)' do
-        subject = new_page.edit_field :subject
-        subject.set_value 'My subject'
-
-        target = find('.ck-content')
-        attachments.drag_and_drop_file(target, image_fixture)
-
-        sleep 2
-        expect(page).not_to have_selector('notification-upload-progress')
-
-        editor.in_editor do |container, editable|
-          expect(editable).to have_selector('img[src*="/api/v3/attachments/"]', wait: 20)
+      shared_examples 'it supports image uploads via drag & drop' do
+        let!(:new_page) { Pages::FullWorkPackageCreate.new }
+        let!(:type) { FactoryBot.create(:type_task) }
+        let!(:status) { FactoryBot.create(:status, is_default: true) }
+        let!(:priority) { FactoryBot.create(:priority, is_default: true) }
+        let!(:project) do
+          FactoryBot.create(:project, types: [type])
         end
 
-        # Besides testing caption functionality this also slows down clicking on the submit button
-        # so that the image is properly embedded
-        caption = page.find('figure.image figcaption')
-        caption.click
-        sleep 0.2
-        caption.base.send_keys('Some image caption')
+        let(:post_conditions) { nil }
 
-        sleep 2
+        before do
+          visit new_project_work_packages_path(project.identifier, type: type.id)
+        end
 
-        click_on 'Save'
+        it 'can upload an image via drag & drop (Regression #28189)' do
+          subject = new_page.edit_field :subject
+          subject.set_value 'My subject'
 
-        wp_page.expect_notification(
-          message: 'Successful creation.'
-        )
+          target = find('.ck-content')
+          attachments.drag_and_drop_file(target, image_fixture)
 
-        field = wp_page.edit_field :description
+          sleep 2
+          expect(page).not_to have_selector('notification-upload-progress')
 
-        expect(field.display_element).to have_selector('img')
-        expect(field.display_element).to have_content('Some image caption')
+          editor.in_editor do |container, editable|
+            expect(editable).to have_selector('img[src*="/api/v3/attachments/"]', wait: 20)
+            expect(editable).not_to have_selector('.ck-upload-placeholder-loader')
+          end
 
-        wp = WorkPackage.last
-        expect(wp.subject).to eq('My subject')
-        expect(wp.attachments.count).to eq(1)
+          sleep 2
+
+          # Besides testing caption functionality this also slows down clicking on the submit button
+          # so that the image is properly embedded
+          caption = page.find('.op-uc-figure .op-uc-figure--description')
+          caption.click(x: 10, y: 10)
+          sleep 0.2
+          caption.base.send_keys('Some image caption')
+
+          scroll_to_and_click find('#work-packages--edit-actions-save')
+
+          wp_page.expect_notification(
+            message: 'Successful creation.'
+          )
+
+          field = wp_page.edit_field :description
+
+          expect(field.display_element).to have_selector('img')
+          expect(field.display_element).to have_content('Some image caption')
+
+          wp = WorkPackage.last
+          expect(wp.subject).to eq('My subject')
+          expect(wp.attachments.count).to eq(1)
+
+          post_conditions
+        end
+      end
+
+      it_behaves_like 'it supports image uploads via drag & drop'
+
+      # We do a complete integration test for direct uploads on this example.
+      # If this works all parts in the backend and frontend work properly together.
+      # Technically one could test this not only for new work packages, but also for existing
+      # ones, and for new and existing other attachable resources. But the code is the same
+      # everywhere so if this works it should work everywhere else too.
+      context 'with direct uploads', with_direct_uploads: true do
+        before do
+          allow_any_instance_of(Attachment).to receive(:diskfile).and_return Struct.new(:path).new(image_fixture.to_s)
+        end
+
+        it_behaves_like 'it supports image uploads via drag & drop' do
+          let(:post_conditions) do
+            # check the attachment was created successfully
+            expect(Attachment.count).to eq 1
+            a = Attachment.first
+            expect(a[:file]).to eq image_fixture.basename.to_s
+
+            # check /api/v3/attachments/:id/uploaded was called
+            expect(::Attachments::FinishDirectUploadJob).to have_been_enqueued
+          end
+        end
       end
     end
   end

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -57,11 +57,6 @@ describe API::V3::Utilities::ResourceLinkGenerator do
     it 'returns nil for unsupported records' do
       record = FactoryBot.create(:custom_field)
       expect(subject.make_link record).to be_nil
-    end
-
-    it 'returns a string object for strings' do
-      record = 'a string'
-      expect(subject.make_link record).to eql "/api/v3/string_objects?value=a%20string"
     end
 
     it 'returns nil for non-AR types' do

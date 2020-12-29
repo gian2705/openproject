@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,37 +23,36 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {take} from 'rxjs/operators';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
-import {WorkPackageCreateController} from 'core-components/wp-new/wp-create.controller';
+import {WorkPackageCreateComponent} from 'core-components/wp-new/wp-create.component';
 import {WorkPackageRelationsService} from "core-components/wp-relations/wp-relations.service";
-import {untilComponentDestroyed} from "ng2-rx-componentdestroyed";
 
 import {HalResourceEditingService} from "core-app/modules/fields/edit/services/hal-resource-editing.service";
 import {WorkPackageChangeset} from "core-components/wp-edit/work-package-changeset";
-import {ChangeDetectionStrategy} from "@angular/core";
-import {WorkPackageCreateService} from "core-components/wp-new/wp-create.service";
+import {Directive} from "@angular/core";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
-export class WorkPackageCopyController extends WorkPackageCreateController {
+@Directive()
+export class WorkPackageCopyController extends WorkPackageCreateComponent {
   private __initialized_at:Number;
   private copiedWorkPackageId:string;
 
   /** Are we in the copying substates ? */
   public copying = true;
 
-  private wpRelations:WorkPackageRelationsService = this.injector.get(WorkPackageRelationsService);
-  protected halEditing:HalResourceEditingService = this.injector.get(HalResourceEditingService);
-  protected wpCreate:WorkPackageCreateService = this.injector.get(WorkPackageCreateService);
+  @InjectField() wpRelations:WorkPackageRelationsService;
+  @InjectField() halEditing:HalResourceEditingService;
 
   ngOnInit() {
     super.ngOnInit();
 
     this.wpCreate.onNewWorkPackage()
       .pipe(
-        untilComponentDestroyed(this)
+        this.untilDestroyed()
       )
       .subscribe((wp:WorkPackageResource) => {
         if (wp.__initialized_at === this.__initialized_at) {
@@ -65,8 +64,11 @@ export class WorkPackageCopyController extends WorkPackageCreateController {
   protected createdWorkPackage() {
     this.copiedWorkPackageId = this.stateParams.copiedFromWorkPackageId;
     return new Promise<WorkPackageChangeset>((resolve, reject) => {
-      this.wpCacheService.loadWorkPackage(this.copiedWorkPackageId)
-        .values$()
+      this
+        .apiV3Service
+        .work_packages
+        .id(this.copiedWorkPackageId)
+        .get()
         .pipe(
           take(1)
         )
@@ -88,7 +90,12 @@ export class WorkPackageCopyController extends WorkPackageCreateController {
       .then((copyChangeset:WorkPackageChangeset) => {
         this.__initialized_at = copyChangeset.pristineResource.__initialized_at;
 
-        this.wpCacheService.updateWorkPackage(copyChangeset.pristineResource);
+        this
+          .apiV3Service
+          .work_packages
+          .cache
+          .updateWorkPackage(copyChangeset.pristineResource, true);
+
         this.halEditing.updateValue('new', copyChangeset);
 
         return copyChangeset;

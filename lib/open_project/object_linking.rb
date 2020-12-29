@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -79,7 +79,7 @@ module OpenProject
       text = options.delete(:text) || format_revision(revision)
       rev = revision.respond_to?(:identifier) ? revision.identifier : revision
       url_opts = { controller: '/repositories', action: 'revision', project_id: project, rev: rev }
-      html_options = { title: l(:label_revision_id, format_revision(revision)) }.merge(options)
+      html_options = { title: I18n.t(:label_revision_id, value: format_revision(revision)) }.merge(options)
       link_to(h(text), url_opts, html_options)
     end
 
@@ -100,17 +100,13 @@ module OpenProject
     # Examples:
     #
     #   link_to_project(project)                          # => link to the specified project overview
-    #   link_to_project(project, action:'settings')     # => link to project settings
     #   link_to_project(project, {only_path: false}, class: "project") # => 3rd arg adds html options
     #   link_to_project(project, {}, class: "project") # => html options with default url (project overview)
     #
     def link_to_project(project, options = {}, html_options = nil, show_icon = false)
       project_name = project_link_name(project, show_icon)
 
-      if project.active? && options.delete(:action) == 'settings'
-        # backwards compatibility
-        link_to(project_name, settings_project_path_or_url(project, options), html_options)
-      elsif project.active?
+      if project.active?
         link_to(project_name, project_path_or_url(project, options), html_options)
       else
         project_name

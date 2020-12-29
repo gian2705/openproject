@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -205,13 +205,6 @@ describe UsersController, type: :controller do
 
     assert_response :success
     assert_template 'edit'
-  end
-
-  it 'should update with group ids should assign groups' do
-    put :update, params: { id: 2, user: { group_ids: ['10'] } }
-
-    user = User.find(2)
-    assert_equal [10], user.group_ids
   end
 
   it 'should update with password change should send a notification' do

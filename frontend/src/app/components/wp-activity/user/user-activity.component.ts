@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,39 +23,36 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {UserResource} from 'core-app/modules/hal/resources/user-resource';
-import {WorkPackageCacheService} from '../../work-packages/work-package-cache.service';
 import {PathHelperService} from 'core-app/modules/common/path-helper/path-helper.service';
 import {ConfigurationService} from 'core-app/modules/common/config/configuration.service';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {WorkPackagesActivityService} from 'core-components/wp-single-view-tabs/activity-panel/wp-activity.service';
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
   Injector,
-  Input,
+  Input, NgZone,
   OnInit
 } from "@angular/core";
-import {UserCacheService} from "core-components/user/user-cache.service";
 import {CommentService} from "core-components/wp-activity/comment-service";
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {WorkPackageCommentFieldHandler} from "core-components/work-packages/work-package-comment/work-package-comment-field-handler";
-import {ViewPointOriginal} from "core-app/modules/bcf/bcf-wp-single-view/bcf-wp-single-view.component";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 import {HalResource} from "core-app/modules/hal/resources/hal-resource";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 @Component({
   selector: 'user-activity',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-activity.component.html'
 })
-export class UserActivityComponent extends WorkPackageCommentFieldHandler implements OnInit, AfterViewInit {
+export class UserActivityComponent extends WorkPackageCommentFieldHandler implements OnInit {
   @Input() public workPackage:WorkPackageResource;
   @Input() public activity:HalResource;
   @Input() public activityNo:number;
@@ -65,16 +62,13 @@ export class UserActivityComponent extends WorkPackageCommentFieldHandler implem
   public userCanQuote = false;
 
   public userId:string | number;
+  public user:UserResource;
   public userName:string;
-  public userActive:boolean;
-  public userPath:string | null;
-  public userLabel:string;
   public userAvatar:string;
   public details:any[] = [];
   public isComment:boolean;
   public isBcfComment:boolean;
   public postedComment:SafeHtml;
-  public bcfSnapshot:ViewPointOriginal;
 
   public focused = false;
 
@@ -93,11 +87,11 @@ export class UserActivityComponent extends WorkPackageCommentFieldHandler implem
               readonly PathHelper:PathHelperService,
               readonly wpLinkedActivities:WorkPackagesActivityService,
               readonly commentService:CommentService,
-              readonly wpCacheService:WorkPackageCacheService,
               readonly ConfigurationService:ConfigurationService,
-              readonly userCacheService:UserCacheService,
+              readonly apiV3Service:APIV3Service,
               readonly cdRef:ChangeDetectorRef,
-              readonly I18n:I18nService) {
+              readonly I18n:I18nService,
+              readonly ngZone:NgZone) {
     super(elementRef, injector);
   }
 
@@ -107,9 +101,6 @@ export class UserActivityComponent extends WorkPackageCommentFieldHandler implem
     this.updateCommentText();
     this.isComment = this.activity._type === 'Activity::Comment';
     this.isBcfComment = this.activity._type === 'Activity::BcfComment';
-    if (this.isBcfComment && _.get(this.activity.bcfComment,  'viewpoint.snapshot')) {
-      this.bcfSnapshot = _.get(this.activity.bcfComment,  'viewpoint.snapshot');
-    }
 
     this.$element = jQuery(this.elementRef.nativeElement);
     this.reset();
@@ -123,27 +114,30 @@ export class UserActivityComponent extends WorkPackageCommentFieldHandler implem
       this.details.push(detail.html);
     });
 
-    this.userCacheService
-      .require(this.activity.user.idFromLink)
-      .then((user:UserResource) => {
+    this
+      .apiV3Service
+      .users
+      .id(this.activity.user.idFromLink)
+      .get()
+      .subscribe((user:UserResource) => {
+        this.user = user;
         this.userId = user.id!;
         this.userName = user.name;
-        this.userActive = user.isActive;
         this.userAvatar = user.avatar;
-        this.userPath = user.showUser.href;
-        this.userLabel = this.I18n.t('js.label_author', {user: this.userName});
         this.cdRef.detectChanges();
       });
+
+    if (window.location.hash === `#activity-${this.activityNo}`) {
+      this.ngZone.runOutsideAngular(() => {
+        setTimeout(() => {
+          this.elementRef.nativeElement.scrollIntoView(true);
+        });
+      });
+    }
   }
 
   public shouldHideIcons():boolean {
     return !((this.isComment || this.isBcfComment) && this.focussing());
-  }
-
-  public ngAfterViewInit() {
-    if (window.location.hash === 'activity-' + this.activityNo) {
-      this.elementRef.nativeElement.scrollIntoView(true);
-    }
   }
 
   public activate() {
@@ -162,6 +156,14 @@ export class UserActivityComponent extends WorkPackageCommentFieldHandler implem
     this.commentService.quoteEvents.next(this.quotedText(this.activity.comment.raw));
   }
 
+  public get bcfSnapshotUrl() {
+    if (_.get(this.activity, 'bcfViewpoints[0]')) {
+      return `${_.get(this.activity, 'bcfViewpoints[0]').href}/snapshot`;
+    } else {
+      return null;
+    }
+  }
+
   public async updateComment() {
     this.inFlight = true;
 
@@ -171,10 +173,15 @@ export class UserActivityComponent extends WorkPackageCommentFieldHandler implem
         this.activity = newActivity;
         this.updateCommentText();
         this.wpLinkedActivities.require(this.workPackage, true);
-        this.wpCacheService.updateWorkPackage(this.workPackage);
-        this.deactivate(true);
+        this
+          .apiV3Service
+          .work_packages
+          .cache
+          .updateWorkPackage(this.workPackage);
       })
-      .catch(() => this.deactivate(true));
+      .finally(() => {
+        this.deactivate(true); this.inFlight = false;
+      });
   }
 
   public focusEditIcon() {

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -33,7 +33,7 @@ namespace :migrations do
   namespace :documents do
     include Tasks::Shared::UserFeedback
 
-    class Document < ActiveRecord::Base
+    class TemporaryDocument < ActiveRecord::Base
       belongs_to :project
       belongs_to :category, class_name: 'DocumentCategory', foreign_key: 'category_id'
     end
@@ -47,7 +47,7 @@ namespace :migrations do
       if !$stdout.isatty || user_agrees_to_delete_all_documents
         puts 'Delete all attachments attached to projects or versions...'
 
-        Document.destroy_all
+        TemporaryDocument.destroy_all
         Attachment.where(container_type: ['Document']).destroy_all
       end
     rescue

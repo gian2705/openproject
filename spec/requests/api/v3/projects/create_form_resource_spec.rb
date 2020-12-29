@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,7 +25,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 
 require 'spec_helper'
 require 'rack/test'
@@ -36,7 +36,9 @@ describe ::API::V3::Projects::CreateFormAPI, content_type: :json do
 
   let(:current_user) do
     FactoryBot.create(:user).tap do |u|
-      u.global_roles << global_role
+      FactoryBot.create(:global_member,
+                        principal: u,
+                        roles: [global_role])
     end
   end
   let(:global_role) do
@@ -147,7 +149,7 @@ describe ::API::V3::Projects::CreateFormAPI, content_type: :json do
           .to be_json_eql(
             {
               "format": "markdown",
-              "html": "<p>A magic dwells in each beginning.</p>",
+              "html": "<p class=\"op-uc-p\">A magic dwells in each beginning.</p>",
               "raw": "A magic dwells in each beginning."
             }.to_json
           ).at_path("_embedded/payload/statusExplanation")

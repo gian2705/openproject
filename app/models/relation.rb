@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,8 +28,12 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Relation < ActiveRecord::Base
-  include Concerns::VirtualAttribute
+class Relation < ApplicationRecord
+  include VirtualAttribute
+
+  include ::Scopes::Scoped
+
+  scope_classes Relations::Scopes::FollowsNonManualAncestors
 
   scope :of_work_package,
         ->(work_package) { where('from_id = ? OR to_id = ?', work_package, work_package) }

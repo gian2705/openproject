@@ -1,16 +1,13 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject Documents Plugin
-#
-# Former OpenProject Core functionality extracted into a plugin.
-#
-# Copyright (C) 2009-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
 # OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
@@ -27,10 +24,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Document < ActiveRecord::Base
+class Document < ApplicationRecord
   belongs_to :project
   belongs_to :category, class_name: "DocumentCategory", foreign_key: "category_id"
   acts_as_attachable delete_permission: :manage_documents,
@@ -39,14 +36,14 @@ class Document < ActiveRecord::Base
   acts_as_journalized
   acts_as_event title: Proc.new { |o| "#{Document.model_name.human}: #{o.title}" },
                 url: Proc.new { |o| { controller: '/documents', action: 'show', id: o.id } },
-                datetime: :created_on,
-                author: ( Proc.new do |o|
-                            o.attachments.find(:first, order: "#{Attachment.table_name}.created_at ASC").try(:author)
-                          end)
+                author: Proc.new { |o|
+                          o.attachments.find(:first, order: "#{Attachment.table_name}.created_at ASC").try(:author)
+                        }
 
   acts_as_searchable columns: ['title', "#{table_name}.description"],
                      include: :project,
-                     references: :projects
+                     references: :projects,
+                     date_column: "#{table_name}.created_at"
 
   validates_presence_of :project, :title, :category
   validates_length_of :title, maximum: 60
@@ -74,15 +71,15 @@ class Document < ActiveRecord::Base
     self.category ||= DocumentCategory.default if new_record?
   end
 
-  def updated_on
-    unless @updated_on
-      # attachments has a default order that conflicts with `created_on DESC`
-      # #reorder removes that default order but rather than #unscoped keeps the
-      # scoping by this document
-      a = attachments.reorder(Arel.sql('created_at DESC')).first
-      @updated_on = (a && a.created_at) || created_on
-    end
-    @updated_on
+  # TODO: This should not be necessary as the Attachments::CreateService in combination
+  # with acts_as_journalized should touch the document after an attachment has been added.
+  def updated_at
+    @updated_at ||= [attachments.maximum(:updated_at), read_attribute(:updated_at)].compact.max
+  end
+
+  def reload(options = nil)
+    @updated_at = nil
+    super
   end
 
   private

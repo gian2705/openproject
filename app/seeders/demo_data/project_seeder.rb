@@ -2,8 +2,8 @@
 
 #-- copyright
 
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -26,12 +26,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 module DemoData
   class ProjectSeeder < Seeder
     # Careful: The seeding recreates the seeded project before it runs, so any changes
     # on the seeded project will be lost.
     def seed_data!
+      puts ' ↳ Updating settings'
+      seed_settings
+
       seed_projects = demo_data_for('projects').keys
 
       seed_projects.each do |key|
@@ -74,9 +77,6 @@ module DemoData
 
       puts ' ↳ Update form configuration with global queries'
       set_form_configuration
-
-      puts ' ↳ Updating settings'
-      seed_settings
     end
 
     def applicable?
@@ -124,7 +124,7 @@ module DemoData
       status_explanation = project_data_for(key, 'status.description')
 
       if status_code || status_explanation
-        Project::Status.create!(
+        Projects::Status.create!(
           project: project,
           code: status_code,
           explanation: status_explanation
@@ -168,8 +168,9 @@ module DemoData
     end
 
     def seed_news(project, key)
+      user = User.admin.first
       Array(project_data_for(key, 'news')).each do |news|
-        News.create! project: project, title: news[:title], summary: news[:summary], description: news[:description]
+        News.create! project: project, author: user, title: news[:title], summary: news[:summary], description: news[:description]
       end
     end
 

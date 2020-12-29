@@ -1,6 +1,6 @@
 #-- copyright
-#OpenProject is a project management system.
-#Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License version 3.
 #OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
@@ -37,6 +37,7 @@ da:
     close_filter_title: "Luk filter"
     close_form_title: "Luk formular"
     button_add_watcher: "Tilføj tilsynsførende"
+    button_add: "Tilføj"
     button_back: "Tilbage"
     button_back_to_list_view: "Tilbage til listevisning"
     button_cancel: "Annuller"
@@ -54,6 +55,8 @@ da:
     button_duplicate: "Lav dublet"
     button_edit: "Rediger"
     button_filter: "Filter"
+    button_collapse_all: "Fold alle sammen"
+    button_expand_all: "Fold alle ud"
     button_advanced_filter: "Avanceret filter"
     button_list_view: "Listevisning"
     button_show_view: "Fuldskærmsvisning"
@@ -80,6 +83,7 @@ da:
         inline: 'Highlight inline:'
         entire_card_by: 'Entire card by'
       remove_from_list: 'Remove card from list'
+    caption_rate_history: "Satshistorik"
     clipboard:
       browser_error: "Din browser understøtter ikke kopiering til Udklipsholder. Kopiér venligst den markerede tekst manuelt."
       copied_successful: "Kopieret til Udklipsholder!"
@@ -114,6 +118,11 @@ da:
         manual: 'Skift til Markdown kildekode'
         wysiwyg: 'Skift til WYSIWYG redigering'
       macro:
+        error: 'Cannot expand macro: %{message}'
+        attribute_reference:
+          macro_help_tooltip: 'This text segment is being dynamically rendered by a macro.'
+          not_found: 'Requested resource could not be found'
+          invalid_attribute: "The selected attribute '%{name}' does not exist."
         child_pages:
           button: 'Links til undersider'
           include_parent: 'Inkludér forælder'
@@ -161,6 +170,60 @@ da:
         edit_query: 'Edit query'
         new_group: 'Ny gruppe'
         reset_to_defaults: 'Reset to defaults'
+      enterprise:
+        trial:
+          confirmation: "Confirmation of email address"
+          confirmation_info: >
+            We sent you an email on %{date} to %{email}. Please check your inbox and click the confirmation link provided to start your 14 days trial.
+          form:
+            general_consent: >
+              I agree with the <a target="_blank" href="%{link_terms}">terms of service</a> and the <a target="_blank" href="%{link_privacy}">privacy policy</a>.
+            invalid_email: "Invalid email address"
+            label_company: "Company"
+            label_first_name: "Fornavn"
+            label_last_name: "Efternavn"
+            label_email: "E-mail"
+            label_domain: "Domain"
+            label_subscriber: "Subscriber"
+            label_maximum_users: "Maximum active users"
+            label_starts_at: "Starts at"
+            label_expires_at: "Expires at"
+            receive_newsletter: I want to receive the OpenProject <a target="_blank" href="%{link}">newsletter</a>.
+            taken_domain: There can only be one active trial per domain.
+            taken_email: Each user can only create one trial.
+          email_not_received: "You did not receive an email? You can resend the email with the link on the right."
+          try_another_email: "Or try it with another email address."
+          next_steps: "Next steps"
+          resend_link: "Resend"
+          resend_success: "Email has been resent. Please check your emails and click the confirmation link provided."
+          resend_warning: "Could not resend email."
+          session_timeout: "Your session timed out. Please try to reload the page or resend email."
+          status_label: "Status:"
+          status_confirmed: "confirmed"
+          status_waiting: "email sent - waiting for confirmation"
+          test_ee: "Test the Enterprise Edition 14 days for free"
+          quick_overview: "Get a quick overview of project management and team collaboration with OpenProject Enterprise Edition."
+        upsale:
+          become_hero: "Become a hero!"
+          benefits:
+            description: "What are the benefits?"
+            high_security: "Security features"
+            high_security_text: "Single sign on (SAML, OpenID Connect, CAS), two-factor authentication and automatic sync of LDAP groups."
+            installation: "Installation support"
+            installation_text: "Experienced software engineers guide you through the complete installation and setup process in your own infrastructure."
+            premium_features: "Premium features"
+            premium_features_text: "Agile boards, custom theme and logo, graphs, intelligent workflows with custom actions, full text search for work package attachments and multi-select custom fields."
+            professional_support: "Professionel support"
+            professional_support_text: "Get reliable, high-touch support from senior support engineers with expert knowledge about running OpenProject in business-critical environments."
+          button_start_trial: "Start free trial"
+          button_book_now: "Book now"
+          confidence: >
+            We deliver the confidence of a tested and supported enterprise-class project management software - with Open Source and an open mind.
+          link_quote: "Get a quote"
+          text: >
+            The OpenProject Enterprise Edition builds on top of the Community Edition. It includes premium features and professional support mainly aimed at organizations with more than 10 users that manage business critical projects with OpenProject.
+          unlimited: "Unlimited"
+          you_contribute: "Developers need to pay their bills, too. With the Enterprise Edition, you substantially contribute to this Open Source community effort."
     custom_actions:
       date:
         specific: 'på'
@@ -170,6 +233,9 @@ da:
       cannot_save_changes_with_message: "Kan ikke gemme dine ændringer på grund af følgende fejl: %{error}"
       query_saving: "Visningen kunne ikke gemmes."
       embedded_table_loading: "Den indlejrede visning kunne ikke indlæses: %{message}"
+    enumeration_activities: "Aktiviteter (styring af tid)"
+    enumeration_doc_categories: "Dokumentkategorier"
+    enumeration_work_package_priorities: "Prioritering af arbejdspakker"
     filter:
       description:
         text_open_filter: "Åbn dette filter med 'ALT' og pile tasterne."
@@ -202,8 +268,15 @@ da:
       blocks:
         new_features:
           text_new_features: "Read about new features and product updates."
-          current_new_feature_html: "OpenProject indeholder en ny <b>Oversigts-side</b> til at <b>vise vigtige projektoplysninger</b> og vise, om projektet er på sporet. </br> Du kan indsætte forskellige nye statuswidgets, såsom: <ul><li> projektstatus,</li> <li>oversigt over arbejdspakkesstatus,</li> <li>opgaveforløb,</li> <li>opgaver, der er tildelt brugere.</li></ul>"
-          learn_about: "Lær mere om de nye status-widgets"
+          learn_about: "Learn more about the new features"
+          standard:
+            learn_about_link: https://www.openproject.org/openproject-11-1-release
+            current_new_feature_html: >
+              The release contains various new features and improvements: <br> <ul class="%{list_styling_class}"> <li><b>Improved stylings</b>  of the WYSIWYG editor.</li> <li>Direct display of <b>user name for @notifications</b> while editing.</li> <li>Extended authentication profile with an <b>OpenID Connect provider.</b></li> <li>Display project <b>milestones aggregated</b> in single row in Gantt chart.</li> <li><b>Collapse all button for groups</b> in the work packages list.</li> <li><b>Optimization for printing,</b> e.g. wiki pages, via the browser print function.</li> </ul>
+          bim:
+            learn_about_link: https://www.openproject.org/openproject-11-0-release
+            current_new_feature_html: >
+              The release contains various new features and improvements: <br> <ul class="%{list_styling_class}"> <li><b>Improved stylings</b>  of the WYSIWYG editor.</li> <li>Direct display of <b>user name for @notifications</b> while editing.</li> <li>Extended authentication profile with an <b>OpenID Connect provider.</b></li> <li>Display project <b>milestones aggregated</b> in single row in Gantt chart.</li> <li><b>Collapse all button for groups</b> in the work packages list.</li> <li><b>Optimization for printing,</b> e.g. wiki pages, via the browser print function.</li> </ul>
     label_activate: "Aktivér"
     label_add_column_after: "Add column after"
     label_add_column_before: "Add column before"
@@ -214,13 +287,14 @@ da:
     label_add_row_before: "Add row before"
     label_add_selected_columns: "Tilføj valgte kolonner"
     label_added_by: "tilføjet af"
-    label_added_time_by: "Tilføjet af %{author} %{age}"
+    label_added_time_by: "Added by <a href=%{authorLink}>%{author}</a> at %{age}"
     label_ago: "dage siden"
     label_all: "alle"
     label_all_work_packages: "alle arbejdspakker"
     label_and: "og"
     label_ascending: "Stigende"
     label_author: "Forfatter: %{user}"
+    label_avatar: "Avatar"
     label_between: "mellem"
     label_board: "Board"
     label_board_locked: "Låst"
@@ -234,6 +308,8 @@ da:
     label_deactivate: "Deaktivér"
     label_descending: "Faldende"
     label_description: "Beskrivelse"
+    label_details: "Detaljer"
+    label_display: "Vis"
     label_cancel_comment: "Annuller kommentar"
     label_closed_work_packages: "lukket"
     label_collapse: "Fold sammen"
@@ -252,31 +328,41 @@ da:
     label_expand_all: "Fold alle ud"
     label_expand_project_menu: "Expand project menu"
     label_export: "Eksportér"
+    label_export_preparing: "The export is being prepared and will be downloaded shortly."
     label_filename: "Fil"
     label_filesize: "Størrelse"
+    label_general: "Generelle"
+    label_global_roles: "Global Roles"
     label_greater_or_equal: ">="
     label_group: 'Gruppe'
     label_group_by: "Gruppér efter"
+    label_group_plural: "Grupper"
     label_hide_attributes: "Vis mindre"
     label_hide_column: "Gem kolonne"
     label_hide_project_menu: "Collapse project menu"
     label_in: "i"
     label_in_less_than: "på mindre end"
     label_in_more_than: "på mere end"
+    label_incoming_emails: "Indkommende e-mails"
+    label_information_plural: "Information"
     label_import: "Import"
     label_latest_activity: "Latest activity"
     label_last_updated_on: "Senest opdateret den"
+    label_learn_more_link: "Få mere at vide"
     label_less_or_equal: "<="
     label_less_than_ago: "mindre end dage siden"
     label_loading: "Henter..."
+    label_mail_notification: "E-mail-påmindelser"
     label_me: "mig"
+    label_meeting_agenda: "Dagsorden"
+    label_meeting_minutes: "Referat"
     label_menu_collapse: "Fold menu sammen"
     label_menu_expand: "Fold menu ud"
     label_more_than_ago: "mere end dage siden"
     label_next: "Næste"
     label_no_color: "Ingen farve"
     label_no_data: "Ingen data at vise"
-    label_no_due_date: "ingen slutdato"
+    label_no_due_date: "no finish date"
     label_no_start_date: "ingen startdato"
     label_no_value: "Ingen værdi tildelt"
     label_none: "ingen"
@@ -290,12 +376,16 @@ da:
     label_previous: "Foregående"
     label_per_page: "Per side:"
     label_please_wait: "Please wait"
+    label_project_plural: "Projekter"
     label_visibility_settings: "Visibility settings"
     label_quote_comment: "Citér denne kommentar"
+    label_recent: "Recent"
     label_reset: "Nulstil"
     label_remove_column: "Remove column"
     label_remove_columns: "Fjern valgte kolonner"
     label_remove_row: "Remove row"
+    label_report: "Rapport"
+    label_repository_plural: "Projektarkiver"
     label_save_as: "Gem som"
     label_select_watcher: "Vælg en tilsynsførende..."
     label_selected_filter_list: "Valgte filtre"
@@ -306,6 +396,7 @@ da:
     label_sort_higher: "Flyt op"
     label_sort_lower: "Flyt ned"
     label_sorting: "Sorterer"
+    label_spent_time: "Anvendt tid"
     label_star_query: "Favored"
     label_press_enter_to_save: "Press enter to save."
     label_public_query: "Offentlig"
@@ -313,16 +404,20 @@ da:
     label_sum_for: "Sum for"
     label_subject: "Emne"
     label_this_week: "denne uge"
-    label_today: "i dag"
+    label_today: "Today"
+    label_time_entry_plural: "Anvendt tid"
     label_up: "Up"
+    label_user_plural: "Brugere"
     label_activity_show_only_comments: "Show activities with comments only"
     label_activity_show_all: "Show all activities"
     label_total_progress: "Samlet fremskridt: %{percent}%"
     label_total_amount: "Total: %{amount}"
     label_updated_on: "opdateret d."
     label_value_derived_from_children: "(value derived from children)"
+    label_children_derived_duration: "Work package's children derived duration"
     label_warning: "Advarsel"
     label_work_package: "Arbejdspakke"
+    label_work_package_parent: "Parent work package"
     label_work_package_plural: "Arbejdspakker"
     label_watch: "Før tilsyn"
     label_watch_work_package: "Før tilsyn med arbejdspakke"
@@ -356,6 +451,7 @@ da:
     label_wait: "Vent venligst på opsætning..."
     label_upload_counter: "%{done} af %{count} filer færdige"
     label_validation_error: "Arbejdspakken kunne ikke gemmes grundet følgende fejl:"
+    label_version_plural: "Versioner"
     label_view_has_changed: "This view has unsaved changes. Click to save them."
     help_texts:
       show_modal: 'Vis attributten til hjælpetekst'
@@ -383,7 +479,7 @@ da:
           drag: 'Drag & Drop your cards within a list to re-order, or to another list. A double click will open the details view.'
         wp:
           toggler: "Now let's have a look at the <b>Work package</b> section, which gives you a more detailed view of your work."
-          list: 'This is the <b>Work package</b> list with the important work within your project, such as tasks, features, milestones, bugs, and more. <br> You can create or edit a work package directly within this list. To see its details you can double click on a row.'
+          list: 'This is the <b>Work package</b> list with the important work within your project, such as tasks, milestones, phases, and more. <br> You can create or edit a work package directly within this list. To see its details you can double click on a row.'
           full_view: 'Within the <b>Work package details</b> you find all relevant information, such as description, status and priority, activities, dependencies or comments.'
           back_button: 'With the arrow you can navigate back to the work package list.'
           create_button: 'The <b>Create</b> button will add a new work package to your project.'
@@ -408,6 +504,7 @@ da:
       context: 'Project context'
       work_package_belongs_to: 'This work package belongs to project %{projectname}.'
       click_to_switch_context: 'Open this work package in that project.'
+      confirm_template_load: 'Switching the template will reload the page and you will lose all input to this form. Continue?'
       autocompleter:
         label: 'Project autocompletion'
     text_are_you_sure: "Er du sikker?"
@@ -422,23 +519,22 @@ da:
         upgrade_to_ee_text: "Wow! If you need this feature you are a super pro! Would you mind supporting us OpenSource developers by becoming an Enterprise Edition client?"
         more_information: "More information"
         nevermind: "Nevermind"
-        filter_types:
-          parent: "being child of"
-          precedes: "preceding"
-          follows: "following"
-          relates: "relating to"
-          duplicates: "duplicating"
-          duplicated: "duplikeret gennem"
-          blocks: "blocking"
-          blocked: "spærret af"
-          partof: "being part of"
-          includes: "including"
-          requires: "requiring"
-          required: "required by"
+      edit:
+        form_configuration: "Form Configuration"
+        projects: "Projekter"
+        settings: "Indstillinger"
     time_entry:
+      project: 'Prjoekt'
+      work_package: 'Arbejdspakke'
+      work_package_required: 'Requires selecting a work package first.'
       activity: 'Aktivivtet'
       comment: 'Kommentér'
+      duration: 'Varighed'
+      spent_on: 'Dato'
       hours: 'Timer'
+      title: 'Tidsregistrering'
+    two_factor_authentication:
+      label_two_factor_authentication: 'Two-factor authentication'
     watchers:
       label_loading: indlæser iagttagere...
       label_error_loading: En fejl opstod under indlæsning af seere
@@ -496,17 +592,10 @@ da:
       select_tag: 'Vælg etiket'
       select_branch: 'Vælg gren'
     field_value_enter_prompt: "Indtast en værdi for '%{field}'"
-    select2:
-      input_too_short:
-        one: "Angiv venligst ét tegn yderligere"
-        other: "Angiv venligst {{count}} tegn yderligere"
-      load_more: "Henter flere resultater..."
-      no_matches: "Ingen passende resultater fundet"
-      searching: "Søger..."
-      selection_too_big:
-        one: "Du kan kun vælge ét emne"
-        other: "Du kan kun vælge {{limit}} emne"
     project_menu_details: "Detaljer"
+    scheduling:
+      manual: 'Manual scheduling'
+      automatic: 'Automatic scheduling'
     sort:
       sorted_asc: 'Ascending sort applied, '
       sorted_dsc: 'Descending sort applied, '
@@ -672,6 +761,7 @@ da:
         startDate: "Start dato"
         status: "Status"
         subject: "Emne"
+        subproject: "Underprojekt"
         title: "Titel"
         type: "Type"
         updatedAt: "Opdateret den"
@@ -717,6 +807,9 @@ da:
           not_found: "There is no such view"
           duplicate_query_title: "Name of this view already exists. Change anyway?"
         text_no_results: "No matching views were found."
+      scheduling:
+        is_parent: "The dates of this work package are automatically deduced from its children. Activate 'Manual scheduling' to set the dates."
+        is_switched_from_manual_to_automatic: "The dates of this work package may need to be recalculated after switching from manual to automatic scheduling due to relationships with other work packages."
       table:
         configure_button: 'Configure work package table'
         summary: "Table with rows of work package and columns of work package attributes."
@@ -750,14 +843,13 @@ da:
           automatic: 'Automatic'
           manually: 'Manually'
           warning: 'You will lose your previous sorting when activating the automatic sorting mode.'
-        columns_help_text: "Use the input above to add or remove columns to your table view. You can drag and drop the columns to reorder them."
+        columns_help_text: "Use the input above to add columns to your table view. You can drag and drop the columns to reorder them."
         upsale:
           attribute_highlighting: 'Need certain work packages to stand out from the mass?'
           relation_columns: 'Need to see relations in the work package list?'
           check_out_link: 'Check out the Enterprise Edition.'
         relation_filters:
-          first_part: "Show all work packages"
-          second_part: "the current work package"
+          filter_work_packages_by_relation_type: 'Filter work packages by relation type'
       tabs:
         overview: Overblik
         activity: Aktivivtet
@@ -806,6 +898,9 @@ da:
         has_children: "The work package has %{childUnits}:"
         confirm_deletion_children: "I acknowledge that ALL descendants of the listed work packages will be recursively removed."
         deletes_children: "All child work packages and their descendants will also be recursively deleted."
+      destroy_time_entry:
+        title: "Confirm deletion of time entry"
+        text: "Are you sure you want to delete the following time entry?"
     notice_no_results_to_display: "No visible results to display."
     notice_successful_create: "Oprettelse gennemført."
     notice_successful_delete: "Sletning gennemført."
@@ -843,8 +938,9 @@ da:
         one: "one child work package"
         other: "%{count} work package children"
       hour:
-        one: "1 h"
-        other: "%{count} h"
+        zero: "0 h"
+        one: ""
+        other: ""
     zen_mode:
       button_activate: 'Activate zen mode'
       button_deactivate: 'Deactivate zen mode'

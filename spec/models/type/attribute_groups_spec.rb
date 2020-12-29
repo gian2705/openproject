@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,7 +32,7 @@ require 'spec_helper'
 
 describe ::Type, type: :model do
   let(:type) { FactoryBot.build(:type) }
-  let(:admin) { FactoryBot.create(:admin) }
+  using_shared_fixtures :admin
 
   before do
     # Clear up the request store cache for all_work_package_attributes

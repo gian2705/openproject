@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -44,7 +44,7 @@ describe News::CommentsController, type: :controller do
 
       expect(response).to redirect_to news_path(news)
 
-      latest_comment = news.comments.reorder(Arel.sql('created_on DESC')).first
+      latest_comment = news.comments.reorder(created_at: :desc).first
       expect(latest_comment).not_to be_nil
       expect(latest_comment.comments).to eq 'This is a test comment'
       expect(latest_comment.author).to eq user

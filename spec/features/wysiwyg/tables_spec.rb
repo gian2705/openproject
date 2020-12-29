@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,7 +30,9 @@ require 'spec_helper'
 
 describe 'Wysiwyg tables',
          type: :feature, js: true do
-  let(:user) { FactoryBot.create :admin }
+  using_shared_fixtures :admin
+  let(:user) { admin }
+
   let(:project) { FactoryBot.create(:project, enabled_module_names: %w[wiki]) }
   let(:editor) { ::Components::WysiwygEditor.new }
 
@@ -52,10 +54,10 @@ describe 'Wysiwyg tables',
           container.find('.ck-insert-table-dropdown-grid-box:nth-of-type(12)').click
 
           # Edit table
-          tds = editable.all('.table.ck-widget td')
-          values = %w(h1 h&2 c1 c&2)
+          tds = editable.all('.op-uc-table .op-uc-table--cell')
           expect(tds.length).to eq(4)
 
+          values = %w(h1 h&2 c1 c&2)
           tds.each_with_index do |td, i|
             td.click
             td.send_keys values[i]
@@ -84,7 +86,7 @@ describe 'Wysiwyg tables',
           container.find('.ck-insert-table-dropdown-grid-box:nth-of-type(12)').click
 
           # Edit table
-          tds = editable.all('.table.ck-widget td')
+          tds = editable.all('.op-uc-table .op-uc-table--cell')
           values = %w(h1 h2 a)
           expect(tds.length).to eq(4)
 
@@ -136,14 +138,188 @@ describe 'Wysiwyg tables',
           expect(editable).to have_selector('td', text: 'a')
         end
       end
+
+      it 'can add styled tables' do
+        editor.in_editor do |container, editable|
+          # strangely, we need visible: :all here
+          editor.click_toolbar_button 'Insert table'
+          # 2x2
+          container.find('.ck-insert-table-dropdown-grid-box:nth-of-type(12)').click
+
+          # Edit table
+          tds = editable.all('.op-uc-table .op-uc-table--cell')
+          expect(tds.length).to eq(4)
+
+          values = %w(h1 h2 a)
+          tds.take(3).each_with_index do |td, i|
+            td.click
+            td.send_keys values[i]
+            sleep 0.5
+          end
+
+          # style first td
+          tds.first.click
+
+          # Click row toolbar
+          editor.click_hover_toolbar_button 'Cell properties'
+
+          # Enable header row
+          expect(page).to have_selector('.ck-input-color input', count: 2)
+          # Pick the latter one, it's the background color
+          page.all('.ck-input-color input').last.set '#123456'
+          # Set vertical center / horizontal top
+          editor.click_hover_toolbar_button 'Align cell text to the center'
+          editor.click_hover_toolbar_button 'Align cell text to the top'
+          find('.ck-button-save').click
+
+          # Table should now have header
+          expect(editable).to have_selector('td[style*="background-color:#123456"]')
+          expect(editable).to have_selector('td[style*="text-align:center"]')
+          expect(editable).to have_selector('td[style*="vertical-align:top"]')
+        end
+
+        # Save wiki page
+        click_on 'Save'
+
+        expect(page).to have_selector('.flash.notice')
+
+        within('#content') do
+          expect(page).to have_selector('td[style*="background-color:#123456"]')
+          expect(page).to have_selector('td[style*="text-align:center"]')
+          expect(page).to have_selector('td[style*="vertical-align:top"]')
+        end
+
+        # Edit again
+        click_on 'Edit'
+
+        editor.in_editor do |container, editable|
+          expect(editable).to have_selector('td[style*="background-color:#123456"]')
+
+          # Change table styles
+          tds = editable.all('.op-uc-table .op-uc-table--cell')
+          tds.first.click
+          editor.click_hover_toolbar_button 'Table properties'
+
+          # Set style to dotted
+          page.find('.ck-table-form__border-style').click
+          page.find('.ck-button_with-text', text: 'Dotted').click
+          page.find('.ck-table-form__border-row .ck-input-color').set 'black'
+          page.find('.ck-table-form__border-width .ck-input-text').set '10px'
+
+          # background
+          page.find('.ck-table-properties-form__background .ck-input-text').set 'red'
+
+          # width, height
+          page.find('.ck-table-form__dimensions-row__width .ck-input-text').set '500px'
+          page.find('.ck-table-form__dimensions-row__height .ck-input-text').set '500px'
+          find('.ck-button-save').click
+
+          # table height and width is set on figure
+          expect(editable).to have_selector('figure[style*="width:500px"]')
+          expect(editable).to have_selector('figure[style*="height:500px"]')
+
+          # rest is set on table
+          expect(editable).to have_selector('table[style*="background-color:red"]')
+          expect(editable).to have_selector('table[style*="border-bottom:10px dotted"]')
+          expect(editable).to have_selector('table[style*="border-right:10px dotted"]')
+          expect(editable).to have_selector('table[style*="border-left:10px dotted"]')
+          expect(editable).to have_selector('table[style*="border-top:10px dotted"]')
+        end
+
+        # Save wiki page
+        click_on 'Save'
+
+        expect(page).to have_selector('.flash.notice')
+
+        within('#content') do
+          # table height and width is set on figure
+          expect(page).to have_selector('figure[style*="width:500px"]')
+          expect(page).to have_selector('figure[style*="height:500px"]')
+
+          # rest is set on table
+          expect(page).to have_selector('table[style*="background-color:red"]')
+          expect(page).to have_selector('table[style*="border-bottom:10px dotted"]')
+          expect(page).to have_selector('table[style*="border-right:10px dotted"]')
+          expect(page).to have_selector('table[style*="border-left:10px dotted"]')
+          expect(page).to have_selector('table[style*="border-top:10px dotted"]')
+        end
+
+        # Edit again
+        click_on 'Edit'
+
+        # Expect all previous changes to be there
+        editor.in_editor do |container, editable|
+          expect(editable).to have_selector('td[style*="background-color:#123456"]')
+
+          # table height and width is set on figure
+          expect(editable).to have_selector('figure[style*="width:500px"]')
+          expect(editable).to have_selector('figure[style*="height:500px"]')
+
+          # rest is set on table
+          expect(editable).to have_selector('table[style*="background-color:red"]')
+          expect(editable).to have_selector('table[style*="border-bottom:10px dotted"]')
+          expect(editable).to have_selector('table[style*="border-right:10px dotted"]')
+          expect(editable).to have_selector('table[style*="border-left:10px dotted"]')
+          expect(editable).to have_selector('table[style*="border-top:10px dotted"]')
+        end
+      end
+
+      it 'can restrict table cell width' do
+        editor.in_editor do |container, editable|
+          # strangely, we need visible: :all here
+          editor.click_toolbar_button 'Insert table'
+          # 2x2
+          container.find('.ck-insert-table-dropdown-grid-box:nth-of-type(12)').click
+
+          # Edit table
+          tds = editable.all('.op-uc-table .op-uc-table--cell')
+          expect(tds.length).to eq(4)
+
+          values = %w(h1 h2 a)
+          tds.take(3).each_with_index do |td, i|
+            td.click
+            td.send_keys values[i]
+            sleep 0.5
+          end
+
+          # style first td
+          tds.first.click
+
+          # Click row toolbar
+          editor.click_hover_toolbar_button 'Cell properties'
+
+          # Enable header row
+          find('.ck-table-form__dimensions-row__width input').set '250px'
+          find('.ck-button-save').click
+
+          expect(editable).to have_selector('td[style*="width:250px"]')
+
+        end
+
+        # Save wiki page
+        click_on 'Save'
+
+        expect(page).to have_selector('.flash.notice')
+
+        within('#content') do
+          expect(page).to have_selector('td[style*="width:250px"]')
+        end
+
+        # Edit again
+        click_on 'Edit'
+
+        editor.in_editor do |container, editable|
+          expect(editable).to have_selector('td[style*="width:250px"]')
+        end
+      end
     end
 
     describe 'editing a wiki page with tables' do
       let(:wiki_page) {
         page = FactoryBot.build :wiki_page_with_content,
                                 title: 'Wiki page with titles'
-        page.content.text = <<~EOS
-        
+        page.content.text = <<~MARKDOWN
+
           ## This is markdown!
 
           <table>
@@ -164,7 +340,7 @@ describe 'Wysiwyg tables',
               </tr>
             </tbody>
           </table>
-        EOS
+        MARKDOWN
 
         page
       }

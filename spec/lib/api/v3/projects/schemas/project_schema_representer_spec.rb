@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -77,7 +77,7 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
   end
   let(:representer) do
     described_class.create(contract,
-                           self_link,
+                           self_link: self_link,
                            form_embedded: embedded,
                            current_user: current_user)
   end
@@ -100,8 +100,6 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
         let(:required) { true }
         let(:writable) { false }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'name' do
@@ -118,8 +116,6 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
         let(:min_length) { 1 }
         let(:max_length) { 255 }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'identifier' do
@@ -136,8 +132,6 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
         let(:min_length) { 1 }
         let(:max_length) { 100 }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'description' do
@@ -149,8 +143,6 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
         let(:required) { false }
         let(:writable) { true }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'public' do
@@ -162,8 +154,6 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
         let(:required) { true }
         let(:writable) { true }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'active' do
@@ -175,8 +165,6 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
         let(:required) { true }
         let(:writable) { true }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'statusExplanation' do
@@ -184,7 +172,7 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
 
       it_behaves_like 'has basic schema properties' do
         let(:type) { 'Formattable' }
-        let(:name) { I18n.t('activerecord.attributes.project/status.explanation') }
+        let(:name) { I18n.t('activerecord.attributes.projects/status.explanation') }
         let(:required) { false }
         let(:writable) { true }
       end
@@ -195,7 +183,7 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
 
       it_behaves_like 'has basic schema properties' do
         let(:type) { 'ProjectStatus' }
-        let(:name) { I18n.t('activerecord.attributes.project/status.code') }
+        let(:name) { I18n.t('activerecord.attributes.projects/status.code') }
         let(:required) { false }
         let(:writable) { true }
       end
@@ -222,8 +210,6 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
         let(:required) { true }
         let(:writable) { false }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'updatedAt' do
@@ -235,8 +221,6 @@ describe ::API::V3::Projects::Schemas::ProjectSchemaRepresenter do
         let(:required) { true }
         let(:writable) { false }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'int custom field' do

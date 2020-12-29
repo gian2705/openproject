@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module RbMasterBacklogsHelper
@@ -69,11 +62,11 @@ module RbMasterBacklogsHelper
     items = {}
 
     items[:new_story] = content_tag(:a,
-                                    l('backlogs.add_new_story'),
+                                    I18n.t('backlogs.add_new_story'),
                                     href: '#',
                                     class: 'add_new_story')
 
-    items[:stories_tasks] = link_to(l(:label_stories_tasks),
+    items[:stories_tasks] = link_to(I18n.t(:label_stories_tasks),
                                     controller: '/rb_queries',
                                     action: 'show',
                                     project_id: @project,
@@ -92,7 +85,7 @@ module RbMasterBacklogsHelper
 
   def export_export_cards_link(backlog)
     if @export_card_config_meta[:count] == 1
-      link_to(l(:label_backlogs_export_card_export),
+      link_to(I18n.t(:label_backlogs_export_card_export),
               controller: '/rb_export_card_configurations',
               action: 'show',
               project_id: @project,
@@ -107,21 +100,21 @@ module RbMasterBacklogsHelper
   def properties_link(backlog)
     back_path = backlogs_project_backlogs_path(@project)
 
-    version_path = edit_version_path(backlog.sprint, back_url: back_path)
+    version_path = edit_version_path(backlog.sprint, back_url: back_path, project_id: @project.id)
 
-    link_to(l(:'backlogs.properties'), version_path)
+    link_to(I18n.t(:'backlogs.properties'), version_path)
   end
 
   def export_modal_link(backlog, options = {})
     path = backlogs_project_sprint_export_card_configurations_path(@project.id, backlog.sprint.id)
     html_id = "modal_work_package_#{SecureRandom.hex(10)}"
-    link_to(l(:label_backlogs_export_card_export), path, options.merge(id: html_id, :'data-modal' => ''))
+    link_to(I18n.t(:label_backlogs_export_card_export), path, options.merge(id: html_id, :'data-modal' => ''))
   end
 
   def sprint_backlog_menu_items_for(backlog)
     items = {}
 
-    items[:task_board] = link_to(l(:label_task_board),
+    items[:task_board] = link_to(I18n.t(:label_task_board),
                                  { controller: '/rb_taskboards',
                                    action: 'show',
                                    project_id: @project,
@@ -131,13 +124,13 @@ module RbMasterBacklogsHelper
 
     if backlog.sprint.has_burndown?
       items[:burndown] = content_tag(:a,
-                                     l('backlogs.show_burndown_chart'),
+                                     I18n.t('backlogs.show_burndown_chart'),
                                      href: '#',
                                      class: 'show_burndown_chart')
     end
 
     if @project.module_enabled? 'wiki'
-      items[:wiki] = link_to(l(:label_wiki),
+      items[:wiki] = link_to(I18n.t(:label_wiki),
                              controller: '/rb_wikis',
                              action: 'edit',
                              project_id: @project,

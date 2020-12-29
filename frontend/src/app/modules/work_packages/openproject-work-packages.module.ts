@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,13 +23,13 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {OpenprojectCommonModule} from 'core-app/modules/common/openproject-common.module';
 import {WorkPackageFormAttributeGroupComponent} from 'core-components/wp-form-group/wp-attribute-group.component';
 import {OpenprojectFieldsModule} from 'core-app/modules/fields/openproject-fields.module';
-import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
+import {Injector, NgModule} from '@angular/core';
 import {
   GroupDescriptor,
   WorkPackageSingleViewComponent
@@ -37,7 +37,6 @@ import {
 import {HookService} from 'core-app/modules/plugins/hook-service';
 import {WorkPackageEmbeddedTableComponent} from 'core-components/wp-table/embedded/wp-embedded-table.component';
 import {WorkPackageEmbeddedTableEntryComponent} from 'core-components/wp-table/embedded/wp-embedded-table-entry.component';
-import {WorkPackagesTableController} from 'core-components/wp-table/wp-table.directive';
 import {WorkPackageTablePaginationComponent} from 'core-components/wp-table/table-pagination/wp-table-pagination.component';
 import {WpResizerDirective} from 'core-components/resizer/wp-resizer.component';
 import {WorkPackageTimelineTableController} from 'core-components/wp-table/timeline/container/wp-timeline-container.directive';
@@ -96,6 +95,7 @@ import {FilterIntegerValueComponent} from 'core-components/filters/filter-intege
 import {FilterStringValueComponent} from 'core-components/filters/filter-string-value/filter-string-value.component';
 import {FilterToggledMultiselectValueComponent} from 'core-components/filters/filter-toggled-multiselect-value/filter-toggled-multiselect-value.component';
 import {WorkPackageDetailsViewButtonComponent} from 'core-components/wp-buttons/wp-details-view-button/wp-details-view-button.component';
+import {WorkPackageFoldToggleButtonComponent} from 'core-components/wp-buttons/wp-fold-toggle-button/wp-fold-toggle-button.component';
 import {WpTableConfigurationModalComponent} from 'core-components/wp-table/configuration-modal/wp-table-configuration.modal';
 import {WpTableConfigurationColumnsTab} from 'core-components/wp-table/configuration-modal/tabs/columns-tab.component';
 import {WpTableConfigurationDisplaySettingsTab} from 'core-components/wp-table/configuration-modal/tabs/display-settings-tab.component';
@@ -126,18 +126,14 @@ import {ExternalRelationQueryConfigurationComponent} from "core-components/wp-ta
 import {ExternalRelationQueryConfigurationService} from "core-components/wp-table/external-configuration/external-relation-query-configuration.service";
 import {WorkPackageStaticQueriesService} from 'core-components/wp-query-select/wp-static-queries.service';
 import {WorkPackagesListInvalidQueryService} from 'core-components/wp-list/wp-list-invalid-query.service';
-import {WorkPackageCacheService} from 'core-components/work-packages/work-package-cache.service';
 import {SchemaCacheService} from 'core-components/schemas/schema-cache.service';
 import {WorkPackageWatchersService} from 'core-components/wp-single-view-tabs/watchers-tab/wp-watchers.service';
 import {WorkPackagesActivityService} from 'core-components/wp-single-view-tabs/activity-panel/wp-activity.service';
-import {KeepTabService} from 'core-components/wp-single-view-tabs/keep-tab/keep-tab.service';
-import {QueryFormDmService} from 'core-app/modules/hal/dm-services/query-form-dm.service';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
 import {WorkPackageChildrenQueryComponent} from "core-components/wp-relations/embedded/children/wp-children-query.component";
 import {WpRelationInlineAddExistingComponent} from "core-components/wp-relations/embedded/inline/add-existing/wp-relation-inline-add-existing.component";
 import {WorkPackageRelationQueryComponent} from "core-components/wp-relations/embedded/relations/wp-relation-query.component";
 import {WorkPackagesBaseComponent} from "core-app/modules/work_packages/routing/wp-base/wp--base.component";
-import {WorkPackagesListComponent} from "core-app/modules/work_packages/routing/wp-list/wp-list.component";
 import {WorkPackageSplitViewComponent} from "core-app/modules/work_packages/routing/wp-split-view/wp-split-view.component";
 import {WorkPackagesFullViewComponent} from "core-app/modules/work_packages/routing/wp-full-view/wp-full-view.component";
 import {AttachmentsUploadComponent} from 'core-app/modules/attachments/attachments-upload/attachments-upload.component';
@@ -146,9 +142,8 @@ import {WorkPackageFilterByTextInputComponent} from "core-components/filters/qui
 import {QueryFiltersService} from "core-components/wp-query/query-filters.service";
 import {WorkPackageCardViewComponent} from "core-components/wp-card-view/wp-card-view.component";
 import {WorkPackageIsolatedQuerySpaceDirective} from "core-app/modules/work_packages/query-space/wp-isolated-query-space.directive";
-import {WorkPackageDmService} from "core-app/modules/hal/dm-services/work-package-dm.service";
 import {WorkPackageRelationsService} from "core-components/wp-relations/wp-relations.service";
-import {OpenprojectBcfModule} from "core-app/modules/bcf/openproject-bcf.module";
+import {OpenprojectBcfModule} from "core-app/modules/bim/bcf/openproject-bcf.module";
 import {WorkPackageRelationsAutocomplete} from "core-components/wp-relations/wp-relations-create/wp-relations-autocomplete/wp-relations-autocomplete.component";
 import {CustomDateActionAdminComponent} from 'core-components/wp-custom-actions/date-action/custom-date-action-admin.component';
 import {WorkPackagesTableConfigMenu} from "core-components/wp-table/config-menu/config-menu.component";
@@ -163,7 +158,15 @@ import {WorkPackageEditActionsBarComponent} from "core-app/modules/common/edit-a
 import {HalResource} from "core-app/modules/hal/resources/hal-resource";
 import {WorkPackageChangeset} from "core-components/wp-edit/work-package-changeset";
 import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-single-card/wp-single-card.component";
-
+import {TimeEntryChangeset} from 'core-app/components/time-entries/time-entry-changeset';
+import {WorkPackageListViewComponent} from "core-app/modules/work_packages/routing/wp-list-view/wp-list-view.component";
+import {PartitionedQuerySpacePageComponent} from "core-app/modules/work_packages/routing/partitioned-query-space-page/partitioned-query-space-page.component";
+import {WorkPackageViewPageComponent} from "core-app/modules/work_packages/routing/wp-view-page/wp-view-page.component";
+import {WorkPackageSettingsButtonComponent} from "core-components/wp-buttons/wp-settings-button/wp-settings-button.component";
+import {BackButtonComponent} from "core-app/modules/common/back-routing/back-button.component";
+import {DatePickerModal} from "core-components/datepicker/datepicker.modal";
+import {WorkPackagesTableComponent} from "core-components/wp-table/wp-table.component";
+import {WorkPackageGroupToggleDropdownMenuDirective} from "core-components/op-context-menu/handlers/wp-group-toggle-dropdown-menu.directive";
 
 @NgModule({
   imports: [
@@ -179,18 +182,8 @@ import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-si
     OpenprojectBcfModule,
 
     OpenprojectProjectsModule,
-
-    // Work package custom actions
-    //WpCustomActionsModule,
   ],
   providers: [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: OpenprojectWorkPackagesModule.bootstrapAttributeGroups,
-      deps: [Injector],
-      multi: true
-    },
-
     // Notification service
     WorkPackageNotificationService,
 
@@ -199,7 +192,6 @@ import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-si
     ExternalRelationQueryConfigurationService,
 
     // Global work package states / services
-    WorkPackageCacheService,
     SchemaCacheService,
 
     // Global query/table state services
@@ -212,23 +204,22 @@ import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-si
     // Provide a separate service for creation events of WP Inline create
     // This can be hierarchically injected to provide isolated events on an embedded table
     WorkPackageRelationsService,
-    WorkPackageCacheService,
-    SchemaCacheService,
-
-    KeepTabService,
-    WorkPackageDmService,
 
     WorkPackagesActivityService,
     WorkPackageRelationsService,
     WorkPackageWatchersService,
 
-    QueryFormDmService,
     HalEventsService,
   ],
   declarations: [
     // Routing
     WorkPackagesBaseComponent,
-    WorkPackagesListComponent,
+    PartitionedQuerySpacePageComponent,
+    WorkPackageViewPageComponent,
+
+    // WP list side
+    WorkPackageListViewComponent,
+    WorkPackageSettingsButtonComponent,
 
     // Query injector isolation
     WorkPackageIsolatedQuerySpaceDirective,
@@ -258,13 +249,16 @@ import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-si
 
     WorkPackagesGridComponent,
 
-    WorkPackagesTableController,
+    WorkPackagesTableComponent,
     WorkPackagesTableConfigMenu,
     WorkPackageTablePaginationComponent,
 
     WpResizerDirective,
 
     WorkPackageTableSumsRowController,
+
+    // Fold/Unfold button on wp list
+    WorkPackageFoldToggleButtonComponent,
 
     // Filters
     QueryFiltersComponent,
@@ -290,6 +284,7 @@ import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-si
     WorkPackageSingleContextMenuDirective,
     WorkPackageQuerySelectDropdownComponent,
     WorkPackageViewDropdownMenuDirective,
+    WorkPackageGroupToggleDropdownMenuDirective,
 
     // Timeline
     WorkPackageTimelineButtonComponent,
@@ -311,6 +306,7 @@ import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-si
     WorkPackageChildrenQueryComponent,
     WorkPackageRelationQueryComponent,
     WorkPackageFormAttributeGroupComponent,
+    BackButtonComponent,
 
     // Activity Tab
     NewestActivityOnOverviewComponent,
@@ -363,6 +359,7 @@ import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-si
     QuerySharingModal,
     SaveQueryModal,
     WpDestroyModal,
+    DatePickerModal,
 
     // CustomActions
     WpCustomActionComponent,
@@ -378,87 +375,11 @@ import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-si
     WorkPackageCardViewComponent,
     WorkPackageSingleCardComponent,
     WorkPackageViewToggleButton,
-  ],
-  entryComponents: [
-    // Split view
-    WorkPackageSplitViewComponent,
 
-    // Full view
-    WorkPackagesFullViewComponent,
 
-    // Single view tabs
-    WorkPackageActivityTabComponent,
-    WorkPackageRelationsTabComponent,
-    WorkPackageWatchersTabComponent,
-
-    // Single view
-    WorkPackageOverviewTabComponent,
-    WorkPackageCommentFieldComponent,
-
-    // Inline create
-    WpRelationInlineAddExistingComponent,
-
-    // View representations
-    WorkPackagesBaseComponent,
-    WorkPackagesListComponent,
-
-    WorkPackagesGridComponent,
-
-    // WP new
-    WorkPackageNewFullViewComponent,
-    WorkPackageNewSplitViewComponent,
-
-    // WP copy
-    WorkPackageCopyFullViewComponent,
-    WorkPackageCopySplitViewComponent,
-
-    // Embedded table
-    WorkPackageEmbeddedTableComponent,
-    WorkPackageEmbeddedTableEntryComponent,
-
-    // External query configuration
-    ExternalQueryConfigurationComponent,
-    ExternalRelationQueryConfigurationComponent,
-
-    WorkPackageFormAttributeGroupComponent,
-    WorkPackageChildrenQueryComponent,
-    WorkPackageRelationQueryComponent,
-
-    WorkPackagesTableController,
-
-    // Modals
-    WpTableConfigurationModalComponent,
-    WpTableConfigurationRelationSelectorComponent,
-    WpTableConfigurationColumnsTab,
-    WpTableConfigurationDisplaySettingsTab,
-    WpTableConfigurationFiltersTab,
-    WpTableConfigurationSortByTab,
-    WpTableConfigurationTimelinesTab,
-    WpTableConfigurationHighlightingTab,
-    WpTableExportModal,
-    QuerySharingModal,
-    SaveQueryModal,
-    WpDestroyModal,
-
-    // Queries in menu
-    WorkPackageQuerySelectDropdownComponent,
-
-    // Relations tab (ng1 -> ng2)
-    WorkPackageRelationsHierarchyComponent,
-
-    // CKEditor macros which could not be included in the
-    // editor module to avoid circular dependencies
-    EmbeddedTablesMacroComponent,
-    WpButtonMacroModal,
-
-    // Card view
-    WorkPackageCardViewComponent,
-    WorkPackageSingleCardComponent,
-
-    CustomDateActionAdminComponent,
   ],
   exports: [
-    WorkPackagesTableController,
+    WorkPackagesTableComponent,
     WorkPackageTablePaginationComponent,
     WorkPackageEmbeddedTableComponent,
     WorkPackageEmbeddedTableEntryComponent,
@@ -470,57 +391,77 @@ import {WorkPackageSingleCardComponent} from "core-components/wp-card-view/wp-si
     WorkPackageIsolatedGraphQuerySpaceDirective,
     QueryFiltersComponent,
 
+    WpResizerDirective,
+    WorkPackageBreadcrumbComponent,
+    WorkPackageBreadcrumbParentComponent,
+    WorkPackageSplitViewToolbarComponent,
+    WorkPackageSubjectComponent,
+    WorkPackageWatchersCountComponent,
+    WorkPackageRelationsCountComponent,
+    WorkPackagesGridComponent,
+
     // Modals
     WpTableConfigurationModalComponent,
     WpTableConfigurationFiltersTab,
+
+    // Needed so that e.g. IFC can access it.
+    WorkPackageCreateButtonComponent,
+    WorkPackageTypeStatusComponent,
+    WorkPackageEditActionsBarComponent,
+    WorkPackageSingleViewComponent,
+    WorkPackageSplitViewComponent,
+    BackButtonComponent,
   ]
 })
 export class OpenprojectWorkPackagesModule {
   static bootstrapAttributeGroupsCalled = false;
 
+  constructor(injector:Injector) {
+    OpenprojectWorkPackagesModule.bootstrapAttributeGroups(injector);
+  }
+
   // The static property prevents running the function
   // multiple times. This happens e.g. when the module is included
   // into a plugin's module.
-  public static bootstrapAttributeGroups(injector:Injector) {
+  public static bootstrapAttributeGroups(injector:Injector):void {
     if (this.bootstrapAttributeGroupsCalled) {
-      return () => {
-        // no op
-      };
+      return;
     }
 
     this.bootstrapAttributeGroupsCalled = true;
 
-    return () => {
-      const hookService = injector.get(HookService);
+    const hookService = injector.get(HookService);
 
-      hookService.register('attributeGroupComponent', (group:GroupDescriptor, workPackage:WorkPackageResource) => {
-        if (group.type === 'WorkPackageFormAttributeGroup') {
-          return WorkPackageFormAttributeGroupComponent;
-        } else if (!workPackage.isNew && group.type === 'WorkPackageFormChildrenQueryGroup') {
-          return WorkPackageChildrenQueryComponent;
-        } else if (!workPackage.isNew && group.type === 'WorkPackageFormRelationQueryGroup') {
-          return WorkPackageRelationQueryComponent;
-        } else {
-          return null;
-        }
-      });
-
-      hookService.register('workPackageAttachmentUploadComponent', (workPackage:WorkPackageResource) => {
-        return AttachmentsUploadComponent;
-      });
-
-      hookService.register('workPackageAttachmentListComponent', (workPackage:WorkPackageResource) => {
-        return AttachmentListComponent;
-      });
-
-      /** Return specialized work package changeset for editing service */
-      hookService.register('halResourceChangesetClass', (resource:HalResource) => {
-        if (resource._type === 'WorkPackage') {
-          return WorkPackageChangeset;
-        }
-
+    hookService.register('attributeGroupComponent', (group:GroupDescriptor, workPackage:WorkPackageResource) => {
+      if (group.type === 'WorkPackageFormAttributeGroup') {
+        return WorkPackageFormAttributeGroupComponent;
+      } else if (!workPackage.isNew && group.type === 'WorkPackageFormChildrenQueryGroup') {
+        return WorkPackageChildrenQueryComponent;
+      } else if (!workPackage.isNew && group.type === 'WorkPackageFormRelationQueryGroup') {
+        return WorkPackageRelationQueryComponent;
+      } else {
         return null;
-      });
-    };
+      }
+    });
+
+    hookService.register('workPackageAttachmentUploadComponent', (workPackage:WorkPackageResource) => {
+      return AttachmentsUploadComponent;
+    });
+
+    hookService.register('workPackageAttachmentListComponent', (workPackage:WorkPackageResource) => {
+      return AttachmentListComponent;
+    });
+
+    /** Return specialized work package changeset for editing service */
+    hookService.register('halResourceChangesetClass', (resource:HalResource) => {
+      switch (resource._type) {
+        case 'WorkPackage':
+          return WorkPackageChangeset;
+        case 'TimeEntry':
+          return TimeEntryChangeset;
+        default:
+          return null;
+      }
+    });
   }
 }

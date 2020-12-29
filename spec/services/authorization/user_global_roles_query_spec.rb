@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -48,6 +48,16 @@ describe Authorization::UserGlobalRolesQuery do
                                roles: [role2],
                                principal: user)
   }
+  let(:global_permission) { OpenProject::AccessControl.permissions.find { |p| p.global? } }
+  let(:global_role) do
+    FactoryBot.build(:global_role,
+                     permissions: [global_permission.name])
+  end
+  let(:global_member) do
+    FactoryBot.build(:global_member,
+                     principal: user,
+                     roles: [global_role])
+  end
 
   describe '.query' do
     before do
@@ -90,6 +100,27 @@ describe Authorization::UserGlobalRolesQuery do
     context 'w/ the user being anonymous' do
       it 'is the anonymous role' do
         expect(described_class.query(anonymous)).to match_array [anonymous_role]
+      end
+    end
+
+    context 'w/ the user having a global role' do
+      before do
+        global_member.save!
+      end
+
+      it 'is the global role and non member role' do
+        expect(described_class.query(user)).to match_array [global_role, non_member]
+      end
+    end
+
+    context 'w/ the user having a global role and a member role' do
+      before do
+        member.save!
+        global_member.save!
+      end
+
+      it 'is the global role and non member role' do
+        expect(described_class.query(user)).to match_array [global_role, role, non_member]
       end
     end
   end

@@ -13,7 +13,8 @@ import {Subject} from "rxjs";
 import {QuerySortByResource} from "core-app/modules/hal/resources/query-sort-by-resource";
 import {QueryGroupByResource} from "core-app/modules/hal/resources/query-group-by-resource";
 import {VersionResource} from "core-app/modules/hal/resources/version-resource";
-import {wpDisplayRepresentation} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-display-representation.service";
+import {WorkPackageDisplayRepresentationValue} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-display-representation.service";
+import {TimeEntryResource} from "core-app/modules/hal/resources/time-entry-resource";
 
 export class States extends StatesGroup {
   name = 'MainStore';
@@ -36,6 +37,9 @@ export class States extends StatesGroup {
   /* /api/v3/statuses */
   statuses = multiInput<StatusResource>();
 
+  /* /api/v3/time_entries */
+  timeEntries:MultiInputState<TimeEntryResource> = multiInput<TimeEntryResource>();
+
   /* /api/v3/versions */
   versions = multiInput<VersionResource>();
 
@@ -49,15 +53,21 @@ export class States extends StatesGroup {
   changes = new GlobalStateChanges();
 
   // Additional state map that can be dynamically registered.
-  additional:{[id:string]:MultiInputState<HalResource>} = {};
+  additional:{ [id:string]:MultiInputState<unknown> } = {};
 
-  forResource(resource:HalResource):InputState<HalResource>|undefined {
-    const stateName = _.camelCase(resource._type) + 's';
+  forType<T>(stateName:string):MultiInputState<T> {
     let state = (this as any)[stateName] || this.additional[stateName];
 
     if (!state) {
-      state = this.additional[stateName] = multiInput<HalResource>();
+      state = this.additional[stateName] = multiInput<T>();
     }
+
+    return state as any;
+  }
+
+  forResource<T extends HalResource = HalResource>(resource:T):InputState<T>|undefined {
+    const stateName = _.camelCase(resource._type) + 's';
+    let state = this.forType<T>(stateName);
 
     return state && state.get(resource.id!);
   }
@@ -86,5 +96,5 @@ export class QueryAvailableDataStates {
   filters = input<QueryFilterInstanceSchemaResource[]>();
 
   // Display of the WP results
-  displayRepresentation = input<wpDisplayRepresentation|null>();
+  displayRepresentation = input<WorkPackageDisplayRepresentationValue|null>();
 }

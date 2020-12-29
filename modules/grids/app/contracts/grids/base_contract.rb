@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,12 +28,10 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-require 'model_contract'
-
 module Grids
   class BaseContract < ::ModelContract
     include OpenProject::StaticRouting::UrlHelpers
-    include Concerns::AssignableValuesContract
+    include AssignableValuesContract
     include ::Attachments::ValidateReplacements
 
     attribute :row_count do
@@ -46,23 +44,18 @@ module Grids
 
     attribute_alias :type, :scope
 
-    def validate
-      validate_allowed
-      validate_registered_widgets
-      validate_widget_collisions
-      validate_widgets_within
-      validate_widgets_start_before_end
-
-      run_registration_validations
-
-      super
-    end
-
     attribute :widgets
 
     attribute :name
 
     attribute :options
+
+    validate :validate_allowed
+    validate :validate_registered_widgets
+    validate :validate_widget_collisions
+    validate :validate_widgets_within
+    validate :validate_widgets_start_before_end
+    validate :run_registration_validations
 
     def self.model
       Grid

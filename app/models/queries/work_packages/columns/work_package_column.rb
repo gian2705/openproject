@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -41,13 +41,17 @@ class Queries::WorkPackages::Columns::WorkPackageColumn < Queries::Columns::Base
     WorkPackage.human_attribute_name(name)
   end
 
-  def sum_of(work_packages)
-    if work_packages.is_a?(Array)
-      # TODO: Sums::grouped_sums might call through here without an AR::Relation
-      # Ensure that this also calls using a Relation and drop this (slow!) implementation
-      work_packages.map { |wp| value(wp) }.compact.reduce(:+)
+  def self.scoped_column_sum(scope, select, group_by)
+    scope = scope
+              .except(:order, :select)
+
+    if group_by
+      scope
+        .group(group_by)
+        .select("#{group_by} id", select)
     else
-      work_packages.sum(name)
+      scope
+        .select(select)
     end
   end
 end

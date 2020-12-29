@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -111,7 +111,10 @@ describe Members::SetAttributesService, type: :model do
 
       context 'with a persisted record' do
         let(:member) do
-          FactoryBot.build_stubbed(:member, roles: [first_role, second_role])
+          FactoryBot.build_stubbed(:member, roles: [first_role, second_role]).tap do |m|
+            allow(m)
+              .to receive(:touch)
+          end
         end
 
         it 'adds the new role' do

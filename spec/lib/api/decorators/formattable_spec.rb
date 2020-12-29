@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -41,7 +41,7 @@ describe ::API::Decorators::Formattable do
   end
 
   it 'should contain the formatted string' do
-    is_expected.to be_json_eql('<p>A <strong>raw</strong> string!</p>'.to_json).at_path('html')
+    is_expected.to be_json_eql('<p class="op-uc-p">A <strong>raw</strong> string!</p>'.to_json).at_path('html')
   end
 
   context 'passing an object context' do
@@ -54,7 +54,7 @@ describe ::API::Decorators::Formattable do
         .and_call_original
 
       expect(subject.to_json)
-        .to be_json_eql('<p>A <strong>raw</strong> string!</p>'.to_json).at_path('html')
+        .to be_json_eql('<p class="op-uc-p">A <strong>raw</strong> string!</p>'.to_json).at_path('html')
     end
   end
 

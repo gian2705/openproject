@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,52 +23,54 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
-import {AfterViewInit, Component, ElementRef, Injector, OnDestroy} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Injector} from '@angular/core';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import {INotification, NotificationsService} from 'core-app/modules/common/notifications/notifications.service';
 import {WorkPackageResource} from 'core-app/modules/hal/resources/work-package-resource';
-import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
+import {IsolatedQuerySpace} from 'core-app/modules/work_packages/query-space/isolated-query-space';
 import * as moment from 'moment';
 import {Moment} from 'moment';
-import {componentDestroyed, untilComponentDestroyed} from 'ng2-rx-componentdestroyed';
-import {debounceTime, filter, map, takeUntil, withLatestFrom} from 'rxjs/operators';
+import {filter, takeUntil} from 'rxjs/operators';
 import {
   calculateDaySpan,
   getPixelPerDayForZoomLevel,
   requiredPixelMarginLeft,
   timelineElementCssClass,
+  timelineHeaderSelector,
   timelineMarkerSelectionStartClass,
   TimelineViewParameters,
   zoomLevelOrder
 } from '../wp-timeline';
-import {input, InputState} from "reactivestates";
-import {WorkPackageTable} from "core-components/wp-fast-table/wp-fast-table";
-import {WorkPackageTimelineCellsRenderer} from "core-components/wp-table/timeline/cells/wp-timeline-cells-renderer";
-import {States} from "core-components/states.service";
-import {WorkPackagesTableController} from "core-components/wp-table/wp-table.directive";
-import {WorkPackageViewTimelineService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-timeline.service";
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
-import {WorkPackageRelationsService} from "core-components/wp-relations/wp-relations.service";
-import {WorkPackageViewHierarchiesService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-hierarchy.service";
-import {WorkPackageTimelineState} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-table-timeline";
-import {WorkPackageTimelineCell} from "core-components/wp-table/timeline/cells/wp-timeline-cell";
-import {selectorTimelineSide} from "core-components/wp-table/wp-table-scroll-sync";
-import {debugLog, timeOutput} from "core-app/helpers/debug_output";
-import {RenderedWorkPackage} from "core-app/modules/work_packages/render-info/rendered-work-package.type";
-import {HalEventsService} from "core-app/modules/hal/services/hal-events.service";
-import {WorkPackageNotificationService} from "core-app/modules/work_packages/notifications/work-package-notification.service";
+import {input, InputState} from 'reactivestates';
+import {WorkPackageTable} from 'core-components/wp-fast-table/wp-fast-table';
+import {WorkPackageTimelineCellsRenderer} from 'core-components/wp-table/timeline/cells/wp-timeline-cells-renderer';
+import {States} from 'core-components/states.service';
+import {WorkPackageViewTimelineService} from 'core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-timeline.service';
+import {WorkPackageRelationsService} from 'core-components/wp-relations/wp-relations.service';
+import {WorkPackageViewHierarchiesService} from 'core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-hierarchy.service';
+import {WorkPackageTimelineCell} from 'core-components/wp-table/timeline/cells/wp-timeline-cell';
+import {selectorTimelineSide} from 'core-components/wp-table/wp-table-scroll-sync';
+import {debugLog, timeOutput} from 'core-app/helpers/debug_output';
+import {RenderedWorkPackage} from 'core-app/modules/work_packages/render-info/rendered-work-package.type';
+import {HalEventsService} from 'core-app/modules/hal/services/hal-events.service';
+import {WorkPackageNotificationService} from 'core-app/modules/work_packages/notifications/work-package-notification.service';
+import {combineLatest, Observable} from 'rxjs';
+import {UntilDestroyedMixin} from 'core-app/helpers/angular/until-destroyed.mixin';
+import {WorkPackagesTableComponent} from 'core-components/wp-table/wp-table.component';
+import {
+  groupIdFromIdentifier,
+  groupTypeFromIdentifier
+} from 'core-components/wp-fast-table/builders/modes/grouped/grouped-rows-helpers';
+import {WorkPackageViewCollapsedGroupsService} from 'core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-collapsed-groups.service';
 
 @Component({
   selector: 'wp-timeline-container',
   templateUrl: './wp-timeline-container.html'
 })
-export class WorkPackageTimelineTableController implements AfterViewInit, OnDestroy {
-
-  private readonly querySpace:IsolatedQuerySpace = this.injector.get(IsolatedQuerySpace);
-
+export class WorkPackageTimelineTableController extends UntilDestroyedMixin implements AfterViewInit {
   private $element:JQuery;
 
   public workPackageTable:WorkPackageTable;
@@ -87,7 +89,7 @@ export class WorkPackageTimelineTableController implements AfterViewInit, OnDest
 
   public timelineBody:JQuery;
 
-  private selectionParams:{ notification:INotification | null } = {
+  private selectionParams:{ notification:INotification|null } = {
     notification: null
   };
 
@@ -95,17 +97,44 @@ export class WorkPackageTimelineTableController implements AfterViewInit, OnDest
 
   private refreshRequest = input<void>();
 
+  private collapsedGroupsCellsMap:IGroupCellsMap = {};
+
+  private orderedRows:RenderedWorkPackage[] = [];
+
+  get commonPipes() {
+    return (source:Observable<any>) => {
+      return source.pipe(
+        this.untilDestroyed(),
+        takeUntil(this.querySpace.stopAllSubscriptions),
+        filter(() => this.initialized && this.wpTableTimeline.isVisible),
+      );
+    };
+  }
+
+  get workPackagesWithGroupHeaderCell():RenderedWorkPackage[] {
+    const tableWorkPackages = this.querySpace.results.value!.elements;
+    const wpsWithGroupHeaderCell = tableWorkPackages
+      .filter(tableWorkPackage => this.shouldBeShownInCollapsedGroupHeaders(tableWorkPackage))
+      .map(tableWorkPackage => tableWorkPackage.id);
+    const workPackagesWithGroupHeaderCell = this.orderedRows.filter(row => wpsWithGroupHeaderCell.includes(row.workPackageId!) && !this.workPackageIdOrder.includes(row));
+
+    return workPackagesWithGroupHeaderCell;
+  }
+
   constructor(public readonly injector:Injector,
               private elementRef:ElementRef,
               private states:States,
-              public wpTableDirective:WorkPackagesTableController,
+              public wpTableComponent:WorkPackagesTableComponent,
               private NotificationsService:NotificationsService,
               private wpTableTimeline:WorkPackageViewTimelineService,
               private notificationService:WorkPackageNotificationService,
               private wpRelations:WorkPackageRelationsService,
               private wpTableHierarchies:WorkPackageViewHierarchiesService,
               private halEvents:HalEventsService,
-              readonly I18n:I18nService) {
+              private querySpace:IsolatedQuerySpace,
+              readonly I18n:I18nService,
+              private workPackageViewCollapsedGroupsService:WorkPackageViewCollapsedGroupsService) {
+    super();
   }
 
   ngAfterViewInit() {
@@ -120,57 +149,26 @@ export class WorkPackageTimelineTableController implements AfterViewInit, OnDest
     this.timelineBody = this.$element.find('.wp-table-timeline--body');
 
     // Register this instance to the table
-    this.wpTableDirective.registerTimeline(this, this.timelineBody[0]);
-
-    // Refresh on changes to work packages
-    this.updateOnWorkPackageChangesets();
-
-    // Refresh timeline rendering callback
-    this.setupRefreshListener();
+    this.wpTableComponent.registerTimeline(this, this.timelineBody[0]);
 
     // Refresh on window resize events
     window.addEventListener('wp-resize.timeline', () => this.refreshRequest.putValue(undefined));
 
-    // Refresh timeline view after table rendered
-    this.querySpace.rendered.values$()
-      .pipe(
-        takeUntil(this.querySpace.stopAllSubscriptions),
-        filter(() => this.initialized)
-      )
-      .subscribe((orderedRows) => {
-        // Remember all visible rows in their order of appearance.
-        this.workPackageIdOrder = orderedRows.filter(row => !row.hidden);
-        this.refreshView();
-      });
+    combineLatest([
+      this.querySpace.tableRendered.values$(),
+      this.refreshRequest.changes$(),
+      this.wpTableTimeline.live$()
+    ]).pipe(
+      this.commonPipes,
+    )
+    .subscribe(([orderedRows, changes, timelineState]) => {
+      // Remember all visible rows in their order of appearance.
+      this.workPackageIdOrder = orderedRows.filter((row:RenderedWorkPackage) => !row.hidden);
+      this.orderedRows = orderedRows;
+      this.refreshView();
+    });
 
-    // Refresh timeline view when becoming visible
-    this.wpTableTimeline
-      .live$()
-      .pipe(
-        untilComponentDestroyed(this),
-        filter((timelineState:WorkPackageTimelineState) => timelineState.visible),
-      )
-      .subscribe((timelineState:WorkPackageTimelineState) => {
-        this.refreshRequest.putValue(undefined);
-      });
-  }
-
-  private setupRefreshListener() {
-    this.refreshRequest
-      .changes$()
-      .pipe(
-        untilComponentDestroyed(this),
-        debounceTime(250)
-      )
-      .subscribe(() => this.refreshView());
-  }
-
-  ngOnDestroy():void {
-    // empty
-  }
-
-  workPackageInView(wpId:string):boolean {
-    return this.cellsRenderer.hasCell(wpId);
+    this.setupManageCollapsedGroupHeaderCells();
   }
 
   workPackageCells(wpId:string):WorkPackageTimelineCell[] {
@@ -205,7 +203,7 @@ export class WorkPackageTimelineTableController implements AfterViewInit, OnDest
   }
 
   get initialized():boolean {
-    return this.workPackageTable && this.querySpace.rendered.hasValue();
+    return this.workPackageTable && this.querySpace.tableRendered.hasValue();
   }
 
   refreshView() {
@@ -236,29 +234,19 @@ export class WorkPackageTimelineTableController implements AfterViewInit, OnDest
         cb(this._viewParameters);
       });
 
-      // Calculate overflowing width to set to outer container
-      // required to match width in all child divs
-      const currentWidth = this.getParentScrollContainer().scrollWidth;
-      this.outerContainer.width(currentWidth);
-    });
-  }
+      this.refreshCollapsedGroupsHeaderCells(this.collapsedGroupsCellsMap, this.cellsRenderer);
 
-  updateOnWorkPackageChangesets() {
-    this.states.workPackages.observeChange()
-      .pipe(
-        takeUntil(componentDestroyed(this)),
-        filter(() => this.initialized && this.wpTableTimeline.isVisible),
-        filter(([wpId, ]) => this.cellsRenderer.hasCell(wpId))
-      )
-      .subscribe(([wpId, ]) => {
-        const viewParamsChanged = this.calculateViewParams(this._viewParameters);
-        if (viewParamsChanged) {
-          this.refreshRequest.putValue(undefined);
-        } else {
-          // Refresh the single cell
-          this.cellsRenderer.refreshCellsFor(wpId);
-        }
+      // Calculate overflowing width to set to outer container
+      // required to match width in all child divs.
+      // The header is the only one reliable, as it already has the final width.
+      const currentWidth = this.$element.find(timelineHeaderSelector)[0].scrollWidth;
+      this.outerContainer.width(currentWidth);
+
+      // Mark rendering event in a timeout to give DOM some time
+      setTimeout(() => {
+        this.querySpace.timelineRendered.next(null);
       });
+    });
   }
 
   startAddRelationPredecessor(start:WorkPackageResource) {
@@ -297,6 +285,7 @@ export class WorkPackageTimelineTableController implements AfterViewInit, OnDest
     const nonVisibleDaysLeft = Math.floor(scrollLeft / this.viewParameters.pixelPerDay);
     return this.viewParameters.dateDisplayStart.clone().add(nonVisibleDaysLeft, 'days');
   }
+
   getLastDayInViewport() {
     const outerContainer = this.getParentScrollContainer();
     const scrollLeft = outerContainer.scrollLeft;
@@ -361,9 +350,9 @@ export class WorkPackageTimelineTableController implements AfterViewInit, OnDest
 
     const newParams = new TimelineViewParameters();
     let changed = false;
+    const workPackagesToCalculateTimelineWidthFrom = this.getWorkPackagesToCalculateTimelineWidthFrom();
 
-    // Calculate view parameters
-    this.workPackageIdOrder.forEach((renderedRow) => {
+    workPackagesToCalculateTimelineWidthFrom.forEach((renderedRow) => {
       const wpId = renderedRow.workPackageId;
 
       if (!wpId) {
@@ -438,7 +427,8 @@ export class WorkPackageTimelineTableController implements AfterViewInit, OnDest
       return;
     }
 
-    const daysSpan = calculateDaySpan(this.workPackageIdOrder, this.states.workPackages, this._viewParameters);
+    const workPackagesToCalculateWidthFrom =  this.getWorkPackagesToCalculateTimelineWidthFrom();
+    const daysSpan = calculateDaySpan(workPackagesToCalculateWidthFrom, this.states.workPackages, this._viewParameters);
     const timelineWidthInPx = this.$element.parent().width()! - (2 * requiredPixelMarginLeft);
 
     for (let zoomLevel of zoomLevelOrder) {
@@ -452,12 +442,104 @@ export class WorkPackageTimelineTableController implements AfterViewInit, OnDest
         // did the zoom level changed?
         if (previousZoomLevel !== zoomLevel) {
           this._viewParameters.settings.zoomLevel = zoomLevel;
-          this.wpTableDirective.timeline.scrollLeft = 0;
+          this.wpTableComponent.timeline.scrollLeft = 0;
         }
 
         this.wpTableTimeline.appliedZoomLevel = zoomLevel;
         return;
       }
     }
+  }
+
+  setupManageCollapsedGroupHeaderCells() {
+    this.workPackageViewCollapsedGroupsService.updates$()
+          .pipe(
+            this.commonPipes,
+          )
+          .subscribe((groupsCollapseEvent:IGroupsCollapseEvent) => {
+              this.manageCollapsedGroupHeaderCells(
+                groupsCollapseEvent,
+                this.querySpace.results.value!.elements,
+                this.collapsedGroupsCellsMap,
+              );
+          });
+  }
+
+  manageCollapsedGroupHeaderCells(groupsCollapseConfig:IGroupsCollapseEvent,
+                                  tableWorkPackages:WorkPackageResource[],
+                                  collapsedGroupsCellsMap:IGroupCellsMap) {
+    const refreshAllGroupHeaderCells = groupsCollapseConfig.allGroupsChanged;
+    const collapsedGroupsChange = groupsCollapseConfig.state;
+    const collapsedGroupsChangeArray = Object.keys(collapsedGroupsChange);
+    let groupsToUpdate:string[] = [];
+
+    if (!collapsedGroupsChangeArray.length) { return; }
+
+    if (refreshAllGroupHeaderCells) {
+      groupsToUpdate = collapsedGroupsChangeArray.filter(groupIdentifier => this.shouldManageCollapsedGroupHeaderCells(groupIdentifier, groupsCollapseConfig));
+    } else {
+      const groupIdentifier = groupsCollapseConfig.lastChangedGroup!;
+      if (this.shouldManageCollapsedGroupHeaderCells(groupIdentifier, groupsCollapseConfig)) {
+        groupsToUpdate = [groupIdentifier];
+      }
+    }
+
+    groupsToUpdate.forEach(groupIdentifier => {
+      const groupIsCollapsed = collapsedGroupsChange[groupIdentifier];
+
+      if (groupIsCollapsed) {
+        this.createCollapsedGroupHeaderCells(groupIdentifier, tableWorkPackages, collapsedGroupsCellsMap);
+      } else {
+        this.removeCollapsedGroupHeaderCells(groupIdentifier, collapsedGroupsCellsMap);
+      }
+    });
+  }
+
+  shouldManageCollapsedGroupHeaderCells(groupIdentifier:string, groupsCollapseConfig:IGroupsCollapseEvent) {
+    const keyGroupType = groupTypeFromIdentifier(groupIdentifier);
+
+    return this.workPackageViewCollapsedGroupsService.groupTypesWithHeaderCellsWhenCollapsed.includes(keyGroupType) &&
+          this.workPackageViewCollapsedGroupsService.groupTypesWithHeaderCellsWhenCollapsed.includes(groupsCollapseConfig.groupedBy!);
+  }
+
+  createCollapsedGroupHeaderCells(groupIdentifier:string, tableWorkPackages:WorkPackageResource[], collapsedGroupsCellsMap:IGroupCellsMap) {
+    this.removeCollapsedGroupHeaderCells(groupIdentifier, collapsedGroupsCellsMap);
+
+    const changedGroupId = groupIdFromIdentifier(groupIdentifier);
+    const changedGroupType = groupTypeFromIdentifier(groupIdentifier);
+    const changedGroupTableWorkPackages = tableWorkPackages.filter(tableWorkPackage => tableWorkPackage[changedGroupType].id === changedGroupId);
+    const changedGroupWpsWithHeaderCells = changedGroupTableWorkPackages.filter(tableWorkPackage => this.shouldBeShownInCollapsedGroupHeaders(tableWorkPackage) &&
+                                                                                                    (tableWorkPackage.date || tableWorkPackage.startDate));
+    const changedGroupWpsWithHeaderCellsIds = changedGroupWpsWithHeaderCells.map(workPackage => workPackage.id!);
+
+    this.collapsedGroupsCellsMap[groupIdentifier!] = this.cellsRenderer.buildCellsAndRenderOnRow(changedGroupWpsWithHeaderCellsIds, `group-${groupIdentifier}-timeline`, true);
+  }
+
+  removeCollapsedGroupHeaderCells(groupIdentifier:string, collapsedGroupsCellsMap:IGroupCellsMap) {
+    if (collapsedGroupsCellsMap[groupIdentifier!]) {
+      collapsedGroupsCellsMap[groupIdentifier!].forEach((cell:WorkPackageTimelineCell) => cell.clear());
+      collapsedGroupsCellsMap[groupIdentifier!] = [];
+    }
+  }
+
+  refreshCollapsedGroupsHeaderCells(collapsedGroupsCellsMap:IGroupCellsMap, cellsRenderer:WorkPackageTimelineCellsRenderer) {
+    Object.keys(collapsedGroupsCellsMap).forEach(collapsedGroupKey => {
+      const collapsedGroupCells = collapsedGroupsCellsMap[collapsedGroupKey];
+
+      collapsedGroupCells.forEach(cell => cellsRenderer.refreshSingleCell(cell, false, true));
+    });
+  }
+
+  shouldBeShownInCollapsedGroupHeaders(workPackage:WorkPackageResource) {
+    return this.workPackageViewCollapsedGroupsService
+                  .wpTypesToShowInCollapsedGroupHeaders
+                  .some(wpTypeFunction => wpTypeFunction(workPackage));
+  }
+
+  getWorkPackagesToCalculateTimelineWidthFrom() {
+    // Include work packages that are show in collapsed group
+    // headers into the calculation, if not they could be rendered out
+    // of the timeline (ie: milestones are shown on collapsed row groups).
+    return [...this.workPackageIdOrder, ...this.workPackagesWithGroupHeaderCell];
   }
 }

@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {BoardActionService} from "core-app/modules/boards/board/board-actions/board-action.service";
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class BoardActionsRegistryService {
 
   private mapping:{ [attribute:string]:BoardActionService } = {};
@@ -12,7 +12,7 @@ export class BoardActionsRegistryService {
 
   public available() {
     return _.map(this.mapping, (service:BoardActionService, attribute:string) => {
-      return { attribute: attribute, text: service.localizedName };
+      return { attribute: attribute, text: service.localizedName, icon:'', description:'', image:''};
     });
   }
 

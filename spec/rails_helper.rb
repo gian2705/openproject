@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 
 ENV['RAILS_ENV'] ||= 'test'
 require File.expand_path('../../config/environment', __FILE__)
@@ -31,8 +31,8 @@ require 'spec_helper'
 require 'factory_bot_rails'
 require 'rspec/rails'
 require 'shoulda/matchers'
-require 'rspec/example_disabler'
 require 'test_prof/recipes/rspec/before_all'
+
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -46,6 +46,12 @@ require 'test_prof/recipes/rspec/before_all'
 # of increasing the boot-up time by auto-requiring all files in the support
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
+#
+# The files are sorted before requiring them to ensure the load order is the same
+# everywhere. There are certain helpers that depend on a expected order.
+# The CI may load the files in a different order than what you see locally which
+# may lead to broken specs on the CI, if we don't sort here
+# (example: with_config.rb has to precede with_direct_uploads.rb).
 #
 Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
 Dir[Rails.root.join('spec/features/support/**/*.rb')].each { |f| require f }

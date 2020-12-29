@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,11 +30,11 @@
 module API
   module Errors
     class UnwritableProperty < ErrorBase
-      identifier 'urn:openproject-org:api:v3:errors:PropertyIsReadOnly'
+      identifier 'PropertyIsReadOnly'
       code 422
 
-      def initialize(property)
-        super I18n.t('api_v3.errors.writing_read_only_attributes')
+      def initialize(property, message)
+        super message
 
         @property = property
         @details = { attribute: property }

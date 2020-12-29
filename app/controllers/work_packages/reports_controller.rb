@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -64,6 +64,6 @@ class WorkPackages::ReportsController < ApplicationController
   private
 
   def default_breadcrumb
-    l(:label_summary)
+    I18n.t(:label_summary)
   end
 end

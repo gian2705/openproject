@@ -1,12 +1,12 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
-# OpenProject is a fork of ChilittProject, which is a fork of Redmine. The copyright follows:
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
 # Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
@@ -29,7 +29,7 @@
 
 class BaseTypeService
   include Shared::BlockService
-  include Concerns::Contracted
+  include Contracted
 
   attr_accessor :contract_class
   attr_accessor :type, :user
@@ -104,7 +104,6 @@ class BaseTypeService
 
   def transform_attribute_groups(groups)
     groups.map do |group|
-
       if group['type'] == 'query'
         transform_query_group(group)
       else

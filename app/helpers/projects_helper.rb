@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,90 +31,6 @@
 module ProjectsHelper
   include WorkPackagesFilterHelper
 
-  def link_to_version(version, html_options = {}, options = {})
-    return '' unless version && version.is_a?(Version)
-
-    link_name = options[:before_text].to_s.html_safe + format_version_name(version)
-    link_to_if version.visible?,
-               link_name,
-               { controller: '/versions', action: 'show', id: version },
-               html_options
-  end
-
-  def project_settings_tabs
-    tabs = [
-      {
-        name: 'info',
-        action: :edit_project,
-        partial: 'projects/edit',
-        label: :label_information_plural
-      },
-      {
-        name: 'modules',
-        action: :select_project_modules,
-        partial: 'project_settings/modules',
-        label: :label_module_plural
-      },
-      {
-        name: 'custom_fields',
-        action: :edit_project,
-        partial: 'project_settings/custom_fields',
-        label: :label_custom_field_plural
-      },
-      {
-        name: 'versions',
-        action: :manage_versions,
-        partial: 'project_settings/versions',
-        label: :label_version_plural
-      },
-      {
-        name: 'categories',
-        action: :manage_categories,
-        partial: 'project_settings/categories',
-        label: :label_work_package_category_plural
-      },
-      {
-        name: 'repository',
-        action: :manage_repository,
-        partial: 'repositories/settings',
-        label: :label_repository
-      },
-      {
-        name: 'forums',
-        action: :manage_forums,
-        partial: 'project_settings/forums',
-        label: :label_forum_plural
-      },
-      {
-        name: 'activities',
-        action: :manage_project_activities,
-        partial: 'project_settings/activities',
-        label: :enumeration_activities
-      },
-      {
-        name: 'types',
-        action: :manage_types,
-        partial: 'project_settings/types',
-        label: :label_work_package_types
-      }
-    ]
-    tabs.select { |tab| User.current.allowed_to?(tab[:action], @project) }
-  end
-
-  # Returns a set of options for a select field, grouped by project.
-  def version_options_for_select(versions, selected = nil)
-    grouped = Hash.new { |h, k| h[k] = [] }
-    (versions + [selected]).compact.uniq.each do |version|
-      grouped[version.project.name] << [version.name, version.id]
-    end
-
-    if grouped.size > 1
-      grouped_options_for_select(grouped, selected && selected.id)
-    else
-      options_for_select((grouped.values.first || []), selected && selected.id)
-    end
-  end
-
   def filter_set?
     params[:filters].present?
   end
@@ -129,6 +45,7 @@ module ProjectsHelper
   def whitelisted_project_filter?(filter)
     whitelist = [
       Queries::Projects::Filters::ActiveFilter,
+      Queries::Projects::Filters::TemplatedFilter,
       Queries::Projects::Filters::ProjectStatusFilter,
       Queries::Projects::Filters::CreatedAtFilter,
       Queries::Projects::Filters::LatestActivityAtFilter,
@@ -167,9 +84,9 @@ module ProjectsHelper
   end
 
   def project_more_menu_settings_item(project)
-    if User.current.allowed_to?({ controller: '/project_settings', action: 'show' }, project)
+    if User.current.allowed_to?({ controller: '/project_settings/generic', action: 'show' }, project)
       [t(:label_project_settings),
-       { controller: '/project_settings', action: 'show', id: project },
+       { controller: '/project_settings/generic', action: 'show', id: project },
        class: 'icon-context icon-settings',
        title: t(:label_project_settings)]
     end
@@ -225,8 +142,14 @@ module ProjectsHelper
       .new(project, current_user)
       .assignable_status_codes
       .map do |code|
-      [I18n.t("activerecord.attributes.project/status.codes.#{code}"), code]
+      [I18n.t("activerecord.attributes.projects/status.codes.#{code}"), code]
     end
+  end
+
+  def project_options_for_templated
+    ::Projects::InstantiateTemplateContract
+      .visible_templates(current_user)
+      .pluck(:name, :id)
   end
 
   def shorten_text(text, length)
@@ -245,16 +168,6 @@ module ProjectsHelper
 
       ancestors << project
     end
-  end
-
-  def project_css_classes(project)
-    s = 'project'
-
-    s << ' root' if project.root?
-    s << ' child' if project.child?
-    s << (project.leaf? ? ' leaf' : ' parent')
-
-    s
   end
 
   def projects_level_list_json(projects)
@@ -294,18 +207,6 @@ module ProjectsHelper
     @sort_criteria.criteria = former_criteria
   end
 
-  def deactivate_class_on_lft_sort
-    if sorted_by_lft?
-      '-inactive'
-    end
-  end
-
-  def href_only_when_not_sort_lft
-    unless sorted_by_lft?
-      "href=#{projects_path(sortBy: JSON::dump([['lft', 'asc']]))}"
-    end
-  end
-
   def sorted_by_lft?
     @sort_criteria.first_key == 'lft'
   end
@@ -317,6 +218,30 @@ module ProjectsHelper
       Projects::CreateContract
     end.new(project, current_user)
        .assignable_parents
+  end
+
+  def gantt_portfolio_query_link(filtered_project_ids)
+    generator = ::Projects::GanttQueryGeneratorService.new(filtered_project_ids)
+    work_packages_path query_props: generator.call
+  end
+
+  def gantt_portfolio_project_ids(project_scope)
+    project_scope
+      .where(active: true)
+      .select(:id)
+      .uniq
+      .pluck(:id)
+  end
+
+  def gantt_portfolio_title
+    title = t('projects.index.open_as_gantt_title')
+
+    if current_user.admin?
+      title << ' '
+      title << t('projects.index.open_as_gantt_title_admin')
+    end
+
+    title
   end
 
   def short_project_description(project, length = 255)

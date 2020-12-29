@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -56,17 +56,22 @@ module Pages
       expect(page).to have_conditional_selector(present, 'td.name', text: name)
     end
 
-    def create_board(action: nil)
+    def create_board(action: nil, expect_empty: false)
       page.find('.toolbar-item a', text: 'Board').click
 
       if action == nil
-        find('.button', text: 'Basic board').click
+        find('.tile-block-title', text: 'Basic').click
       else
-        select action.to_s, from: 'new_board_action_select'
-        find('.button', text: 'Action board').click
+        find('.tile-block-title', text: action.to_s[0..5]).click
       end
 
-      expect(page).to have_selector('.boards-list--item', wait: 10)
+      if expect_empty
+        expect(page).to have_selector('.boards-list--add-item-text', wait: 10)
+        expect(page).to have_no_selector('.boards-list--item')
+      else
+        expect(page).to have_selector('.boards-list--item', wait: 10)
+      end
+
       ::Pages::Board.new ::Boards::Grid.last
     end
 

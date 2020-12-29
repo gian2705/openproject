@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,12 +29,6 @@
 require 'spec_helper'
 
 describe 'roles routes', type: :routing do
-  describe 'new' do
-    it do
-      expect(get('/roles/new')).to route_to('roles#new')
-    end
-  end
-
   context 'admin scoped' do
     it {
       is_expected.to route(:get, 'admin/roles').to(controller: 'roles',

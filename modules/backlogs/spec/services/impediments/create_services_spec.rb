@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
@@ -81,7 +74,7 @@ describe Impediments::CreateService do
     it { expect(subject.subject).to eql impediment_subject }
     it { expect(subject.author).to eql User.current }
     it { expect(subject.project).to eql project }
-    it { expect(subject.fixed_version).to eql version }
+    it { expect(subject.version).to eql version }
     it { expect(subject.priority).to eql priority }
     it { expect(subject.status).to eql status1 }
     it { expect(subject.type).to eql type_task }
@@ -108,13 +101,13 @@ describe Impediments::CreateService do
                                            priority_id: priority.id,
                                            blocks_ids: feature.id.to_s,
                                            status_id: status1.id,
-                                           fixed_version_id: version.id,
+                                           version_id: version.id,
                                            project_id: project.id })
         call.result
       end
 
       before(:each) do
-        feature.fixed_version = version
+        feature.version = version
         feature.save
       end
 
@@ -130,13 +123,13 @@ describe Impediments::CreateService do
                                            priority_id: priority.id,
                                            blocks_ids: feature.id.to_s,
                                            status_id: status1.id,
-                                           fixed_version_id: version.id,
+                                           version_id: version.id,
                                            project_id: project.id })
         call.result
       end
 
       before(:each) do
-        feature.fixed_version = FactoryBot.create(:version, project: project, name: 'another version')
+        feature.version = FactoryBot.create(:version, project: project, name: 'another version')
         feature.save
       end
 
@@ -152,7 +145,7 @@ describe Impediments::CreateService do
                                            priority_id: priority.id,
                                            blocks_ids: '0',
                                            status_id: status1.id,
-                                           fixed_version_id: version.id,
+                                           version_id: version.id,
                                            project_id: project.id })
         call.result
       end
@@ -170,7 +163,7 @@ describe Impediments::CreateService do
                                          blocks_ids: '',
                                          priority_id: priority.id,
                                          status_id: status1.id,
-                                         fixed_version_id: version.id,
+                                         version_id: version.id,
                                          project_id: project.id })
       call.result
     end

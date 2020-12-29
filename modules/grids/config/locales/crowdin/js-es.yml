@@ -3,6 +3,7 @@ es:
     grid:
       add_widget: 'Agregar widget'
       remove: 'Quitar widget'
+      configure: 'Configurar widget'
       upsale:
         text: "Algunos widgets, como el widget del gráfico de paquetes de trabajo, solo están disponibles en la "
         link: 'edición Enterprise.'
@@ -37,11 +38,14 @@ es:
         subprojects:
           title: 'Subproyectos'
           no_results: 'No hay subproyectos.'
+        time_entries_current_user:
+          title: 'Tiempo que he invertido'
+          displayed_days: 'Días mostrados en el widget:'
         time_entries_list:
           title: 'Tiempo de gastos (últimos 7 días)'
           no_results: 'Sin entradas temporales en los últimos 7 días.'
         work_packages_accountable:
-          title: "Paquetes de trabajo de los que soy responsable"
+          title: "Soy responsable por estos paquetes de trabajo"
         work_packages_assigned:
           title: 'Paquetes de trabajo asignados a mí'
         work_packages_created:

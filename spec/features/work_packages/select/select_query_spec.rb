@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -79,8 +79,8 @@ describe 'Query selection', type: :feature do
 
     it 'shows the saved filters', js: true do
       filters.open
-      filters.expect_filter_by 'Assignee', 'is',  ['me']
-      filters.expect_filter_by 'Progress (%)', '>=',  ['10'], 'percentageDone'
+      filters.expect_filter_by 'Assignee', 'is', ['me']
+      filters.expect_filter_by 'Progress (%)', '>=', ['10'], 'percentageDone'
     end
 
     it 'shows filter count within toggle button', js: true do

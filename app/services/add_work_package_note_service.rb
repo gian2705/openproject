@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -32,7 +32,7 @@
 # Does not change the work package itself.
 
 class AddWorkPackageNoteService
-  include Concerns::Contracted
+  include Contracted
   attr_accessor :user, :work_package
 
   def initialize(user:, work_package:)
@@ -42,7 +42,7 @@ class AddWorkPackageNoteService
   end
 
   def call(notes, send_notifications: true)
-    JournalManager.with_send_notifications send_notifications do
+    Journal::NotificationConfiguration.with send_notifications do
       work_package.add_journal(user, notes)
 
       success, errors = validate_and_yield(work_package, user) do

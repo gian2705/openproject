@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -43,7 +43,7 @@ module API
 
           get do
             PriorityCollectionRepresenter.new(@priorities,
-                                              api_v3_paths.priorities,
+                                              self_link: api_v3_paths.priorities,
                                               current_user: current_user)
           end
 

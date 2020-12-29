@@ -1,7 +1,8 @@
 #-- encoding: UTF-8
+
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,7 +31,7 @@
 ActionController::Renderers.add :csv do |obj, options|
   filename = options[:filename] || 'data'
   str = obj.respond_to?(:to_csv) ? obj.to_csv : obj.to_s
-  charset = "charset=#{l(:general_csv_encoding).downcase}"
+  charset = "charset=#{I18n.t(:general_csv_encoding).downcase}"
 
   data = send_data str,
                    type: "#{Mime[:csv]}; header=present; #{charset};",

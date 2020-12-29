@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,10 +30,10 @@
 
 class Queries::WorkPackages::Filter::VersionFilter <
   Queries::WorkPackages::Filter::WorkPackageFilter
-
   def allowed_values
     @allowed_values ||= begin
-      versions.sort.map { |s| ["#{s.project.name} - #{s.name}", s.id.to_s] }
+      # as we no longer display the allowed values, the first value is irrelevant
+      versions.pluck(:id).map { |id| [id.to_s, id.to_s] }
     end
   end
 
@@ -42,11 +42,11 @@ class Queries::WorkPackages::Filter::VersionFilter <
   end
 
   def human_name
-    WorkPackage.human_attribute_name('fixed_version')
+    WorkPackage.human_attribute_name('version')
   end
 
   def self.key
-    :fixed_version_id
+    :version_id
   end
 
   def ar_object_filter?
@@ -54,9 +54,11 @@ class Queries::WorkPackages::Filter::VersionFilter <
   end
 
   def value_objects
-    value_ints = values.map(&:to_i)
+    available_versions = versions.index_by(&:id)
 
-    versions.select { |v| value_ints.include?(v.id) }
+    values
+      .map { |version_id| available_versions[version_id.to_i] }
+      .compact
   end
 
   private

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -49,21 +49,25 @@ describe AddWorkPackageNoteService, type: :model do
              new: mock_contract_instance)
     end
     let(:mock_contract_instance) do
-      mock_model(WorkPackages::CreateNoteContract)
+      double(WorkPackages::CreateNoteContract,
+             errors: contract_errors,
+             validate: valid_contract)
     end
     let(:valid_contract) { true }
+    let(:contract_errors) do
+      double('contract errors')
+    end
 
     let(:send_notifications) { false }
 
     before do
-      expect(JournalManager)
-        .to receive(:with_send_notifications)
+      expect(Journal::NotificationConfiguration)
+        .to receive(:with)
         .with(send_notifications)
         .and_yield
 
       allow(instance).to receive(:contract_class).and_return(mock_contract)
       allow(work_package).to receive(:save_journals).and_return true
-      allow(mock_contract_instance).to receive(:validate).and_return valid_contract
     end
 
     subject { instance.call('blubs', send_notifications: send_notifications) }

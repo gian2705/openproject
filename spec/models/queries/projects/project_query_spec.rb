@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,12 +30,25 @@ require 'spec_helper'
 
 describe Queries::Projects::ProjectQuery, type: :model do
   let(:instance) { described_class.new }
-  let(:base_scope) { Project.all }
+  let(:base_scope) { Project.all.order(id: :desc) }
+  let(:current_user) { FactoryBot.build_stubbed(:admin) }
+
+  before do
+    login_as(current_user)
+  end
 
   context 'without a filter' do
-    describe '#results' do
+    context 'as an admin' do
       it 'is the same as getting all projects' do
         expect(instance.results.to_sql).to eql base_scope.to_sql
+      end
+    end
+
+    context 'as a non admin' do
+      let(:current_user) { FactoryBot.build_stubbed(:user) }
+
+      it 'is the same as getting all visible projects' do
+        expect(instance.results.to_sql).to eql base_scope.where(id: Project.visible).to_sql
       end
     end
   end
@@ -115,6 +128,15 @@ describe Queries::Projects::ProjectQuery, type: :model do
 
           expect(instance.results.to_sql).to eql expected.to_sql
         end
+      end
+    end
+  end
+
+  context 'with an order by id asc' do
+    describe '#results' do
+      it 'returns all visible projects ordered by id asc' do
+        expect(instance.order(id: :asc).results.to_sql)
+          .to eql base_scope.except(:order).order(id: :asc).to_sql
       end
     end
   end

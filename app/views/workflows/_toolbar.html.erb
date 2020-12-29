@@ -1,6 +1,6 @@
 <%#-- copyright
-OpenProject is a project management system.
-Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+OpenProject is an open source project management software.
+Copyright (C) 2012-2020 the OpenProject GmbH
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 3.
@@ -28,16 +28,16 @@ See docs/COPYRIGHT.rdoc for more details.
 ++#%>
 
 <%= toolbar title: title do %>
-  <li class="toolbar-item">
+  <li class="toolbar-item hidden-for-mobile">
     <%= link_to({ action: 'copy' }, class: 'button') do %>
       <%= op_icon('button--icon icon-copy') %>
-      <span class="button--text"><%= l(:button_copy) %></span>
+      <span class="button--text"><%= t(:button_copy) %></span>
     <% end %>
   </li>
   <li class="toolbar-item">
     <%= link_to({ action: 'show' }, class: 'button') do %>
       <%= op_icon('button--icon icon-info1') %>
-      <span class="button--text"><%= l(:label_workflow_summary) %></span>
+      <span class="button--text"><%= t(:label_workflow_summary) %></span>
     <% end %>
   </li>
 <% end %>

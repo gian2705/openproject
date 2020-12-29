@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -42,6 +42,22 @@ describe Queries::Users::Filters::StatusFilter, type: :model do
         end
 
         expect(instance.allowed_values).to match_array(expected)
+      end
+    end
+  end
+
+  describe '#scope' do
+    include_context 'filter tests'
+    let(:values) { %w[active invited] }
+    let(:model) { User }
+
+    context 'for "="' do
+      let(:operator) { '=' }
+
+      it 'is the same as handwriting the query' do
+        expected = model.where("users.status IN (1,4)")
+
+        expect(instance.scope.to_sql).to eql expected.to_sql
       end
     end
   end

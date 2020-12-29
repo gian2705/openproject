@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {ErrorResource} from 'core-app/modules/hal/resources/error-resource';
@@ -35,17 +35,20 @@ import {NotificationsService} from 'core-app/modules/common/notifications/notifi
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {HttpErrorResponse} from "@angular/common/http";
 import {HalResource} from "core-app/modules/hal/resources/hal-resource";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
+import {SchemaCacheService} from "core-components/schemas/schema-cache.service";
 
 @Injectable()
 export class HalResourceNotificationService {
 
-  protected I18n = this.injector.get(I18nService);
-  protected $state = this.injector.get(StateService);
-  protected halResourceService = this.injector.get(HalResourceService);
-  protected NotificationsService = this.injector.get(NotificationsService);
-  protected loadingIndicator = this.injector.get(LoadingIndicatorService);
+  @InjectField() protected I18n:I18nService;
+  @InjectField() protected $state:StateService;
+  @InjectField() protected halResourceService:HalResourceService;
+  @InjectField() protected NotificationsService:NotificationsService;
+  @InjectField() protected loadingIndicator:LoadingIndicatorService;
+  @InjectField() protected schemaCache:SchemaCacheService;
 
-  constructor(protected injector:Injector) {
+  constructor(public injector:Injector) {
   }
 
   public showSave(resource:HalResource, isCreate:boolean = false) {
@@ -83,6 +86,11 @@ export class HalResourceNotificationService {
 
     if (typeof (response) === 'string') {
       this.NotificationsService.addError(response);
+      return;
+    }
+
+    if (response instanceof Error) {
+      this.NotificationsService.addError(response.message);
       return;
     }
 
@@ -166,8 +174,9 @@ export class HalResourceNotificationService {
 
     if (errorResource.errorIdentifier === 'urn:openproject-org:api:v3:errors:PropertyFormatError') {
 
-      let attributeName = resource.schema[errorResource.details.attribute].name;
-      let attributeType = resource.schema[errorResource.details.attribute].type.toLowerCase();
+      let schema = this.schemaCache.of(resource).ofProperty(errorResource.details.attribute);
+      let attributeName = schema.name;
+      let attributeType = schema.type.toLowerCase();
       let i18nString = 'js.hal.error.format.' + attributeType;
 
       if (this.I18n.lookup(i18nString) === undefined) {

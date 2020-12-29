@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -43,7 +43,7 @@ module CustomField::OrderStatements
       if multi_value?
         [select_custom_values_as_group]
       else
-        coalesce_select_custom_value_as_string
+        [coalesce_select_custom_value_as_string]
       end
     when 'int', 'float'
       # Make the database cast values into numeric
@@ -61,15 +61,24 @@ module CustomField::OrderStatements
     end
   end
 
+  ##
+  # Returns the null handling for the given direction
+  def null_handling(asc)
+    return unless %w[int float].include?(field_format)
+
+    null_direction = asc ? 'FIRST' : 'LAST'
+    Arel.sql("NULLS #{null_direction}")
+  end
+
   # Returns the grouping result
   # which differ for multi-value select fields,
   # because in this case we do want the primary CV values
-  def group_by_statements
+  def group_by_statement
     return order_statements unless field_format == 'list'
 
     if multi_value?
       # We want to return the internal IDs in the case of grouping
-      [select_custom_values_as_group]
+      select_custom_values_as_group
     else
       coalesce_select_custom_value_as_string
     end
@@ -79,19 +88,16 @@ module CustomField::OrderStatements
 
   def coalesce_select_custom_value_as_string
     # COALESCE is here to make sure that blank and NULL values are sorted equally
-    [
-      <<-SQL
-          COALESCE(#{select_custom_value_as_string}, '')
-      SQL
-    ]
+    <<-SQL
+      COALESCE(#{select_custom_value_as_string}, '')
+    SQL
   end
 
   def select_custom_value_as_string
     <<-SQL
     (SELECT cv_sort.value FROM #{CustomValue.table_name} cv_sort
-        WHERE cv_sort.customized_type='#{self.class.customized_class.name}'
-        AND cv_sort.customized_id=#{self.class.customized_class.table_name}.id
-        AND cv_sort.custom_field_id=#{id} LIMIT 1)
+        WHERE #{cv_sort_only_custom_field_condition_sql}
+        LIMIT 1)
     SQL
   end
 
@@ -100,8 +106,7 @@ module CustomField::OrderStatements
     (SELECT co_sort.position FROM #{CustomOption.table_name} co_sort
         LEFT JOIN #{CustomValue.table_name} cv_sort
         ON co_sort.id = CAST(cv_sort.value AS decimal(60,3))
-        WHERE cv_sort.custom_field_id=#{id}
-        AND cv_sort.customized_id=#{self.class.customized_class.table_name}.id
+        WHERE #{cv_sort_only_custom_field_condition_sql}
         LIMIT 1
     )
     SQL
@@ -110,9 +115,7 @@ module CustomField::OrderStatements
   def select_custom_values_as_group
     <<-SQL
       COALESCE((SELECT string_agg(cv_sort.value, '.') FROM #{CustomValue.table_name} cv_sort
-        WHERE cv_sort.customized_type='#{self.class.customized_class.name}'
-          AND cv_sort.customized_id=#{self.class.customized_class.table_name}.id
-          AND cv_sort.custom_field_id=#{id}
+        WHERE #{cv_sort_only_custom_field_condition_sql}
           AND cv_sort.value IS NOT NULL), '')
     SQL
   end
@@ -122,18 +125,14 @@ module CustomField::OrderStatements
       COALESCE((SELECT string_agg(co_sort.value, '.' ORDER BY co_sort.position ASC) FROM #{CustomOption.table_name} co_sort
         LEFT JOIN #{CustomValue.table_name} cv_sort
         ON cv_sort.value IS NOT NULL AND co_sort.id = cv_sort.value::numeric
-        WHERE cv_sort.customized_type='#{self.class.customized_class.name}'
-          AND cv_sort.customized_id=#{self.class.customized_class.table_name}.id
-          AND cv_sort.custom_field_id=#{id}), '')
+        WHERE #{cv_sort_only_custom_field_condition_sql}), '')
     SQL
   end
 
   def select_custom_value_as_decimal
     <<-SQL
     (SELECT CAST(cv_sort.value AS decimal(60,3)) FROM #{CustomValue.table_name} cv_sort
-      WHERE cv_sort.customized_type='#{self.class.customized_class.name}'
-      AND cv_sort.customized_id=#{self.class.customized_class.table_name}.id
-      AND cv_sort.custom_field_id=#{id}
+      WHERE #{cv_sort_only_custom_field_condition_sql}
       AND cv_sort.value <> ''
       AND cv_sort.value IS NOT NULL
     LIMIT 1)
@@ -153,6 +152,16 @@ module CustomField::OrderStatements
     (SELECT #{column} version_cv_#{column} FROM #{Version.table_name} cv_version
      WHERE cv_version.id = #{select_custom_value_as_decimal}
      LIMIT 1)
+    SQL
+  end
+
+  private
+
+  def cv_sort_only_custom_field_condition_sql
+    <<-SQL
+      cv_sort.customized_type='#{self.class.customized_class.name}'
+      AND cv_sort.customized_id=#{self.class.customized_class.table_name}.id
+      AND cv_sort.custom_field_id=#{id}
     SQL
   end
 end

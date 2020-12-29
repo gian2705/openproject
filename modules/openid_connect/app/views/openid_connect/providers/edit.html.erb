@@ -1,9 +1,7 @@
 <% page_title = t('openid_connect.providers.label_edit', name: @provider.name) %>
+<% local_assigns[:additional_breadcrumb] = @provider.name %>
+
 <% html_title(t(:label_administration), page_title) -%>
-<% local_assigns[:additional_breadcrumb] = [
-  link_to(t('openid_connect.providers.plural'), url_for(action: :index)),
-  page_title
-] %>
 
 <%= toolbar title: page_title %>
 
@@ -13,7 +11,7 @@
                               html: { class: 'form', autocomplete: 'off' } do |f| %>
   <%= render partial: "form", locals: { f: f } %>
   <p>
-    <%= styled_button_tag l(:button_save), class: '-highlight -with-icon icon-checkmark' %>
-    <%= link_to t(:button_cancel), { action: :index }, class: 'button' %>
+    <%= styled_button_tag t(:button_save), class: '-highlight -with-icon icon-checkmark' %>
+    <%= link_to t(:button_cancel), { action: :index }, class: 'button -with-icon icon-cancel' %>
   </p>
 <% end %>

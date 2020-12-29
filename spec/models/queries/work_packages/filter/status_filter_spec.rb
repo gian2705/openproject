@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -39,8 +39,8 @@ describe Queries::WorkPackages::Filter::StatusFilter, type: :model do
     describe '#available?' do
       it 'is true if any status exists' do
         allow(Status)
-          .to receive(:exists?)
-          .and_return true
+          .to receive(:all)
+          .and_return [status]
 
         expect(instance).to be_available
       end

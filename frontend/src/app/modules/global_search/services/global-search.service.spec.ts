@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 /*jshint expr: true*/
@@ -33,6 +33,8 @@ import {GlobalSearchService} from "core-app/modules/global_search/services/globa
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {async, TestBed} from "@angular/core/testing";
 import {PathHelperService} from "core-app/modules/common/path-helper/path-helper.service";
+import {States} from "core-components/states.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 describe('Global search service', function() {
   let service:GlobalSearchService;
@@ -45,6 +47,8 @@ describe('Global search service', function() {
       providers: [
         I18nService,
         PathHelperService,
+        States,
+        APIV3Service,
         CurrentProjectService,
         GlobalSearchService,
       ]

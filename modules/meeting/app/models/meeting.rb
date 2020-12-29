@@ -1,10 +1,18 @@
 #-- copyright
-# OpenProject Meeting Plugin
-#
-# Copyright (C) 2011-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,11 +23,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.md for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Meeting < ActiveRecord::Base
-  include Concerns::VirtualAttribute
+class Meeting < ApplicationRecord
+  include VirtualAttribute
 
   self.table_name = 'meetings'
 
@@ -48,13 +56,13 @@ class Meeting < ActiveRecord::Base
 
   acts_as_journalized
   acts_as_event title: Proc.new { |o|
-    "#{l :label_meeting}: #{o.title} \
-                 #{format_date o.start_time} \
-                 #{format_time o.start_time, false}-#{format_time o.end_time, false})"
-  },
-                url: Proc.new { |o| { controller: '/meetings', action: 'show', id: o } },
-                author: Proc.new(&:user),
-                description: ''
+      "#{I18n.t(:label_meeting)}: #{o.title} \
+        #{format_date o.start_time} \
+        #{format_time o.start_time, false}-#{format_time o.end_time, false})"
+    },
+    url: Proc.new { |o| { controller: '/meetings', action: 'show', id: o } },
+    author: Proc.new(&:user),
+    description: ''
 
   register_on_journal_formatter(:plaintext, 'title')
   register_on_journal_formatter(:fraction, 'duration')

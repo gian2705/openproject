@@ -1,4 +1,12 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output
+} from "@angular/core";
 import {WorkPackageResource} from "core-app/modules/hal/resources/work-package-resource";
 import {checkedClassName, uiStateLinkClass} from "core-components/wp-fast-table/builders/ui-state-link-builder";
 import {PathHelperService} from "core-app/modules/common/path-helper/path-helper.service";
@@ -9,7 +17,9 @@ import {WorkPackageCardViewService} from "core-components/wp-card-view/services/
 import {I18nService} from "core-app/modules/common/i18n/i18n.service";
 import {CardHighlightingMode} from "core-components/wp-fast-table/builders/highlighting/highlighting-mode.const";
 import {CardViewOrientation} from "core-components/wp-card-view/wp-card-view.component";
-
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+import {WorkPackageViewFocusService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-focus.service";
+import {splitViewRoute} from "core-app/modules/work_packages/routing/split-view-routes.helper";
 
 @Component({
   selector: 'wp-single-card',
@@ -17,7 +27,7 @@ import {CardViewOrientation} from "core-components/wp-card-view/wp-card-view.com
   templateUrl: './wp-single-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkPackageSingleCardComponent {
+export class WorkPackageSingleCardComponent extends UntilDestroyedMixin implements OnInit {
   @Input() public workPackage:WorkPackageResource;
   @Input() public showInfoButton:boolean = false;
   @Input() public showStatusButton:boolean = true;
@@ -25,8 +35,10 @@ export class WorkPackageSingleCardComponent {
   @Input() public highlightingMode:CardHighlightingMode = 'inline';
   @Input() public draggable:boolean = false;
   @Input() public orientation:CardViewOrientation = 'vertical';
+  @Input() public shrinkOnMobile:boolean = false;
 
-  @Output() public onRemove = new EventEmitter<WorkPackageResource>();
+  @Output() onRemove = new EventEmitter<WorkPackageResource>();
+  @Output() stateLinkClicked = new EventEmitter<{ workPackageId:string, requestedState:string }>();
 
   public uiStateLinkClass:string = uiStateLinkClass;
 
@@ -39,33 +51,44 @@ export class WorkPackageSingleCardComponent {
               readonly I18n:I18nService,
               readonly $state:StateService,
               readonly wpTableSelection:WorkPackageViewSelectionService,
-              readonly cardView:WorkPackageCardViewService) {
+              readonly wpTableFocus:WorkPackageViewFocusService,
+              readonly cardView:WorkPackageCardViewService,
+              readonly cdRef:ChangeDetectorRef) {
+    super();
+  }
+
+  ngOnInit():void {
+    // Update selection state
+    this.wpTableSelection.live$()
+      .pipe(
+        this.untilDestroyed()
+      )
+      .subscribe(() => {
+        this.cdRef.detectChanges();
+      });
   }
 
   public classIdentifier(wp:WorkPackageResource) {
     return this.cardView.classIdentifier(wp);
   }
 
-  public openSplitScreen(wp:WorkPackageResource) {
-    let classIdentifier = this.classIdentifier(wp);
+  public emitStateLinkClicked(wp:WorkPackageResource, detail?:boolean) {
+    const classIdentifier = this.classIdentifier(wp);
+    const stateToEmit = detail ? splitViewRoute(this.$state) : 'work-packages.show';
+
     this.wpTableSelection.setSelection(wp.id!, this.cardView.findRenderedCard(classIdentifier));
-    this.$state.go(
-      'work-packages.list.details',
-      {workPackageId: wp.id!}
-    );
+    this.wpTableFocus.updateFocus(wp.id!);
+    this.stateLinkClicked.emit({ workPackageId:wp.id!, requestedState: stateToEmit });
   }
 
-  public cardClasses(wp:WorkPackageResource) {
-    let classes = this.isSelected(wp) ? checkedClassName : '';
+  public cardClasses() {
+    let classes = this.isSelected(this.workPackage) ? checkedClassName : '';
     classes += this.draggable ? ' -draggable' : '';
-    classes += wp.isNew ? ' -new' : '';
-    classes += ' wp-card-' + wp.id;
+    classes += this.workPackage.isNew ? ' -new' : '';
+    classes += ' wp-card-' + this.workPackage.id;
     classes += ' -' + this.orientation;
+    classes += this.shrinkOnMobile ? ' -shrink' : '';
     return classes;
-  }
-
-  public isSelected(wp:WorkPackageResource):boolean {
-    return this.wpTableSelection.isSelected(wp.id!);
   }
 
   public wpTypeAttribute(wp:WorkPackageResource) {
@@ -74,6 +97,10 @@ export class WorkPackageSingleCardComponent {
 
   public wpSubject(wp:WorkPackageResource) {
     return wp.subject;
+  }
+
+  public wpProjectName(wp:WorkPackageResource) {
+    return wp.project?.name;
   }
 
   public cardHighlightingClass(wp:WorkPackageResource) {
@@ -88,13 +115,16 @@ export class WorkPackageSingleCardComponent {
     this.onRemove.emit(wp);
   }
 
+  public cardCoverImageShown(wp:WorkPackageResource):boolean {
+    return this.bcfSnapshotPath(wp) !== null;
+  }
+
   public bcfSnapshotPath(wp:WorkPackageResource) {
-    let vp = _.get(wp, 'bcf.viewpoints[0]');
-    if (vp) {
-      return this.pathHelper.attachmentDownloadPath(vp.id, vp.file_name);
-    } else {
-      return null;
-    }
+    return wp.bcfViewpoints && wp.bcfViewpoints.length > 0 ? wp.bcfViewpoints[0].href + '/snapshot' : null;
+  }
+
+  private isSelected(wp:WorkPackageResource):boolean {
+    return this.wpTableSelection.isSelected(wp.id!);
   }
 
   private cardHighlighting(wp:WorkPackageResource) {

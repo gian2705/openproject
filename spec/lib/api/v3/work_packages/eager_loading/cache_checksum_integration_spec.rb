@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,7 +25,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++require 'rspec'
 
 require 'spec_helper'
@@ -40,7 +40,7 @@ describe ::API::V3::WorkPackages::EagerLoading::Checksum do
     FactoryBot.create(:work_package,
                       responsible: responsible,
                       assigned_to: assignee,
-                      fixed_version: version,
+                      version: version,
                       category: category)
   end
   let!(:type) { work_package.type }
@@ -83,7 +83,7 @@ describe ::API::V3::WorkPackages::EagerLoading::Checksum do
     end
 
     it 'produces a different checksum on changes to the author' do
-      work_package.author.update_attribute(:updated_on, Time.now + 10.seconds)
+      work_package.author.update_attribute(:updated_at, Time.now + 10.seconds)
 
       expect(new_checksum)
         .not_to eql orig_checksum
@@ -97,7 +97,7 @@ describe ::API::V3::WorkPackages::EagerLoading::Checksum do
     end
 
     it 'produces a different checksum on changes to the assigned_to' do
-      work_package.assigned_to.update_attribute(:updated_on, Time.now + 10.seconds)
+      work_package.assigned_to.update_attribute(:updated_at, Time.now + 10.seconds)
 
       expect(new_checksum)
         .not_to eql orig_checksum
@@ -111,21 +111,21 @@ describe ::API::V3::WorkPackages::EagerLoading::Checksum do
     end
 
     it 'produces a different checksum on changes to the responsible' do
-      work_package.responsible.update_attribute(:updated_on, Time.now + 10.seconds)
+      work_package.responsible.update_attribute(:updated_at, Time.now + 10.seconds)
 
       expect(new_checksum)
         .not_to eql orig_checksum
     end
 
     it 'produces a different checksum on changes to the version id' do
-      WorkPackage.where(id: work_package.id).update_all(fixed_version_id: 0)
+      WorkPackage.where(id: work_package.id).update_all(version_id: 0)
 
       expect(new_checksum)
         .not_to eql orig_checksum
     end
 
     it 'produces a different checksum on changes to the version' do
-      work_package.fixed_version.update_attribute(:updated_on, Time.now + 10.seconds)
+      work_package.version.update_attribute(:updated_at, Time.now + 10.seconds)
 
       expect(new_checksum)
         .not_to eql orig_checksum

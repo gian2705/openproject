@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -50,7 +50,7 @@ module API
 
         def self.associated_container_getter
           ->(*) do
-            next unless embed_links
+            next unless embed_links && container_representer
 
             container_representer
               .new(represented.container, current_user: current_user)
@@ -59,6 +59,8 @@ module API
 
         def self.associated_container_link
           ->(*) do
+            return nil unless v3_container_name == 'nil_class' || api_v3_paths.respond_to?(v3_container_name)
+
             ::API::Decorators::LinkObject
               .new(represented,
                    path: v3_container_name,
@@ -123,6 +125,8 @@ module API
           name = v3_container_name.camelcase
 
           "::API::V3::#{name.pluralize}::#{name}Representer".constantize
+        rescue NameError
+          nil
         end
 
         def v3_container_name

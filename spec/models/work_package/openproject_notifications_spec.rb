@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -33,12 +33,12 @@ require 'spec_helper'
 # Tests that email notifications will be sent upon creating or changing a work package.
 describe WorkPackage, type: :model do
   describe 'OpenProject notifications' do
-    let(:user) { FactoryBot.create :admin }
-    let(:current_user) { FactoryBot.create :admin }
+    using_shared_fixtures :admin
+
     let(:project) { FactoryBot.create :project }
     let(:work_package) do
       FactoryBot.create :work_package,
-                        author: user,
+                        author: admin,
                         subject: 'I can see you',
                         project: project
     end

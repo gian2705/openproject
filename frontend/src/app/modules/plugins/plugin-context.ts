@@ -7,16 +7,11 @@ import {ExternalQueryConfigurationService} from "core-components/wp-table/extern
 import {HalResourceService} from "core-app/modules/hal/services/hal-resource.service";
 import {PasswordConfirmationModal} from "../../components/modals/request-for-confirmation/password-confirmation.modal";
 import {OpModalService} from "../../components/op-modals/op-modal.service";
-import {HelpTextDmService} from "../hal/dm-services/help-text-dm.service";
-import {AttributeHelpTextsService} from "../common/help-texts/attribute-help-text.service";
-import {AttributeHelpTextModal} from "../common/help-texts/attribute-help-text.modal";
 import {DynamicContentModal} from "../../components/modals/modal-wrapper/dynamic-content.modal";
 import {DisplayField} from "core-app/modules/fields/display/display-field.module";
 import {HalResource} from "core-app/modules/hal/resources/hal-resource";
-import {WorkPackageCacheService} from "core-components/work-packages/work-package-cache.service";
 import {DisplayFieldService} from "core-app/modules/fields/display/display-field.service";
 import {EditFieldService} from "core-app/modules/fields/edit/edit-field.service";
-import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-resource-notification.service";
 import {OpenProjectFileUploadService} from "core-components/api/op-file-upload/op-file-upload.service";
 import {EditorMacrosService} from "core-components/modals/editor/editor-macros.service";
 import {HTMLSanitizeService} from "../common/html-sanitize/html-sanitize.service";
@@ -25,6 +20,9 @@ import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
 import {States} from 'core-components/states.service';
 import {CKEditorPreviewService} from "core-app/modules/common/ckeditor/ckeditor-preview.service";
 import {ExternalRelationQueryConfigurationService} from "core-components/wp-table/external-configuration/external-relation-query-configuration.service";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
+import {ConfigurationService} from "core-app/modules/common/config/configuration.service";
 
 /**
  * Plugin context bridge for plugins outside the CLI compiler context
@@ -49,23 +47,21 @@ export class OpenProjectPluginContext {
     notifications: this.injector.get<NotificationsService>(NotificationsService),
     opModalService: this.injector.get<OpModalService>(OpModalService),
     opFileUpload: this.injector.get<OpenProjectFileUploadService>(OpenProjectFileUploadService),
-    helpTextDm: this.injector.get<HelpTextDmService>(HelpTextDmService),
-    attributeHelpTexts: this.injector.get<AttributeHelpTextsService>(AttributeHelpTextsService),
     displayField: this.injector.get<DisplayFieldService>(DisplayFieldService),
     editField: this.injector.get<EditFieldService>(EditFieldService),
-    wpCache: this.injector.get<WorkPackageCacheService>(WorkPackageCacheService),
     macros: this.injector.get<EditorMacrosService>(EditorMacrosService),
     htmlSanitizeService: this.injector.get<HTMLSanitizeService>(HTMLSanitizeService),
     ckEditorPreview: this.injector.get<CKEditorPreviewService>(CKEditorPreviewService),
     pathHelperService: this.injector.get<PathHelperService>(PathHelperService),
     states: this.injector.get<States>(States),
+    apiV3Service: this.injector.get<APIV3Service>(APIV3Service),
+    configurationService: this.injector.get<ConfigurationService>(ConfigurationService)
   };
 
   // Random collection of classes needed outside of angular
   public readonly classes = {
     modals: {
       passwordConfirmation: PasswordConfirmationModal,
-      attributeHelpTexts: AttributeHelpTextModal,
       dynamicContent: DynamicContentModal,
     },
     HalResource: HalResource,
@@ -76,7 +72,7 @@ export class OpenProjectPluginContext {
   public readonly hooks:{ [hook:string]:(callback:Function) => void } = {};
 
   // Angular zone reference
-  public readonly zone:NgZone = this.injector.get(NgZone);
+  @InjectField() public readonly zone:NgZone;
 
   // Angular2 global injector reference
   constructor(public readonly injector:Injector) {

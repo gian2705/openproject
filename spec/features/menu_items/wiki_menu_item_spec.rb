@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -158,7 +158,7 @@ feature 'Wiki menu items' do
 
     # removing the menu item which is also the last wiki menu item
     # removing the default wiki menu item programatically first
-    MenuItems::WikiMenuItem.where(name: "wiki").delete_all
+    MenuItems::WikiMenuItem.where(navigatable_id: project.wiki.id, name: "wiki").delete_all
     visit project_wiki_path(project, other_wiki_page)
 
     click_link 'More'

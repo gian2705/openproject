@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,7 +30,7 @@
 
 require 'digest/md5'
 
-class Attachment < ActiveRecord::Base
+class Attachment < ApplicationRecord
   ALLOWED_TEXT_TYPES = %w[text/plain].freeze
   ALLOWED_IMAGE_TYPES = %w[image/gif image/jpeg image/png image/tiff image/bmp].freeze
 
@@ -100,7 +100,7 @@ class Attachment < ActiveRecord::Base
 
   # images are sent inline
   def inlineable?
-    is_plain_text? || is_image?
+    is_plain_text? || is_image? || is_pdf?
   end
 
   def is_plain_text?
@@ -153,6 +153,13 @@ class Attachment < ActiveRecord::Base
     attributes['file']
   end
 
+  ##
+  # Returns the file extension name,
+  # if any (with leading dot)
+  def extension
+    File.extname filename
+  end
+
   def file=(file)
     super.tap do
       set_file_size file
@@ -198,21 +205,21 @@ class Attachment < ActiveRecord::Base
   end
 
   def extract_fulltext
-    return unless OpenProject::Database.allows_tsv?
+    return unless OpenProject::Database.allows_tsv? && (!container || container.class.attachment_tsv_extracted?)
 
     ExtractFulltextJob.perform_later(id)
   end
 
   # Extract the fulltext of any attachments where fulltext is still nil.
-  # This runs inline and not in a asynchronous worker.
+  # This runs inline and not in an asynchronous worker.
   def self.extract_fulltext_where_missing(run_now: true)
     return unless OpenProject::Database.allows_tsv?
 
     Attachment
       .where(fulltext: nil)
+      .where(container_type: tsv_extracted_containers)
       .pluck(:id)
       .each do |id|
-
       if run_now
         ExtractFulltextJob.perform_now(id)
       else
@@ -227,6 +234,49 @@ class Attachment < ActiveRecord::Base
     Attachment.pluck(:id).each do |id|
       ExtractFulltextJob.perform_now(id)
     end
+  end
+
+  def self.tsv_extracted_containers
+    Attachment
+      .select(:container_type)
+      .distinct
+      .pluck(:container_type)
+      .compact
+      .select do |container_class|
+      klass = container_class.constantize
+
+      klass.respond_to?(:attachment_tsv_extracted?) && klass.attachment_tsv_extracted?
+    rescue NameError
+      false
+    end
+  end
+
+  def self.pending_direct_uploads
+    where(digest: "", downloads: -1)
+  end
+
+  def self.create_pending_direct_upload(file_name:, author:, container: nil, content_type: nil, file_size: 0)
+    a = create(
+      container: container,
+      author: author,
+      content_type: content_type.presence || "application/octet-stream",
+      filesize: file_size,
+      digest: "",
+      downloads: -1
+    )
+
+    # We need to do it like this because `file` is an uploader which expects a File (not a string)
+    # to upload usually. But in this case the data has already been uploaded and we just point to it.
+    a[:file] = file_name
+
+    a.save!
+    a.reload # necessary so that the fog file uploader path is correct
+
+    a
+  end
+
+  def pending_direct_upload?
+    digest == "" && downloads == -1
   end
 
   private

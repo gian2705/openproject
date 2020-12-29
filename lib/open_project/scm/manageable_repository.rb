@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,7 +28,7 @@
 #++
 
 module OpenProject
-  module Scm
+  module SCM
     module ManageableRepository
       def self.included(base)
         base.extend(ClassMethods)
@@ -39,7 +39,7 @@ module OpenProject
           repository = payload[:project].repository
 
           if repository&.managed?
-            ::Scm::RelocateRepositoryJob.perform_later(repository)
+            ::SCM::RelocateRepositoryJob.perform_later(repository)
           end
         end
       end

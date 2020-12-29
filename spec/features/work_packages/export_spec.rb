@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -47,6 +47,7 @@ describe 'work package export', type: :feature do
   let(:filters) { ::Components::WorkPackages::Filters.new }
   let(:group_by) { ::Components::WorkPackages::GroupBy.new }
   let(:hierarchies) { ::Components::WorkPackages::Hierarchies.new }
+  let(:settings_menu) { ::Components::WorkPackages::SettingsMenu.new }
 
   before do
     wp_1
@@ -54,103 +55,191 @@ describe 'work package export', type: :feature do
     wp_3
     wp_4
 
-    allow(User).to receive(:current).and_return current_user
+    login_as(current_user)
   end
 
+  let(:export_type) { 'CSV' }
   subject { DownloadedFile.download_content }
 
-  def export!
+  def export!(wait_for_downloads = true)
     DownloadedFile::clear_downloads
 
     work_packages_page.ensure_loaded
-    work_packages_page.open_settings!
 
-    click_on 'Export ...'
-    click_on 'CSV'
-  end
+    settings_menu.open_and_choose 'Export ...'
+    click_on export_type
 
-  before do
-    work_packages_page.visit_index
-    filters.expect_filter_count 1
-    filters.open
+    # Expect to get a response regarding queuing
+    expect(page).to have_content I18n.t('js.job_status.generic_messages.in_queue'),
+                                 wait: 10
 
-    # render the CSV as plain text so we can run expectations against the output
-    expect_any_instance_of(WorkPackagesController)
-      .to receive(:send_data) do |receiver, serialized_work_packages, _opts|
-        receiver.render plain: serialized_work_packages
-      end
+    # Expect title
+    expect(page).to have_selector 'h3', text: I18n.t('export.your_work_packages_export')
+
+    begin
+      perform_enqueued_jobs
+    rescue
+      # nothing
+    end
+
+    if wait_for_downloads
+      # Wait for the file to download
+      ::DownloadedFile.wait_for_download
+      ::DownloadedFile.wait_for_download_content
+    end
   end
 
   after do
     DownloadedFile::clear_downloads
   end
 
-  it 'shows all work packages with the default filters', js: true, retry: 2 do
-    export!
+  context 'CSV export' do
+    context 'with default filter' do
+      before do
+        work_packages_page.visit_index
+        filters.expect_filter_count 1
+        filters.open
+      end
 
-    expect(subject).to have_text(wp_1.description)
-    expect(subject).to have_text(wp_2.description)
-    expect(subject).to have_text(wp_3.description)
-    expect(subject).to have_text(wp_4.description)
+      it 'shows all work packages with the default filters', js: true, retry: 2 do
+        export!
 
-    # results are ordered by ID (asc) and not grouped by type
-    expect(subject.scan(/Type (A|B)/).flatten).to eq %w(A A B A)
+        expect(subject).to have_text(wp_1.description)
+        expect(subject).to have_text(wp_2.description)
+        expect(subject).to have_text(wp_3.description)
+        expect(subject).to have_text(wp_4.description)
+
+        # results are ordered by ID (asc) and not grouped by type
+        expect(subject.scan(/Type (A|B)/).flatten).to eq %w(A A B A)
+      end
+
+      it 'shows all work packages grouped by ', js: true, retry: 2 do
+        group_by.enable_via_menu 'Type'
+
+        wp_table.expect_work_package_listed(wp_1)
+        wp_table.expect_work_package_listed(wp_2)
+        wp_table.expect_work_package_listed(wp_3)
+        wp_table.expect_work_package_listed(wp_4)
+
+        export!
+
+        expect(subject).to have_text(wp_1.description)
+        expect(subject).to have_text(wp_2.description)
+        expect(subject).to have_text(wp_3.description)
+        expect(subject).to have_text(wp_4.description)
+
+        # grouped by type
+        expect(subject.scan(/Type (A|B)/).flatten).to eq %w(A A A B)
+      end
+
+      it 'shows only the work package with the right progress if filtered this way',
+         js: true, retry: 2 do
+        filters.add_filter_by 'Progress (%)', 'is', ['25'], 'percentageDone'
+
+        sleep 1
+        loading_indicator_saveguard
+
+        wp_table.expect_work_package_listed(wp_1)
+        wp_table.ensure_work_package_not_listed!(wp_2, wp_3)
+
+        export!
+
+        expect(subject).to have_text(wp_1.description)
+        expect(subject).not_to have_text(wp_2.description)
+        expect(subject).not_to have_text(wp_3.description)
+      end
+
+      it 'shows only work packages of the filtered type', js: true, retry: 2 do
+        filters.add_filter_by 'Type', 'is', wp_3.type.name
+
+        expect(page).to have_no_content(wp_2.description) # safeguard
+
+        sleep(0.5)
+
+        export!
+
+        expect(subject).not_to have_text(wp_1.description)
+        expect(subject).not_to have_text(wp_2.description)
+        expect(subject).to have_text(wp_3.description)
+      end
+
+      it 'exports selected columns', js: true, retry: 2 do
+        columns.add 'Progress (%)'
+
+        export!
+
+        expect(subject).to have_text('Progress (%)')
+        expect(subject).to have_text('25')
+      end
+    end
+
+    describe 'with a manually sorted query', js: true do
+      let(:query) do
+        FactoryBot.create :query,
+                          user: current_user,
+                          project: project
+      end
+
+      before do
+        ::OrderedWorkPackage.create(query: query, work_package: wp_4, position: 0)
+        ::OrderedWorkPackage.create(query: query, work_package: wp_1, position: 1)
+        ::OrderedWorkPackage.create(query: query, work_package: wp_2, position: 2)
+        ::OrderedWorkPackage.create(query: query, work_package: wp_3, position: 3)
+
+        query.add_filter('manual_sort', 'ow', [])
+        query.sort_criteria = [[:manual_sorting, 'asc']]
+        query.save!
+      end
+
+      it 'returns the correct number of work packages' do
+        wp_table.visit_query query
+        wp_table.expect_work_package_listed(wp_1, wp_2, wp_3, wp_4)
+        wp_table.expect_work_package_order(wp_4, wp_1, wp_2, wp_3)
+
+        export!
+
+        expect(page).to have_selector('.job-status--modal .icon-checkmark', wait: 10)
+        expect(page).to have_content('The export has completed successfully.')
+
+        expect(subject).to have_text(wp_1.description)
+        expect(subject).to have_text(wp_2.description)
+        expect(subject).to have_text(wp_3.description)
+        expect(subject).to have_text(wp_4.description)
+
+        # results are ordered by ID (asc) and not grouped by type
+        expect(subject.scan(/WorkPackage No\. \d+,/)).to eq [wp_4, wp_1, wp_2, wp_3].map { |wp| wp.subject + ',' }
+      end
+    end
   end
 
-  it 'shows all work packages grouped by ', js: true, retry: 2 do
-    group_by.enable_via_menu 'Type'
+  context 'PDF export', js: true do
+    let(:export_type) { 'PDF' }
+    let(:query) do
+      FactoryBot.create :query,
+                        user: current_user,
+                        project: project
+    end
 
-    wp_table.expect_work_package_listed(wp_1)
-    wp_table.expect_work_package_listed(wp_2)
-    wp_table.expect_work_package_listed(wp_3)
-    wp_table.expect_work_package_listed(wp_4)
+    context 'with many columns' do
+      before do
+        query.column_names = query.available_columns.map { |c| c.name.to_s } - ['bcf_thumbnail']
+        query.save!
 
-    export!
+        # Despite attempts to provoke the error by having a lot of columns, the pdf
+        # is still being drawn successfully. We thus have to fake the error.
+        allow_any_instance_of(WorkPackage::PDFExport::WorkPackageListToPdf)
+          .to receive(:render!)
+          .and_return(WorkPackage::Exporter::Result::Error.new(I18n.t(:error_pdf_export_too_many_columns)))
+      end
 
-    expect(subject).to have_text(wp_1.description)
-    expect(subject).to have_text(wp_2.description)
-    expect(subject).to have_text(wp_3.description)
-    expect(subject).to have_text(wp_4.description)
+      it 'returns the error' do
+        wp_table.visit_query query
 
-    # grouped by type
-    expect(subject.scan(/Type (A|B)/).flatten).to eq %w(A A A B)
-  end
+        export!(false)
 
-  it 'shows only the work package with the right progress if filtered this way',
-     js: true, retry: 2 do
-    filters.add_filter_by 'Progress (%)', 'is', ['25'], 'percentageDone'
-
-    sleep 1
-    loading_indicator_saveguard
-
-    wp_table.expect_work_package_listed(wp_1)
-    wp_table.ensure_work_package_not_listed!(wp_2, wp_3)
-
-    export!
-
-    expect(subject).to have_text(wp_1.description)
-    expect(subject).not_to have_text(wp_2.description)
-    expect(subject).not_to have_text(wp_3.description)
-  end
-
-  it 'shows only work packages of the filtered type', js: true, retry: 2 do
-    filters.add_filter_by 'Type', 'is', wp_3.type.name
-
-    expect(page).to have_no_content(wp_2.description) # safeguard
-
-    export!
-
-    expect(subject).not_to have_text(wp_1.description)
-    expect(subject).not_to have_text(wp_2.description)
-    expect(subject).to have_text(wp_3.description)
-  end
-
-  it 'exports selected columns', js: true, retry: 2 do
-    columns.add 'Progress (%)'
-
-    export!
-
-    expect(subject).to have_text('Progress (%)')
-    expect(subject).to have_text('25')
+        expect(page)
+          .to have_content(I18n.t(:error_pdf_export_too_many_columns), wait: 10)
+      end
+    end
   end
 end

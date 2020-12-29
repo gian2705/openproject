@@ -26,6 +26,13 @@ AvatarHelper.class_eval do
     c.include_size_attributes = false
   end
 
+  # Override gems's method in order to avoid deprecated URI.escape
+  GravatarImageTag.define_singleton_method(:url_params) do |gravatar_params|
+    return nil if gravatar_params.keys.size == 0
+    array = gravatar_params.map { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }
+    "?#{array.join('&')}"
+  end
+
   module InstanceMethods
     # Returns the avatar image tag for the given +user+ if avatars are enabled
     # +user+ can be a User or a string that will be scanned for an email address (eg. 'joe <joe@foo.bar>')
@@ -39,7 +46,7 @@ AvatarHelper.class_eval do
       end
     rescue StandardError => e
       Rails.logger.error "Failed to create avatar for #{user}: #{e}"
-      return ''.html_safe
+      ''.html_safe
     end
 
     def avatar_url(user, options = {})
@@ -52,7 +59,7 @@ AvatarHelper.class_eval do
       end
     rescue StandardError => e
       Rails.logger.error "Failed to create avatar url for #{user}: #{e}"
-      return ''.html_safe
+      ''.html_safe
     end
 
     def any_avatar?(user)
@@ -61,6 +68,7 @@ AvatarHelper.class_eval do
 
     def local_avatar?(user)
       return false unless avatar_manager.local_avatars_enabled?
+
       user.respond_to?(:local_avatar_attachment) && user.local_avatar_attachment
     end
 
@@ -87,6 +95,7 @@ AvatarHelper.class_eval do
     def build_gravatar_image_url(user, options = {})
       mail = extract_email_address(user)
       raise ArgumentError.new('Invalid Mail') unless mail.present?
+
       opts = options.merge(gravatar: default_gravatar_options)
       # gravatar_image_url expects grvatar options as second arg
       if opts[:gravatar]

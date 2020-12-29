@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,7 +30,6 @@ require 'spec_helper'
 
 describe CopyProjectsController, type: :controller do
   let(:current_user) { FactoryBot.create(:admin) }
-  let(:redirect_path) { "/projects/#{project.id}/settings" }
   let(:permission) { :copy_projects }
   let(:project) { FactoryBot.create(:project_with_types, public: false) }
   let(:copy_project_params) do
@@ -47,8 +46,6 @@ describe CopyProjectsController, type: :controller do
     # Prevent actually setting User.current.
     # Otherwise the set user might be used in the next spec.
     allow(User).to receive(:current=)
-
-    request.env['HTTP_REFERER'] = redirect_path
   end
 
   describe 'copy_from_settings uses correct project to copy from' do
@@ -121,7 +118,9 @@ describe CopyProjectsController, type: :controller do
       let(:target_project_name) { 'copy' }
     end
 
-    it { expect(response).to redirect_to(redirect_path) }
+    it 'should redirect to job status' do
+      expect(response).to redirect_to /\/job_statuses\/[\w-]+/
+    end
   end
 
   describe 'copy permissions' do

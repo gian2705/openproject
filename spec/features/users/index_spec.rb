@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,9 +29,9 @@
 require 'spec_helper'
 
 describe 'index users', type: :feature do
-  let!(:admin) { FactoryBot.create :admin, created_on: 1.hour.ago }
+  let!(:admin) { FactoryBot.create :admin, created_at: 1.hour.ago }
   let!(:anonymous) { FactoryBot.create :anonymous }
-  let!(:active_user) { FactoryBot.create :user, created_on: 1.minute.ago }
+  let!(:active_user) { FactoryBot.create :user, created_at: 1.minute.ago }
   let!(:registered_user) { FactoryBot.create :user, status: User::STATUSES[:registered] }
   let!(:invited_user) { FactoryBot.create :user, status: User::STATUSES[:invited] }
   let(:index_page) { Pages::Admin::Users::Index.new }
@@ -62,17 +62,17 @@ describe 'index users', type: :feature do
     expect(active_user.reload)
       .to be_locked
 
-    index_page.filter_by_status('locked permanently (1)')
+    index_page.filter_by_status('locked permanently')
     index_page.expect_listed(active_user)
 
-    index_page.filter_by_status('active (1)')
+    index_page.filter_by_status('active')
     index_page.expect_listed(admin)
 
-    index_page.filter_by_status('locked permanently (1)')
+    index_page.filter_by_status('locked permanently')
     index_page.unlock_user(active_user)
     index_page.expect_non_listed
 
-    index_page.filter_by_status('active (2)')
+    index_page.filter_by_status('active')
     index_page.expect_listed(admin, active_user)
 
     index_page.filter_by_name(active_user.lastname[0..-3])
@@ -84,7 +84,7 @@ describe 'index users', type: :feature do
     index_page.clear_filters
     index_page.expect_listed(admin, active_user, registered_user, invited_user)
 
-    index_page.filter_by_status('locked temporarily (1)')
+    index_page.filter_by_status('locked temporarily')
     index_page.expect_listed(active_user)
 
     index_page.reset_failed_logins(active_user)
@@ -96,27 +96,27 @@ describe 'index users', type: :feature do
                                   last_failed_login_on: 9.minutes.ago)
     index_page.clear_filters
 
-    index_page.filter_by_status('locked temporarily (1)')
+    index_page.filter_by_status('locked temporarily')
     index_page.expect_listed(active_user)
 
     index_page.lock_user(active_user)
     index_page.expect_listed(active_user)
 
-    index_page.filter_by_status('locked permanently (1)')
+    index_page.filter_by_status('locked permanently')
     index_page.expect_listed(active_user)
 
     index_page.unlock_and_reset_user(active_user)
     index_page.expect_non_listed
 
-    index_page.filter_by_status('active (2)')
+    index_page.filter_by_status('active')
     index_page.expect_listed(admin, active_user)
 
     # activate registered user
-    index_page.filter_by_status('registered (1)')
+    index_page.filter_by_status('registered')
     index_page.expect_listed(registered_user)
 
     index_page.activate_user(registered_user)
-    index_page.filter_by_status('active (3)')
+    index_page.filter_by_status('active')
 
     index_page.expect_listed(admin, active_user, registered_user)
   end

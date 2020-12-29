@@ -1,20 +1,13 @@
 #-- copyright
-# OpenProject Backlogs Plugin
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
-# Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
-# Copyright (C)2010-2011 friflaj
-# Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
-# Copyright (C)2009-2010 Mark Maglana
-# Copyright (C)2009 Joe Heck, Nate Lowrie
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License version 3.
-#
-# OpenProject Backlogs is a derivative work based on ChiliProject Backlogs.
-# The copyright follows:
-# Copyright (C) 2010-2011 - Emiliano Heyns, Mark Maglana, friflaj
-# Copyright (C) 2011 - Jens Ulferts, Gregor Schmidt - Finn GmbH - Berlin, Germany
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,10 +23,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'open_project/plugins'
+require_relative './patches/api/work_package_representer'
+require_relative './patches/api/work_package_schema_representer'
 
 module OpenProject::Backlogs
   class Engine < ::Rails::Engine
@@ -51,11 +46,14 @@ module OpenProject::Backlogs
     include OpenProject::Plugins::ActsAsOpEngine
 
     register 'openproject-backlogs',
-             author_url: 'http://finn.de',
+             author_url: 'https://www.openproject.com',
              bundled: true,
              settings: settings do
-      OpenProject::AccessControl.permission(:edit_project).actions << 'projects/project_done_statuses'
-      OpenProject::AccessControl.permission(:edit_project).actions << 'projects/rebuild_positions'
+      OpenProject::AccessControl.permission(:edit_project).tap do |add|
+        add.actions << 'projects/project_done_statuses'
+        add.actions << 'projects/rebuild_positions'
+        add.actions << 'backlogs_settings/show'
+      end
 
       OpenProject::AccessControl.permission(:add_work_packages).tap do |add|
         add.actions << 'rb_stories/create'
@@ -68,7 +66,6 @@ module OpenProject::Backlogs
         edit.actions << 'rb_tasks/update'
         edit.actions << 'rb_impediments/update'
       end
-
 
       project_module :backlogs do
         # SYNTAX: permission :name_of_permission, { :controller_name => [:action1, :action2] }
@@ -106,28 +103,19 @@ module OpenProject::Backlogs
            icon: 'icon2 icon-backlogs'
     end
 
-    assets %w(
-      backlogs/backlogs.css
-      backlogs/backlogs.js
-      backlogs/master_backlog.css
-      backlogs/taskboard.css
-      backlogs/jquery.flot/excanvas.js
-      backlogs/burndown.js
-    )
-
     # We still override version and project settings views from the core! URH
     override_core_views!
 
-    patches [:PermittedParams,
-             :WorkPackage,
-             :Status,
-             :Type,
-             :Project,
-             :ProjectsController,
-             :ProjectsHelper,
-             :User,
-             :VersionsController,
-             :Version]
+    patches %i[PermittedParams
+               WorkPackage
+               Status
+               Type
+               Project
+               ProjectsController
+               ProjectSettingsHelper
+               User
+               VersionsController
+               Version]
 
     patch_with_namespace :API, :V3, :WorkPackages, :Schema, :SpecificWorkPackageSchema
     patch_with_namespace :BasicData, :SettingSeeder
@@ -136,102 +124,22 @@ module OpenProject::Backlogs
     patch_with_namespace :WorkPackages, :UpdateService
     patch_with_namespace :WorkPackages, :SetAttributesService
     patch_with_namespace :WorkPackages, :BaseContract
+    patch_with_namespace :Versions, :RowCell
 
     config.to_prepare do
-      next if Versions::BaseContract.included_modules.include?(OpenProject::Backlogs::Patches::VersionBaseContractPatch)
+      next if Versions::BaseContract.included_modules.include?(OpenProject::Backlogs::Patches::Versions::BaseContractPatch)
 
-      Versions::BaseContract.prepend(OpenProject::Backlogs::Patches::VersionBaseContractPatch)
+      Versions::BaseContract.prepend(OpenProject::Backlogs::Patches::Versions::BaseContractPatch)
     end
 
-    extend_api_response(:v3, :work_packages, :work_package) do
-      property :position,
-               render_nil: true,
-               skip_render: ->(*) { !(backlogs_enabled? && type && type.passes_attribute_constraint?(:position)) }
+    extend_api_response(:v3, :work_packages, :work_package,
+                        &::OpenProject::Backlogs::Patches::API::WorkPackageRepresenter.extension)
 
-      property :story_points,
-               render_nil: true,
-               skip_render: ->(*) { !(backlogs_enabled? && type && type.passes_attribute_constraint?(:story_points)) }
+    extend_api_response(:v3, :work_packages, :work_package_payload,
+                        &::OpenProject::Backlogs::Patches::API::WorkPackageRepresenter.extension)
 
-      property :remaining_time,
-               exec_context: :decorator,
-               render_nil: true,
-               skip_render: ->(represented:, **) { !represented.backlogs_enabled? }
-
-      # cannot use def here as it wouldn't define the method on the representer
-      define_method :remaining_time do
-        datetime_formatter.format_duration_from_hours(represented.remaining_hours,
-                                                      allow_nil: true)
-      end
-
-      define_method :remaining_time= do |value|
-        remaining = datetime_formatter.parse_duration_to_hours(value,
-                                                               'remainingTime',
-                                                               allow_nil: true)
-        represented.remaining_hours = remaining
-      end
-    end
-
-    extend_api_response(:v3, :work_packages, :schema, :work_package_schema) do
-      schema :position,
-             type: 'Integer',
-             required: false,
-             writable: false,
-             show_if: ->(*) {
-               represented.project && represented.project.backlogs_enabled? &&
-                 (!represented.type || represented.type.passes_attribute_constraint?(:position))
-             }
-
-      schema :story_points,
-             type: 'Integer',
-             required: false,
-             show_if: ->(*) {
-               represented.project && represented.project.backlogs_enabled? &&
-                 (!represented.type || represented.type.passes_attribute_constraint?(:story_points))
-             }
-
-      schema :remaining_time,
-             type: 'Duration',
-             name_source: :remaining_hours,
-             required: false,
-             show_if: ->(*) { represented.project && represented.project.backlogs_enabled? }
-    end
-
-    extend_api_response(:v3, :work_packages, :schema, :work_package_sums_schema) do
-      schema :story_points,
-             type: 'Integer',
-             required: false,
-             show_if: ->(*) {
-               ::Setting.work_package_list_summable_columns.include?('story_points')
-             }
-
-      schema :remaining_time,
-             type: 'Duration',
-             name_source: :remaining_hours,
-             required: false,
-             writable: false,
-             show_if: ->(*) {
-               ::Setting.work_package_list_summable_columns.include?('remaining_hours')
-             }
-    end
-
-    extend_api_response(:v3, :work_packages, :work_package_sums) do
-      property :story_points,
-               render_nil: true,
-               if: ->(*) {
-                 ::Setting.work_package_list_summable_columns.include?('story_points')
-               }
-
-      property :remaining_time,
-               render_nil: true,
-               exec_context: :decorator,
-               getter: ->(*) {
-                 datetime_formatter.format_duration_from_hours(represented.remaining_hours,
-                                                               allow_nil: true)
-               },
-               if: ->(*) {
-                 ::Setting.work_package_list_summable_columns.include?('remaining_hours')
-               }
-    end
+    extend_api_response(:v3, :work_packages, :schema, :work_package_schema,
+                        &::OpenProject::Backlogs::Patches::API::WorkPackageSchemaRepresenter.extension)
 
     add_api_attribute on: :work_package, ar_name: :story_points
     add_api_attribute on: :work_package, ar_name: :remaining_hours, writeable: ->(*) { model.leaf? }

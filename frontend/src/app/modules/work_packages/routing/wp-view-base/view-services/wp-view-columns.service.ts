@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {WorkPackageQueryStateService} from './wp-view-base.service';
@@ -33,12 +33,18 @@ import {States} from 'core-components/states.service';
 import {Injectable} from '@angular/core';
 import {cloneHalResourceCollection} from 'core-app/modules/hal/helpers/hal-resource-builder';
 import {QueryColumn, queryColumnTypes} from "core-components/wp-query/query-column";
+import {combine} from "reactivestates";
+import {mapTo, take} from "rxjs/operators";
 
 @Injectable()
 export class WorkPackageViewColumnsService extends WorkPackageQueryStateService<QueryColumn[]> {
 
   public constructor(readonly states:States, readonly querySpace:IsolatedQuerySpace) {
     super(querySpace);
+  }
+
+  public initialize(query:any, results:any, schema?:any) {
+    super.initialize(query, results, schema);
   }
 
   public valueFromQuery(query:QueryResource):QueryColumn[] {
@@ -268,5 +274,18 @@ export class WorkPackageViewColumnsService extends WorkPackageQueryStateService<
    */
   public get unused():QueryColumn[] {
     return _.differenceBy(this.all, this.getColumns(), '$href');
+  }
+
+  /**
+   * Columns service depends on two states
+   */
+  public onReady() {
+    return combine(this.pristineState, this.availableState)
+      .values$()
+      .pipe(
+        take(1),
+        mapTo(null)
+      )
+      .toPromise();
   }
 }

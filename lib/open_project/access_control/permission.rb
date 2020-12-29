@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -41,6 +41,7 @@ module OpenProject
         @actions = []
         @public = options[:public] || false
         @require = options[:require]
+        @global = options[:global] || false
         @dependencies = Array(options[:dependencies]) || []
         @project_module = options[:project_module]
         hash.each do |controller, actions|
@@ -55,6 +56,10 @@ module OpenProject
 
       def public?
         @public
+      end
+
+      def global?
+        @global
       end
 
       def require_member?

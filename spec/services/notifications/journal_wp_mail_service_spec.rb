@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,7 +29,7 @@
 #++
 require 'spec_helper'
 
-describe Notifications::JournalWPMailService do
+describe Notifications::JournalWpMailService do
   let(:project) { FactoryBot.create(:project_with_types) }
   let(:role) { FactoryBot.create(:role, permissions: [:view_work_packages]) }
   let(:author) do
@@ -194,6 +194,44 @@ describe Notifications::JournalWPMailService do
                         author: author,
                         type: project.types.first)
     end
+    let(:recipient) do
+      FactoryBot.create(:user,
+                        mail_notification: 'only_assigned',
+                        member_in_project: project,
+                        member_through_role: role,
+                        login: "johndoe")
+    end
+
+    shared_examples_for 'group mention' do
+      context 'group member is allowed to view the work package' do
+        context 'user wants to receive notifications' do
+          it_behaves_like 'sends mail'
+        end
+
+        context 'user disabled notifications' do
+          let(:recipient) { FactoryBot.create(:user, mail_notification: User::USER_MAIL_OPTION_NON.first) }
+
+          it_behaves_like 'sends no mail'
+        end
+      end
+
+      context 'group is not allowed to view the work package' do
+        let(:role) { FactoryBot.create(:role, permissions: []) }
+
+        it_behaves_like 'sends no mail'
+
+        context 'but group member is allowed individually' do
+          let(:recipient) do
+            FactoryBot.create(:user,
+                              mail_notification: 'only_assigned',
+                              member_in_project: project,
+                              member_with_permissions: [:view_work_packages])
+          end
+
+          it_behaves_like 'sends mail'
+        end
+      end
+    end
 
     shared_examples_for 'mentioned' do
       context 'for users' do
@@ -208,6 +246,7 @@ describe Notifications::JournalWPMailService do
             context "that is an email address" do
               let(:recipient) do
                 FactoryBot.create(:user,
+                                  mail_notification: 'only_assigned',
                                   member_in_project: project,
                                   member_through_role: role,
                                   login: "foo@bar.com")
@@ -219,6 +258,26 @@ describe Notifications::JournalWPMailService do
 
           context "The added text contains a user ID" do
             let(:note) { "Hello user##{recipient.id}" }
+
+            it_behaves_like 'sends mail'
+          end
+
+          context "The added text contains a user mention tag in one way" do
+            let(:note) do
+              <<~NOTE
+                Hello <mention class="mention" data-id="#{recipient.id}" data-type="user" data-text="@#{recipient.name}">@#{recipient.name}</mention>
+              NOTE
+            end
+
+            it_behaves_like 'sends mail'
+          end
+
+          context "The added text contains a user mention tag in the other way" do
+            let(:note) do
+              <<~NOTE
+                Hello <mention class="mention" data-type="user" data-id="#{recipient.id}" data-text="@#{recipient.name}">@#{recipient.name}</mention>
+              NOTE
+            end
 
             it_behaves_like 'sends mail'
           end
@@ -242,6 +301,7 @@ describe Notifications::JournalWPMailService do
         context "mentioned user is not allowed to view the work package" do
           let(:recipient) do
             FactoryBot.create(:user,
+                              mail_notification: 'only_assigned',
                               login: "foo@bar.com")
           end
           let(:note) do
@@ -252,13 +312,16 @@ describe Notifications::JournalWPMailService do
         end
       end
 
+      # TODO: test for group mention.
+      # Probably need to distinguish between user and group in mention tag
       context 'for groups' do
-        let(:recipient) { FactoryBot.create(:user) }
+        let(:recipient) do
+          FactoryBot.create(:user,
+                            mail_notification: 'only_assigned')
+        end
 
         let(:group) do
-          FactoryBot.create(:group) do |group|
-            group.users << recipient
-
+          FactoryBot.create(:group, members: recipient) do |group|
             FactoryBot.create(:member,
                               project: project,
                               principal: group,
@@ -266,36 +329,32 @@ describe Notifications::JournalWPMailService do
           end
         end
 
-        let(:note) do
-          "Hello group##{group.id}"
+        context 'on a hash/id based mention' do
+          let(:note) do
+            "Hello group##{group.id}"
+          end
+
+          it_behaves_like 'group mention'
         end
 
-        context 'group member is allowed to view the work package' do
-          context 'user wants to receive notifications' do
-            it_behaves_like 'sends mail'
+        context 'on a tag based mention with the type after' do
+          let(:note) do
+            <<~NOTE
+              Hello <mention class="mention" data-id="#{group.id}" data-type="group" data-text="@#{group.name}">@#{group.name}</mention>
+            NOTE
           end
 
-          context 'user disabled notifications' do
-            let(:recipient) { FactoryBot.create(:user, mail_notification: User::USER_MAIL_OPTION_NON.first) }
-
-            it_behaves_like 'sends no mail'
-          end
+          it_behaves_like 'group mention'
         end
 
-        context 'group is not allowed to view the work package' do
-          let(:role) { FactoryBot.create(:role, permissions: []) }
-
-          it_behaves_like 'sends no mail'
-
-          context 'but group member is allowed individually' do
-            let(:recipient) do
-              FactoryBot.create(:user,
-                                member_in_project: project,
-                                member_with_permissions: [:view_work_packages])
-            end
-
-            it_behaves_like 'sends mail'
+        context 'on a tag based mention with the type before' do
+          let(:note) do
+            <<~NOTE
+              Hello <mention data-type="group" class="mention" data-id="#{group.id}" data-text="@#{group.name}">@#{group.name}</mention>
+            NOTE
           end
+
+          it_behaves_like 'group mention'
         end
       end
     end
@@ -333,15 +392,28 @@ describe Notifications::JournalWPMailService do
       it_behaves_like 'mentioned'
     end
   end
+
+  context 'aggregated journal is empty' do
+    let(:journal) { journal_2_empty_change }
+    let(:journal_2_empty_change) do
+      work_package.add_journal(author, 'temp')
+      work_package.save(validate: false)
+      work_package.journals.last.tap do |j|
+        j.update_column(:notes, nil)
+      end
+    end
+
+    it_behaves_like 'sends no mail'
+  end
 end
 
 describe 'initialization' do
   it 'subscribes the listener' do
-    expect(Notifications::JournalWPMailService).to receive(:call)
+    expect(Notifications::JournalWpMailService).to receive(:call)
 
     OpenProject::Notifications.send(
       OpenProject::Events::AGGREGATED_WORK_PACKAGE_JOURNAL_READY,
-      journal: double('journal', initial?: true)
+      journal: double('journal', initial?: true, journable: double('WorkPackage'))
     )
   end
 end

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -115,8 +115,23 @@ module API
             "#{work_package(id)}/attachments"
           end
 
+          def self.attachments_by_help_text(id)
+            "#{help_text(id)}/attachments"
+          end
+
           def self.attachments_by_wiki_page(id)
             "#{wiki_page(id)}/attachments"
+          end
+
+          def self.prepare_new_attachment_upload
+            "#{root}/attachments/prepare"
+          end
+
+          index :attachment_upload
+          show :attachment_upload
+
+          def self.attachment_uploaded(attachment_id)
+            "#{root}/attachments/#{attachment_id}/uploaded"
           end
 
           def self.available_assignees(project_id)
@@ -323,11 +338,22 @@ module API
             "#{root}/string_objects?value=#{val}"
           end
 
-          index :time_entry
-          show :time_entry
+          resources :time_entry
 
           def self.time_entries_activity(activity_id)
             "#{root}/time_entries/activities/#{activity_id}"
+          end
+
+          def self.time_entries_available_projects
+            "#{time_entries}/available_projects"
+          end
+
+          def self.time_entries_available_work_packages_on_create
+            "#{time_entries}/available_work_packages"
+          end
+
+          def self.time_entries_available_work_packages_on_edit(time_entry_id)
+            "#{time_entry(time_entry_id)}/available_work_packages"
           end
 
           index :type
@@ -450,12 +476,12 @@ module API
 
             root_url = OpenProject::StaticRouting::StaticUrlHelpers.new.root_url
 
-            root_url.gsub(duplicate_regexp, '') + ApiV3Path.send(path, arguments)
+            root_url.gsub(duplicate_regexp, '') + send(path, arguments)
           end
         end
 
         def api_v3_paths
-          ApiV3Path
+          ::API::V3::Utilities::PathHelper::ApiV3Path
         end
       end
     end

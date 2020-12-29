@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,7 +25,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module OpenProject::TextFormatting::Matchers
@@ -33,7 +33,7 @@ module OpenProject::TextFormatting::Matchers
     class HashSeparator < Base
 
       def self.allowed_prefixes
-        %w(version message project user group)
+        %w(version message project user group document meeting)
       end
 
       ##
@@ -68,6 +68,29 @@ module OpenProject::TextFormatting::Matchers
         end
       end
 
+      def render_document
+        if document = Document.visible.find_by_id(oid)
+          link_to document.title,
+                  { only_path: context[:only_path],
+                    controller: '/documents',
+                    action: 'show',
+                    id: document },
+                  class: 'document'
+        end
+      end
+
+      def render_meeting
+        meeting = Meeting.find_by_id(oid)
+        if meeting&.visible?(User.current)
+          link_to meeting.title,
+                  { only_path: context[:only_path],
+                    controller: '/meetings',
+                    action: 'show',
+                    id: oid },
+                  class: 'meeting'
+        end
+      end
+
       def render_message
         message = Message.includes(:parent).find_by(id: oid)
         if message
@@ -90,7 +113,9 @@ module OpenProject::TextFormatting::Matchers
       end
 
       def render_group
-        if group = Group.find_by(id: oid)
+        group = Group.find_by(id: oid)
+
+        if group
           content_tag :span,
                       group.name,
                       title: I18n.t(:label_group_named, name: group.name),

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -52,7 +52,7 @@ class AdminUserSeeder < Seeder
       user.password = 'admin'
       user.firstname = 'OpenProject'
       user.lastname = 'Admin'
-      user.mail = ENV.fetch('ADMIN_EMAIL') { 'admin@example.net' }
+      user.mail = ENV['ADMIN_EMAIL'].presence || 'admin@example.net'
       user.mail_notification = User::USER_MAIL_OPTION_ONLY_MY_EVENTS.first
       user.language = I18n.locale.to_s
       user.status = User::STATUSES[:active]

@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -43,7 +43,7 @@ class Queries::WorkPackages::Columns::PropertyColumn < Queries::WorkPackages::Co
     project: {
       association: 'project',
       sortable: "name",
-      groupable: 'project_id'
+      groupable: "#{WorkPackage.table_name}.project_id"
     },
     subject: {
       sortable: "#{WorkPackage.table_name}.subject"
@@ -51,7 +51,7 @@ class Queries::WorkPackages::Columns::PropertyColumn < Queries::WorkPackages::Co
     type: {
       association: 'type',
       sortable: "position",
-      groupable: 'type_id'
+      groupable: "#{WorkPackage.table_name}.type_id"
     },
     parent: {
       association: 'ancestors_relations',
@@ -62,35 +62,29 @@ class Queries::WorkPackages::Columns::PropertyColumn < Queries::WorkPackages::Co
       association: 'status',
       sortable: "position",
       highlightable: true,
-      groupable: 'status_id'
+      groupable: "#{WorkPackage.table_name}.status_id"
     },
     priority: {
       association: 'priority',
       sortable: "position",
       default_order: 'desc',
       highlightable: true,
-      groupable: 'priority_id'
+      groupable: "#{WorkPackage.table_name}.priority_id"
     },
     author: {
       association: 'author',
-      sortable: ["lastname",
-                 "firstname",
-                 "id"],
-      groupable: 'author_id'
+      sortable: %w(lastname firstname id),
+      groupable: "#{WorkPackage.table_name}.author_id"
     },
     assigned_to: {
       association: 'assigned_to',
-      sortable: ["lastname",
-                 "firstname",
-                 "id"],
-      groupable: 'assigned_to_id'
+      sortable: %w(lastname firstname id),
+      groupable: "#{WorkPackage.table_name}.assigned_to_id"
     },
     responsible: {
       association: 'responsible',
-      sortable: ["lastname",
-                 "firstname",
-                 "id"],
-      groupable: 'responsible_id'
+      sortable: %w(lastname firstname id),
+      groupable: "#{WorkPackage.table_name}.responsible_id"
     },
     updated_at: {
       sortable: "#{WorkPackage.table_name}.updated_at",
@@ -99,28 +93,23 @@ class Queries::WorkPackages::Columns::PropertyColumn < Queries::WorkPackages::Co
     category: {
       association: 'category',
       sortable: "name",
-      groupable: 'category_id'
+      groupable: "#{WorkPackage.table_name}.category_id"
     },
-    fixed_version: {
-      association: 'fixed_version',
-      sortable: ["name"],
-      default_order: 'desc',
-      groupable: 'fixed_version_id'
+    version: {
+      association: 'version',
+      sortable: [->(table_name = Version.table_name) { Versions::Scopes::OrderBySemverName.semver_sql(table_name) }, 'name'],
+      default_order: 'ASC',
+      null_handling: 'NULLS LAST',
+      groupable: "#{WorkPackage.table_name}.version_id"
     },
     start_date: {
-      # Put empty start_dates in the far future rather than in the far past
-      sortable: ["CASE WHEN #{WorkPackage.table_name}.start_date IS NULL
-                  THEN 1
-                  ELSE 0 END",
-                 "#{WorkPackage.table_name}.start_date"]
+      sortable: "#{WorkPackage.table_name}.start_date",
+      null_handling: 'NULLS LAST'
     },
     due_date: {
       highlightable: true,
-      # Put empty due_dates in the far future rather than in the far past
-      sortable: ["CASE WHEN #{WorkPackage.table_name}.due_date IS NULL
-                  THEN 1
-                  ELSE 0 END",
-                 "#{WorkPackage.table_name}.due_date"]
+      sortable: "#{WorkPackage.table_name}.due_date",
+      null_handling: 'NULLS LAST'
     },
     estimated_hours: {
       sortable: "#{WorkPackage.table_name}.estimated_hours",

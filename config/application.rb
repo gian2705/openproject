@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,23 +29,6 @@
 
 require_relative 'boot'
 
-require 'benchmark'
-module SimpleBenchmark
-  #
-  # Measure execution of block and display result
-  #
-  # Time is measured by Benchmark module, displayed time is total
-  # (user cpu time + system cpu time + user and system cpu time of children)
-  # This is not wallclock time.
-  def self.bench(title)
-    $stderr.print "#{title}... "
-    result = Benchmark.measure do
-      yield
-    end
-    $stderr.printf "%.03fs\n", result.total
-  end
-end
-
 require 'rails/all'
 require 'active_support'
 require 'active_support/dependencies'
@@ -71,7 +54,7 @@ if defined?(Bundler)
   Bundler.require(*Rails.groups(:opf_plugins))
 end
 
-require File.dirname(__FILE__) + '/../lib/open_project/configuration'
+require_relative '../lib/open_project/configuration'
 
 env = ENV['RAILS_ENV'] || 'production'
 db_config = ActiveRecord::Base.configurations[env] || {}
@@ -80,7 +63,7 @@ if db_adapter&.start_with? 'mysql'
   warn <<~ERROR
     ======= INCOMPATIBLE DATABASE DETECTED =======
     Your database is set up for use with a MySQL or MySQL-compatible variant.
-    This installation of OpenProject 10.0. no longer supports these variants.
+    This installation of OpenProject no longer supports these variants.
 
     The following guides provide extensive documentation for migrating
     your installation to a PostgreSQL database:
@@ -122,6 +105,7 @@ module OpenProject
     # http://stackoverflow.com/questions/4590229
     config.middleware.use Rack::TempfileReaper
 
+    config.autoloader = :zeitwerk
     # Custom directories with classes and modules you want to be autoloadable.
     config.enable_dependency_loading = true
     config.paths.add Rails.root.join('lib').to_s, eager_load: true
@@ -141,6 +125,14 @@ module OpenProject
 
     # Fall back to default locale
     config.i18n.fallbacks = true
+
+    # Activate being able to specify the format in which full_message works.
+    # Doing this, it is e.g. possible to avoid having the format of '%{attribute} %{message}' which
+    # will always prepend the attribute name to the error message.
+    # The formats can then be specified using the `format:` key within the [local].yml file in every
+    # layer of activerecord.errors down to the individual leve of the message, e.g.
+    # activerecord.errors.models.project.attributes.types.format
+    config.active_model.i18n_customize_full_message = true
 
     # Enable cascade key lookup for i18n
     I18n.backend.class.send(:include, I18n::Backend::Cascade)

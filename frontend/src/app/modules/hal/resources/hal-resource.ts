@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {InputState} from "reactivestates";
@@ -31,8 +31,7 @@ import {HalLinkInterface} from 'core-app/modules/hal/hal-link/hal-link';
 import {Injector} from '@angular/core';
 import {States} from 'core-components/states.service';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
-import {WorkPackageResource} from "core-app/modules/hal/resources/work-package-resource";
-
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 export interface HalResourceClass<T extends HalResource = HalResource> {
   new(injector:Injector,
@@ -41,6 +40,17 @@ export interface HalResourceClass<T extends HalResource = HalResource> {
       halInitializer:(halResource:T) => void,
       $halType:string):T;
 }
+
+export type HalSourceLink = { href:string|null };
+
+export type HalSourceLinks = {
+  [key:string]:HalSourceLink
+};
+
+export type HalSource = {
+  [key:string]:string|number|null|HalSourceLinks,
+  _links:HalSourceLinks
+};
 
 export class HalResource {
   // TODO this is the source of many issues in the frontend
@@ -63,8 +73,8 @@ export class HalResource {
   // This is required for attributes to be correctly mapped according to their configuration.
   public $halType:string;
 
-  protected readonly states:States = this.injector.get(States);
-  protected readonly I18n:I18nService = this.injector.get(I18nService);
+  @InjectField() states:States;
+  @InjectField() I18n:I18nService;
 
   /**
    * Constructs and initializes the HalResource. For this, the halResoureFactory is required.
@@ -88,7 +98,7 @@ export class HalResource {
     this.$initialize($source);
   }
 
-  public static getEmptyResource(self:{ href:string | null } = {href: null}):any {
+  public static getEmptyResource(self:{ href:string|null } = {href: null}):any {
     return {_links: {self: self}};
   }
 
@@ -116,12 +126,24 @@ export class HalResource {
   }
 
   /**
+   * Override toString to ensure the resource can
+   * be printed nicely on console and in errors
+   */
+  public toString() {
+    if (this.$href) {
+      return `[HalResource href=${this.$href}]`;
+    } else {
+      return `[HalResource id=${this.id}]`;
+    }
+  }
+
+  /**
    * Returns the ID and ensures it's a string, null.
    * Returns a string when:
    *  - The embedded ID is actually set
    *  - The self link is terminated by a number.
    */
-  public get id():string | null {
+  public get id():string|null {
     if (this.$source.id) {
       return this.$source.id.toString();
     }
@@ -134,29 +156,16 @@ export class HalResource {
     return null;
   }
 
-  public set id(val:string | null) {
+  public set id(val:string|null) {
     this.$source.id = val;
   }
 
   public get isNew():boolean {
-    return this.id === 'new';
+    return !this.id || this.id === 'new';
   }
 
   public get persisted() {
     return !!(this.id && this.id !== 'new');
-  }
-
-  /**
-   * Return whether the resource is editable with the user's permission
-   * on the given resource package attribute.
-   * In order to be editable, there needs to be an update link on the resource and the schema for
-   * the attribute needs to indicate the writability.
-   *
-   * @param property
-   */
-  public isAttributeEditable(property:string):boolean {
-    const fieldSchema = this.schema[property];
-    return this.$links.update && fieldSchema && fieldSchema.writable;
   }
 
   /**
@@ -206,28 +215,30 @@ export class HalResource {
   /**
    * Alias for $href.
    */
-  public get href():string | null {
+  public get href():string|null {
     return this.$link.href;
   }
 
-  public get $href():string | null {
+  public get $href():string|null {
     return this.$link.href;
   }
 
   /**
    * Return the associated state to this HAL resource, if any.
    */
-  public get state():InputState<this> | null {
+  public get state():InputState<this>|null {
     return null;
   }
 
   /**
    * Update the state
    */
-  public push(newValue:this):void {
+  public push(newValue:this):Promise<unknown> {
     if (this.state) {
       this.state.putValue(newValue);
     }
+
+    return Promise.resolve();
   }
 
   public previewPath():string|undefined {

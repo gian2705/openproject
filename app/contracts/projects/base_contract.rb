@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -25,13 +25,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module Projects
   class BaseContract < ::ModelContract
-    include Concerns::AssignableValuesContract
-    include Concerns::AssignableCustomFieldValues
+    include AssignableValuesContract
+    include AssignableCustomFieldValues
+    include Projects::Archiver
 
     attribute :name
     attribute :identifier
@@ -39,6 +40,7 @@ module Projects
     attribute :public
     attribute :active do
       validate_active_present
+      validate_changing_active
     end
     attribute :parent do
       validate_parent_assignable
@@ -46,12 +48,11 @@ module Projects
     attribute :status do
       validate_status_code_included
     end
-
-    def validate
-      validate_user_allowed_to_manage
-
-      super
+    attribute :templated do
+      validate_templated_set_by_admin
     end
+
+    validate :validate_user_allowed_to_manage
 
     def assignable_parents
       Project
@@ -72,7 +73,7 @@ module Projects
     end
 
     def assignable_status_codes
-      Project::Status.codes.keys
+      Projects::Status.codes.keys
     end
 
     private
@@ -92,15 +93,56 @@ module Projects
     end
 
     def validate_user_allowed_to_manage
-      errors.add :base, :error_unauthorized unless user.allowed_to?(manage_permission, model)
+      with_unchanged_id do
+        with_active_assumed do
+          errors.add :base, :error_unauthorized unless user.allowed_to?(manage_permission, model)
+        end
+      end
     end
 
     def validate_status_code_included
-      errors.add :status, :inclusion if model.status&.code && !Project::Status.codes.keys.include?(model.status.code.to_s)
+      errors.add :status, :inclusion if model.status&.code && !Projects::Status.codes.keys.include?(model.status.code.to_s)
+    end
+
+    def validate_templated_set_by_admin
+      if model.templated_changed? && !user.admin?
+        errors.add :templated, :error_unauthorized
+      end
     end
 
     def manage_permission
       raise NotImplementedError
+    end
+
+    def with_unchanged_id
+      project_id = model.id
+      model.id = model.id_was
+
+      yield
+    ensure
+      model.id = project_id
+    end
+
+    def with_active_assumed
+      active = model.active
+      model.active = true
+
+      yield
+    ensure
+      model.active = active
+    end
+
+    def validate_changing_active
+      return unless model.active_changed?
+
+      validate_admin_only
+
+      if model.active?
+        # switched to active -> unarchiving
+        validate_all_ancestors_active
+      else
+        validate_no_foreign_wp_references
+      end
     end
   end
 end

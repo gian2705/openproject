@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -71,7 +71,7 @@ describe ::API::V3::Grids::Schemas::GridSchemaRepresenter do
   end
   let(:representer) do
     described_class.create(contract,
-                           self_link,
+                           self_link: self_link,
                            form_embedded: embedded,
                            current_user: current_user)
   end
@@ -94,8 +94,6 @@ describe ::API::V3::Grids::Schemas::GridSchemaRepresenter do
         let(:required) { true }
         let(:writable) { false }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'rowCount' do
@@ -107,8 +105,6 @@ describe ::API::V3::Grids::Schemas::GridSchemaRepresenter do
         let(:required) { true }
         let(:writable) { true }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'columnCount' do
@@ -120,8 +116,6 @@ describe ::API::V3::Grids::Schemas::GridSchemaRepresenter do
         let(:required) { true }
         let(:writable) { true }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'createdAt' do
@@ -133,8 +127,6 @@ describe ::API::V3::Grids::Schemas::GridSchemaRepresenter do
         let(:required) { true }
         let(:writable) { false }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'updatedAt' do
@@ -146,8 +138,6 @@ describe ::API::V3::Grids::Schemas::GridSchemaRepresenter do
         let(:required) { true }
         let(:writable) { false }
       end
-
-      it_behaves_like 'has no visibility property'
     end
 
     describe 'widgets' do

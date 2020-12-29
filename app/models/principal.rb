@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -28,7 +28,7 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Principal < ActiveRecord::Base
+class Principal < ApplicationRecord
   # Account statuses
   # Code accessing the keys assumes they are ordered, which they are since Ruby 1.9
   STATUSES = {
@@ -47,7 +47,7 @@ class Principal < ActiveRecord::Base
   has_many :members, foreign_key: 'user_id', dependent: :destroy
   has_many :memberships, -> {
     includes(:project, :roles)
-      .where(projects: { active: true })
+      .where(["projects.active = ? OR project_id IS NULL", true])
       .order(Arel.sql('projects.name ASC'))
     # haven't been able to produce the order using hashes
   },
@@ -59,7 +59,7 @@ class Principal < ActiveRecord::Base
   scope :active, -> { where(status: STATUSES[:active]) }
 
   scope :active_or_registered, -> {
-    where(status: [STATUSES[:active], STATUSES[:registered], STATUSES[:invited]])
+    not_builtin.where(status: [STATUSES[:active], STATUSES[:registered], STATUSES[:invited]])
   }
 
   scope :active_or_registered_like, ->(query) { active_or_registered.like(query) }

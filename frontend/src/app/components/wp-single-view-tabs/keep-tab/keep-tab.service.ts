@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,14 +23,14 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {StateService, Transition, TransitionService} from '@uirouter/core';
 import {ReplaySubject} from 'rxjs';
 import {Injectable} from "@angular/core";
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class KeepTabService {
   protected currentTab:string = 'overview';
 
@@ -65,11 +65,15 @@ export class KeepTabService {
   }
 
   public get currentDetailsState():string {
-    return 'work-packages.list.details.' + this.currentDetailsTab;
+    return 'work-packages.partitioned.list.details.' + this.currentDetailsTab;
+  }
+
+  public get currentDetailsSubState():string {
+    return '.details.' + this.currentDetailsTab;
   }
 
   public isDetailsState(stateName:string) {
-    return stateName === 'work-packages.list.details';
+    return !!stateName && stateName.includes('.details');
   }
 
   public get currentShowTab():string {
@@ -108,24 +112,20 @@ export class KeepTabService {
     if (stateName === 'show') {
       return this.$state.includes('work-packages.show.*');
     }
-
     if (stateName === 'details') {
-      return this.$state.includes('work-packages.list.details.*');
+      return this.$state.includes('**.details.*');
     }
 
     return false;
   }
 
   public updateTabs(stateName?:string) {
-
     // Ignore the switch from show#activity to details#activity
     // and show details#overview instead
-
     if (stateName === 'work-packages.show.activity') {
       this.currentTab = 'overview';
       return this.notify();
     }
-
     this.updateTab('show');
     this.updateTab('details');
   }

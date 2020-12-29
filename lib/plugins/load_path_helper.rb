@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,12 +31,6 @@ module Plugins
     def self.spec_load_paths
       plugin_load_paths.map { |path|
         File.join(path, 'spec')
-      }.keep_if{ |path| File.directory?(path) }
-    end
-
-    def self.cucumber_load_paths
-      plugin_load_paths.map { |path|
-        File.join(path, 'features')
       }.keep_if{ |path| File.directory?(path) }
     end
 

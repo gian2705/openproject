@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -31,13 +31,11 @@
 module WorkPackage::SchedulingRules
   extend ActiveSupport::Concern
 
-  def reschedule_after(date)
-    WorkPackages::RescheduleService
-      .new(user: User.current,
-           work_package: self)
-      .call(date)
+  def schedule_automatically?
+    !schedule_manually?
   end
 
+  # TODO: move into work package contract (possibly a module included into the contract)
   # Calculates the minimum date that
   # will not violate the precedes relations (max(finish date, start date) + delay)
   # of this work package or its ancestors
@@ -57,18 +55,14 @@ module WorkPackage::SchedulingRules
   #   B is 2017/07/25
   #   A is 2017/07/25
   def soonest_start
-    # Using a hand crafted union here instead of the alternative
-    # Relation.from_work_package_or_ancestors(self).follows
-    # as the performance of the above would be several orders of magnitude worse on MySql
-    sql = Relation.connection.unprepared_statement do
-      "((#{ancestors_follows_relations.to_sql}) UNION (#{own_follows_relations.to_sql})) AS relations"
-    end
-
+    # eager load `to` to avoid n+1 on successor_soonest_start
     @soonest_start ||=
-      Relation.from(sql)
-              .map(&:successor_soonest_start)
-              .compact
-              .max
+      Relation
+        .follows_non_manual_ancestors(self)
+        .includes(:to)
+        .map(&:successor_soonest_start)
+        .compact
+        .max
   end
 
   # Returns the time scheduled for this work package.
@@ -84,15 +78,5 @@ module WorkPackage::SchedulingRules
     else
       1
     end
-  end
-
-  private
-
-  def ancestors_follows_relations
-    Relation.where(from_id: self.ancestors_relations.select(:from_id)).follows
-  end
-
-  def own_follows_relations
-    Relation.where(from_id: self.id).follows
   end
 end

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -39,13 +39,25 @@ module API
             def container
               nil
             end
+
+            def check_attachments_addable
+              raise API::Errors::Unauthorized if Redmine::Acts::Attachable.attachables.none?(&:attachments_addable?)
+            end
           end
 
           post do
-            raise API::Errors::Unauthorized if Redmine::Acts::Attachable.attachables.none?(&:attachments_addable?)
+            check_attachments_addable
 
-            ::API::V3::Attachments::AttachmentRepresenter.new(parse_and_create,
-                                                              current_user: current_user)
+            ::API::V3::Attachments::AttachmentRepresenter.new(parse_and_create, current_user: current_user)
+          end
+
+          namespace :prepare do
+            post do
+              require_direct_uploads
+              check_attachments_addable
+
+              ::API::V3::Attachments::AttachmentUploadRepresenter.new(parse_and_prepare, current_user: current_user)
+            end
           end
 
           route_param :id, type: Integer, desc: 'Attachment ID' do
@@ -59,23 +71,21 @@ module API
               AttachmentRepresenter.new(@attachment, embed_links: true, current_user: current_user)
             end
 
-            delete do
-              raise API::Errors::Unauthorized unless @attachment.deletable?(current_user)
+            delete &::API::V3::Utilities::Endpoints::Delete.new(model: Attachment).mount
 
-              if @attachment.container
-                @attachment.container.attachments.delete(@attachment)
-              else
-                @attachment.destroy
-              end
+            namespace :content, &::API::Helpers::AttachmentRenderer.content_endpoint(&-> {
+              @attachment
+            })
 
-              status 204
-            end
-
-            namespace :content do
-              helpers ::API::Helpers::AttachmentRenderer
-
+            namespace :uploaded do
               get do
-                respond_with_attachment @attachment
+                attachment = Attachment.pending_direct_uploads.where(id: params[:id]).first!
+
+                raise API::Errors::NotFound unless attachment.file.readable?
+
+                ::Attachments::FinishDirectUploadJob.perform_later attachment.id
+
+                ::API::V3::Attachments::AttachmentRepresenter.new(attachment, current_user: current_user)
               end
             end
           end

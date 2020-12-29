@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,7 +27,7 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-class Wiki < ActiveRecord::Base
+class Wiki < ApplicationRecord
   belongs_to :project
   has_many :pages, -> {
     order('title')
@@ -55,7 +55,9 @@ class Wiki < ActiveRecord::Base
   # if page doesn't exist, return a new page
   def find_or_new_page(title)
     title = start_page if title.blank?
-    find_page(title) || WikiPage.new(wiki: self, title: title)
+    # If a new page is initialized, it needs to have a slug (via the ensure_unique_url)
+    # method right away, so that the correct menu item (if that exists already) is highlighted
+    find_page(title) || WikiPage.new(wiki: self, title: title).tap(&:ensure_unique_url)
   end
 
   ##

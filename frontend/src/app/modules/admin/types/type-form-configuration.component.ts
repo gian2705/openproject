@@ -1,18 +1,15 @@
-import {Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit} from '@angular/core';
 import {TypeBannerService} from 'core-app/modules/admin/types/type-banner.service';
 import {I18nService} from 'core-app/modules/common/i18n/i18n.service';
 import {NotificationsService} from 'core-app/modules/common/notifications/notifications.service';
 import {ExternalRelationQueryConfigurationService} from 'core-components/wp-table/external-configuration/external-relation-query-configuration.service';
 import {DomAutoscrollService} from 'core-app/modules/common/drag-and-drop/dom-autoscroll.service';
-import {DragulaService} from 'ng2-dragula';
+import {DragulaService, DrakeWithModels} from 'ng2-dragula';
 import {ConfirmDialogService} from 'core-components/modals/confirm-dialog/confirm-dialog.service';
 import {Drake} from 'dragula';
-
-import {randomString} from 'core-app/helpers/random-string';
 import {GonService} from "core-app/modules/common/gon/gon.service";
-import {DynamicBootstrapper} from "core-app/globals/dynamic-bootstrapper";
-import {takeUntil} from "rxjs/operators";
-import {componentDestroyed} from "ng2-rx-componentdestroyed";
+import {UntilDestroyedMixin} from "core-app/helpers/angular/until-destroyed.mixin";
+import {install_menu_logic} from "core-app/globals/global-listeners/action-menu";
 
 export type TypeGroupType = 'attribute'|'query';
 
@@ -32,14 +29,17 @@ export interface TypeGroup {
   type:TypeGroupType;
 }
 
+export const adminTypeFormConfigurationSelector = 'admin-type-form-configuration';
+export const emptyTypeGroup = '__empty';
+
 @Component({
-  selector: 'admin-type-form-configuration',
+  selector: adminTypeFormConfigurationSelector,
   templateUrl: './type-form-configuration.html',
   providers: [
     TypeBannerService,
   ]
 })
-export class TypeFormConfigurationComponent implements OnInit, OnDestroy {
+export class TypeFormConfigurationComponent extends UntilDestroyedMixin implements OnInit, AfterViewInit {
 
   public text = {
     drag_to_activate: this.I18n.t('js.admin.type_form.drag_to_activate'),
@@ -55,12 +55,13 @@ export class TypeFormConfigurationComponent implements OnInit, OnDestroy {
   private autoscroll:any;
   private element:HTMLElement;
   private form:JQuery;
+  private submit:JQuery;
 
   public groups:TypeGroup[] = [];
   public inactives:TypeFormAttribute[] = [];
 
-  private attributeDrake:Drake;
-  private groupsDrake:Drake;
+  private attributeDrake:DrakeWithModels;
+  private groupsDrake:DrakeWithModels;
 
   private no_filter_query:string;
 
@@ -71,6 +72,7 @@ export class TypeFormConfigurationComponent implements OnInit, OnDestroy {
               private confirmDialog:ConfirmDialogService,
               private notificationsService:NotificationsService,
               private externalRelationQuery:ExternalRelationQueryConfigurationService) {
+    super();
   }
 
   ngOnInit():void {
@@ -78,31 +80,53 @@ export class TypeFormConfigurationComponent implements OnInit, OnDestroy {
     this.element = this.elementRef.nativeElement;
     this.no_filter_query = this.element.dataset.noFilterQuery!;
     this.form = jQuery(this.element).closest('form');
+    this.submit = this.form.find('.form-configuration--save');
+
+    // In the following we are triggering the form submit ourselves to work around
+    // a firefox shortcoming. But to avoid double submits which are sometimes not canceled fast
+    // enough, we need to memoize whether we have already submitted.
+    let submitted = false;
+
+    this.form.on('submit', (event) => {
+      submitted = true;
+    });
+
+    // Capture mousedown on button because firefox breaks blur on click
+    this.submit.on('mousedown', (event) => {
+      setTimeout(() => {
+        if (!submitted) {
+          this.form.trigger('submit');
+        }
+      }, 50);
+      return true;
+    });
+
+    // Capture regular form submit
     this.form.on('submit.typeformupdater', () => {
       this.updateHiddenFields();
       return true;
     });
 
     // Setup groups
-    this.dragula.createGroup('groups', {
-      moves: (el, source, handle:HTMLElement) => handle.classList.contains('group-handle')
-    });
+    this.groupsDrake = this
+      .dragula
+      .createGroup('groups', {
+        moves: (el, source, handle:HTMLElement) => handle.classList.contains('group-handle')
+      })
+      .drake;
 
     // Setup attributes
-    this.dragula.createGroup('attributes', {
-      moves: (el, source, handle:HTMLElement) => handle.classList.contains('attribute-handle')
-    });
-
-    this.dragula.dropModel("attributes")
-      .pipe(
-        takeUntil(componentDestroyed(this))
-      )
-      .subscribe((event) => {
-        console.log(event);
-      });
+    this.attributeDrake = this
+      .dragula
+      .createGroup('attributes', {
+        moves: (el, source, handle:HTMLElement) => handle.classList.contains('attribute-handle')
+      })
+      .drake;
 
     // Get attribute id
-    this.groups = JSON.parse(this.element.dataset.activeGroups!);
+    this.groups = JSON
+      .parse(this.element.dataset.activeGroups!)
+      .filter((group:TypeGroup) => group?.key !== emptyTypeGroup);
     this.inactives = JSON.parse(this.element.dataset.inactiveAttributes!);
 
     // Setup autoscroll
@@ -118,13 +142,15 @@ export class TypeFormConfigurationComponent implements OnInit, OnDestroy {
         autoScroll: function (this:any) {
           const groups = that.groupsDrake && that.groupsDrake.dragging;
           const attributes = that.attributeDrake && that.attributeDrake.dragging;
-          return this.down && (groups || attributes);
+
+          return groups || attributes;
         }
       });
   }
 
-  ngOnDestroy() {
-    // Nothing to do
+  ngAfterViewInit() {
+    const menu = jQuery(this.elementRef.nativeElement).find('.toolbar-items');
+    install_menu_logic(menu);
   }
 
   public deactivateAttribute(attribute:TypeFormAttribute) {
@@ -143,11 +169,11 @@ export class TypeFormConfigurationComponent implements OnInit, OnDestroy {
       'timelines': I18n.t('js.work_packages.table_configuration.embedded_tab_disabled')
     };
 
-    this.externalRelationQuery.show(
-      JSON.parse(group.query),
-      (queryProps:any) => group.query = JSON.stringify(queryProps),
+    this.externalRelationQuery.show({
+      currentQuery: JSON.parse(group.query),
+      callback: (queryProps:any) => group.query = JSON.stringify(queryProps),
       disabledTabs
-    );
+    });
   }
 
   public deleteGroup(group:TypeGroup) {
@@ -183,12 +209,12 @@ export class TypeFormConfigurationComponent implements OnInit, OnDestroy {
         }
       })
       .then(() => {
-      this.form.find('input#type_attribute_groups').val(JSON.stringify([]));
+        this.form.find('input#type_attribute_groups').val(JSON.stringify([]));
 
-      // Disable our form handler that updates the attribute groups
-      this.form.off('submit.typeformupdater');
-      this.form.trigger('submit');
-    });
+        // Disable our form handler that updates the attribute groups
+        this.form.off('submit.typeformupdater');
+        this.form.trigger('submit');
+      });
 
     $event.preventDefault();
     return false;
@@ -198,10 +224,23 @@ export class TypeFormConfigurationComponent implements OnInit, OnDestroy {
     this.inactives = [...newValue].sort((a, b) => a.translation.localeCompare(b.translation));
   }
 
+  // We maintain an empty group
+  // that gets hidden in the frontend in case the user
+  // decides to remove all groups
+  // This was necessary since the "default" is actually an empty array of groups
+  private get emptyGroup():TypeGroup {
+    return { type: 'attribute', key: emptyTypeGroup, name: 'empty', attributes: [] };
+  }
+
   private updateHiddenFields() {
     const hiddenField = this.form.find('.admin-type-form--hidden-field');
-    hiddenField.val(JSON.stringify(this.groups));
+    if (this.groups.length === 0) {
+      // Ensure we're adding an empty group if deliberately removing
+      // all values.
+      hiddenField.val(JSON.stringify([this.emptyGroup]));
+    } else {
+      hiddenField.val(JSON.stringify(this.groups));
+    }
   }
 }
 
-DynamicBootstrapper.register({cls: TypeFormConfigurationComponent, selector: 'admin-type-form-configuration'});

@@ -2,7 +2,6 @@ import {Inject, Injectable, Injector, OnDestroy} from "@angular/core";
 import {DOCUMENT} from "@angular/common";
 import {DomAutoscrollService} from "core-app/modules/common/drag-and-drop/dom-autoscroll.service";
 import {DragAndDropHelpers} from "core-app/modules/common/drag-and-drop/drag-and-drop.helpers";
-import DropEvent = JQuery.DropEvent;
 
 export interface DragMember {
   dragContainer:HTMLElement;
@@ -72,14 +71,15 @@ export class DragAndDropService implements OnDestroy {
 
   public register(member:DragMember) {
     this.members.push(member);
-    const dragContainer = member.dragContainer;
+    const scrollContainers = member.scrollContainers;
 
     if (this.autoscroll) {
-      this.autoscroll.add(dragContainer);
+      this.autoscroll.add(scrollContainers);
     } else {
-      this.setupAutoscroll([dragContainer]);
+      this.setupAutoscroll(scrollContainers);
     }
 
+    const dragContainer = member.dragContainer;
     if (this.drake === null) {
       this.initializeDrake([dragContainer]);
     } else {
@@ -122,7 +122,7 @@ export class DragAndDropService implements OnDestroy {
         const member = this.getMember(container);
         return member ? member.moves(el, container, handle, sibling) : false;
       },
-      accepts:(el:any, container:any) => {
+      accepts: (el:any, container:any) => {
         const member = this.getMember(container);
         return (member && member.accepts) ? member.accepts(el, container) : true;
       },
@@ -160,7 +160,7 @@ export class DragAndDropService implements OnDestroy {
       }
     });
 
-    this.drake.on('drop', async (el:HTMLElement, target:HTMLElement, source:HTMLElement, sibling:HTMLElement|null) => {
+    this.drake.on('drop', async (el:HTMLElement, target:HTMLElement, source:HTMLElement, sibling:HTMLElement) => {
       try {
         await this.handleDrop(el, target, source, sibling);
       } catch (e) {

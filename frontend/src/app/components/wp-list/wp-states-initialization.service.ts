@@ -3,7 +3,6 @@ import {QueryResource} from 'core-app/modules/hal/resources/query-resource';
 import {WorkPackageCollectionResource} from 'core-app/modules/hal/resources/wp-collection-resource';
 import {SchemaResource} from 'core-app/modules/hal/resources/schema-resource';
 import {QueryFormResource} from 'core-app/modules/hal/resources/query-form-resource';
-import {WorkPackageCacheService} from '../work-packages/work-package-cache.service';
 import {WorkPackagesListChecksumService} from './wp-list-checksum.service';
 import {AuthorisationService} from 'core-app/modules/common/model-auth/model-auth.service';
 import {IsolatedQuerySpace} from "core-app/modules/work_packages/query-space/isolated-query-space";
@@ -23,6 +22,8 @@ import {WorkPackageViewTimelineService} from "core-app/modules/work_packages/rou
 import {WorkPackageViewGroupByService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-group-by.service";
 import {WorkPackageViewFiltersService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-filters.service";
 import {WorkPackageViewRelationColumnsService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-relation-columns.service";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
+import {WorkPackageViewCollapsedGroupsService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-collapsed-groups.service";
 
 @Injectable()
 export class WorkPackageStatesInitializationService {
@@ -30,6 +31,7 @@ export class WorkPackageStatesInitializationService {
               protected querySpace:IsolatedQuerySpace,
               protected wpTableColumns:WorkPackageViewColumnsService,
               protected wpTableGroupBy:WorkPackageViewGroupByService,
+              protected wpTableGroupFold:WorkPackageViewCollapsedGroupsService,
               protected wpTableSortBy:WorkPackageViewSortByService,
               protected wpTableFilters:WorkPackageViewFiltersService,
               protected wpTableSum:WorkPackageViewSumService,
@@ -40,7 +42,7 @@ export class WorkPackageStatesInitializationService {
               protected wpTablePagination:WorkPackageViewPaginationService,
               protected wpTableOrder:WorkPackageViewOrderService,
               protected wpTableAdditionalElements:WorkPackageViewAdditionalElementsService,
-              protected wpCacheService:WorkPackageCacheService,
+              protected apiV3Service:APIV3Service,
               protected wpListChecksumService:WorkPackagesListChecksumService,
               protected authorisationService:AuthorisationService,
               protected wpDisplayRepresentation:WorkPackageViewDisplayRepresentationService) {
@@ -92,7 +94,7 @@ export class WorkPackageStatesInitializationService {
   public updateQuerySpace(query:QueryResource, results:WorkPackageCollectionResource) {
     // Clear table required data states
     this.querySpace.additionalRequiredWorkPackages.clear('Clearing additional WPs before updating rows');
-    this.querySpace.rendered.clear('Clearing rendered data before upgrading query space');
+    this.querySpace.tableRendered.clear('Clearing rendered data before upgrading query space');
 
     if (results.schemas) {
       _.each(results.schemas.elements, (schema:SchemaResource) => {
@@ -104,7 +106,7 @@ export class WorkPackageStatesInitializationService {
 
     this.authorisationService.initModelAuth('work_packages', results.$links);
 
-    results.elements.forEach(wp => this.wpCacheService.updateWorkPackage(wp, true));
+    results.elements.forEach(wp => this.apiV3Service.work_packages.cache.updateWorkPackage(wp, true));
 
     this.querySpace.results.putValue(results);
 
@@ -114,7 +116,7 @@ export class WorkPackageStatesInitializationService {
 
     this.wpTableRelationColumns.initialize(query, results);
 
-    this.wpTableAdditionalElements.initialize(results.elements);
+    this.wpTableAdditionalElements.initialize(query, results);
 
     this.wpTableOrder.initialize(query, results);
 
@@ -138,6 +140,7 @@ export class WorkPackageStatesInitializationService {
     this.wpTableColumns.initialize(query, results);
     this.wpTableSortBy.initialize(query, results);
     this.wpTableGroupBy.initialize(query, results);
+    this.wpTableGroupFold.initialize(query, results);
     this.wpTableTimeline.initialize(query, results);
     this.wpTableHierarchies.initialize(query, results);
     this.wpTableHighlighting.initialize(query, results);
@@ -153,6 +156,7 @@ export class WorkPackageStatesInitializationService {
     this.wpTableColumns.applyToQuery(query);
     this.wpTableSortBy.applyToQuery(query);
     this.wpTableGroupBy.applyToQuery(query);
+    this.wpTableGroupFold.applyToQuery(query);
     this.wpTableTimeline.applyToQuery(query);
     this.wpTableHighlighting.applyToQuery(query);
     this.wpTableHierarchies.applyToQuery(query);
@@ -174,10 +178,11 @@ export class WorkPackageStatesInitializationService {
     this.wpTableColumns.clear(reason);
     this.wpTableSortBy.clear(reason);
     this.wpTableGroupBy.clear(reason);
+    this.wpTableGroupFold.clear(reason);
     this.wpDisplayRepresentation.clear(reason);
     this.wpTableSum.clear(reason);
 
     // Clear rendered state
-    this.querySpace.rendered.clear(reason);
+    this.querySpace.tableRendered.clear(reason);
   }
 }

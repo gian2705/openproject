@@ -34,8 +34,12 @@ class EditField
     context.find "#{@selector} #{input_selector}"
   end
 
-  def clear
-    input_element.native.clear
+  def clear(with_backspace: false)
+    if with_backspace
+      input_element.set(' ', fill_options: { clear: :backspace })
+    else
+      input_element.native.clear
+    end
   end
 
   def expect_read_only
@@ -51,6 +55,11 @@ class EditField
     expect(input_element.value).to eq(value)
   end
 
+  def expect_display_value(value)
+    expect(display_element)
+      .to have_content(value)
+  end
+
   ##
   # Activate the field and check it opened correctly
   def activate!(expect_open: true)
@@ -60,7 +69,7 @@ class EditField
       end
 
       if expect_open && !active?
-        raise "Expected field input type '#{field_type}' for attribute '#{property_name}'."
+        raise "Expected field for attribute '#{property_name}' to be active."
       end
     end
   end
@@ -222,8 +231,11 @@ class EditField
            'status',
            'project',
            'type',
-           'category'
+           'category',
+           'workPackage'
         'create-autocompleter'
+      when 'activity'
+        'activity-autocompleter'
       else
         :input
       end.to_s

@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -35,8 +35,7 @@ describe ::API::V3::Memberships::MembershipRepresenter, 'rendering' do
     FactoryBot.build_stubbed(:member,
                              member_roles: [member_role1, member_role2, member_role2, marked_member_role],
                              principal: principal,
-                             project: project,
-                             created_on: Time.current)
+                             project: project)
   end
   let(:project) { FactoryBot.build_stubbed(:project) }
   let(:roles) { [role1, role2] }
@@ -128,6 +127,14 @@ describe ::API::V3::Memberships::MembershipRepresenter, 'rendering' do
         let(:href) { api_v3_paths.project(project.id) }
         let(:title) { project.name }
       end
+
+      context 'for a global member' do
+        let(:project) { nil }
+
+        it_behaves_like 'has an empty link' do
+          let(:link) { 'project' }
+        end
+      end
     end
 
     describe 'principal' do
@@ -182,8 +189,15 @@ describe ::API::V3::Memberships::MembershipRepresenter, 'rendering' do
 
     describe 'createdAt' do
       it_behaves_like 'has UTC ISO 8601 date and time' do
-        let(:date) { member.created_on }
+        let(:date) { member.created_at }
         let(:json_path) { 'createdAt' }
+      end
+    end
+
+    describe 'updatedAt' do
+      it_behaves_like 'has UTC ISO 8601 date and time' do
+        let(:date) { member.updated_at }
+        let(:json_path) { 'updatedAt' }
       end
     end
   end
@@ -200,6 +214,15 @@ describe ::API::V3::Memberships::MembershipRepresenter, 'rendering' do
         is_expected
           .to be_json_eql(project.name.to_json)
           .at_path("#{embedded_path}/name")
+      end
+
+      context 'for a global member' do
+        let(:project) { nil }
+
+        it 'has no project embedded' do
+          is_expected
+            .not_to have_json_path(embedded_path)
+        end
       end
     end
 

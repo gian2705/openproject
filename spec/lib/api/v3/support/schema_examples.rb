@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -83,13 +83,6 @@ shared_examples_for 'indicates length requirements' do
       is_expected
         .not_to have_json_path("#{path}/maxLength")
     end
-  end
-end
-
-shared_examples_for 'has no visibility property' do
-  it 'has no path' do
-    is_expected
-      .not_to have_json_path("#{path}/visibility")
   end
 end
 

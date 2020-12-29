@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -48,10 +48,10 @@ class UsersController < ApplicationController
                                                    :destroy]
 
   # Password confirmation helpers and actions
-  include Concerns::PasswordConfirmation
+  include PasswordConfirmation
   before_action :check_password_confirmation, only: [:destroy]
 
-  include Concerns::UserLimits
+  include Accounts::UserLimits
   before_action :enforce_user_limit, only: [:create]
   before_action -> { enforce_user_limit flash_now: true }, only: [:new]
 
@@ -76,20 +76,18 @@ class UsersController < ApplicationController
     @memberships = @user.memberships
                         .visible(current_user)
 
-    events = Redmine::Activity::Fetcher.new(User.current, author: @user).events(nil, nil, limit: 10)
+    events = Activities::Fetcher.new(User.current, author: @user).events(nil, nil, limit: 10)
     @events_by_day = events.group_by { |e| e.event_datetime.to_date }
 
-    unless User.current.admin?
-      if !(@user.active? ||
-         @user.registered?) ||
-         (@user != User.current && @memberships.empty? && events.empty?)
-        render_404
-        return
+    if !User.current.admin? &&
+       (!(@user.active? ||
+       @user.registered?) ||
+       (@user != User.current && @memberships.empty? && events.empty?))
+      render_404
+    else
+      respond_to do |format|
+        format.html { render layout: 'no_menu' }
       end
-    end
-
-    respond_to do |format|
-      format.html { render layout: 'no_menu' }
     end
   end
 
@@ -99,7 +97,6 @@ class UsersController < ApplicationController
     @auth_sources = AuthSource.all
   end
 
-  verify method: :post, only: :create, render: { nothing: true, status: :method_not_allowed }
   def create
     @user = User.new(language: Setting.default_language,
                      mail_notification: Setting.default_notification_option)
@@ -110,7 +107,7 @@ class UsersController < ApplicationController
     if UserInvitation.invite_user! @user
       respond_to do |format|
         format.html do
-          flash[:notice] = l(:notice_successful_create)
+          flash[:notice] = I18n.t(:notice_successful_create)
           redirect_to(params[:continue] ? new_user_path : edit_user_path(@user))
         end
       end
@@ -128,9 +125,8 @@ class UsersController < ApplicationController
     @membership ||= Member.new
   end
 
-  verify method: :put, only: :update, render: { nothing: true, status: :method_not_allowed }
   def update
-    @user.attributes = permitted_params.user_update_as_admin(@user.uses_external_authentication?,
+    @user.attributes = permitted_params.user_create_as_admin(@user.uses_external_authentication?,
                                                              @user.change_password_allowed?)
 
     if @user.change_password_allowed?
@@ -179,7 +175,7 @@ class UsersController < ApplicationController
 
       respond_to do |format|
         format.html do
-          flash[:notice] = l(:notice_successful_update)
+          flash[:notice] = I18n.t(:notice_successful_update)
           redirect_back(fallback_location: edit_user_path(@user))
         end
       end
@@ -267,7 +263,7 @@ class UsersController < ApplicationController
 
     Users::DeleteService.new(@user, User.current).call
 
-    flash[:notice] = l('account.deleted')
+    flash[:notice] = I18n.t('account.deleted')
 
     respond_to do |format|
       format.html do

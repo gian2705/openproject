@@ -1,6 +1,6 @@
 // -- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 // ++
 
 import {CollectionResource} from 'core-app/modules/hal/resources/collection-resource';
@@ -33,16 +33,16 @@ import {Component, OnInit, ViewChild} from "@angular/core";
 import {EditFieldComponent} from "core-app/modules/fields/edit/edit-field.component";
 import {ValueOption} from "core-app/modules/fields/edit/field-types/select-edit-field.component";
 import {NgSelectComponent} from "@ng-select/ng-select";
-import {untilComponentDestroyed} from "ng2-rx-componentdestroyed";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
 
 @Component({
   templateUrl: './multi-select-edit-field.component.html'
 })
 export class MultiSelectEditFieldComponent extends EditFieldComponent implements OnInit {
   @ViewChild(NgSelectComponent, { static: true }) public ngSelectComponent:NgSelectComponent;
+  @InjectField() I18n:I18nService;
 
-  readonly I18n:I18nService = this.injector.get(I18nService);
-  public options:any[] = [];
+  public availableOptions:any[] = [];
   public valueOptions:ValueOption[];
   public text = {
     requiredPlaceholder: this.I18n.t('js.placeholders.selection'),
@@ -67,10 +67,10 @@ export class MultiSelectEditFieldComponent extends EditFieldComponent implements
     this.handler
       .$onUserActivate
       .pipe(
-        untilComponentDestroyed(this),
+        this.untilDestroyed()
       )
       .subscribe(() => {
-        this.requestFocus = this.options.length === 0;
+        this.requestFocus = this.availableOptions.length === 0;
 
         // If we already have all values loaded, open now.
         if (!this.requestFocus) {
@@ -108,7 +108,7 @@ export class MultiSelectEditFieldComponent extends EditFieldComponent implements
   public set selectedOption(val:ValueOption[]) {
     this._selectedOption = val;
     let mapper = (val:ValueOption) => {
-      let option = _.find(this.options, o => o.$href === val.$href) || this.nullOption;
+      let option = _.find(this.availableOptions, o => o.$href === val.$href) || this.nullOption;
 
       // Special case 'null' value, which angular
       // only understands in ng-options as an empty string.
@@ -166,14 +166,14 @@ export class MultiSelectEditFieldComponent extends EditFieldComponent implements
       });
     }
 
-    this.options = availableValues || [];
-    this.valueOptions = this.options.map(el => {
+    this.availableOptions = availableValues || [];
+    this.valueOptions = this.availableOptions.map(el => {
       return { name: el.name, $href: el.$href };
     });
     this._selectedOption = this.buildSelectedOption();
     this.checkCurrentValueValidity();
 
-    if (this.options.length > 0 && this.requestFocus) {
+    if (this.availableOptions.length > 0 && this.requestFocus) {
       this.openAutocompleteSelectField();
       this.requestFocus = false;
     }
@@ -209,11 +209,10 @@ export class MultiSelectEditFieldComponent extends EditFieldComponent implements
         // (If value AND)
         // MultiSelect AND there is no value which href is not in the options hrefs
         (!_.some(this.value, (value:HalResource) => {
-          return _.some(this.options, (option) => (option.$href === value.$href))
+          return _.some(this.availableOptions, (option) => (option.$href === value.$href))
         }))
       );
-    }
-    else {
+    } else {
       // If no value but required
       this.currentValueInvalid = !!this.schema.required;
     }

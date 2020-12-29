@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -136,7 +136,6 @@ module Type::AttributeGroups
     self.attribute_groups_objects = nil
   end
 
-
   private
 
   def write_attribute_groups_objects
@@ -234,7 +233,7 @@ module Type::AttributeGroups
           .map { |k| ::Type::QueryGroup.query_attribute_id(k) }
           .compact
 
-    Query.destroy(ids)
+    Query.where(id: ids).destroy_all
   end
 
   def remove_attribute_groups_queries

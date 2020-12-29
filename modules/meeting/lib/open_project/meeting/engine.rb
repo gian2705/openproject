@@ -1,10 +1,18 @@
 #-- copyright
-# OpenProject Meeting Plugin
-#
-# Copyright (C) 2011-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2017 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.md for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'open_project/plugins'
@@ -27,9 +35,8 @@ module OpenProject::Meeting
     include OpenProject::Plugins::ActsAsOpEngine
 
     register 'openproject-meeting',
-             author_url: 'http://finn.de',
+             author_url: 'https://www.openproject.com',
              bundled: true do
-
       project_module :meetings do
         permission :view_meetings, meetings: [:index, :show], meeting_agendas: [:history, :show, :diff], meeting_minutes: [:history, :show, :diff]
         permission :create_meetings, { meetings: [:new, :create, :copy] }, require: :member
@@ -48,20 +55,20 @@ module OpenProject::Meeting
         search.register :meetings
       end
 
-      menu :project_menu, :meetings, { controller: '/meetings', action: 'index' },
+      menu :project_menu,
+           :meetings, { controller: '/meetings', action: 'index' },
            caption: :project_module_meetings,
            param: :project_id,
            after: :wiki,
+           before: :members,
            icon: 'icon2 icon-meetings'
 
       ActiveSupport::Inflector.inflections do |inflect|
         inflect.uncountable 'meeting_minutes'
       end
-
-      Redmine::Activity.map do |activity|
-        activity.register :meetings, class_name: 'Activity::MeetingActivityProvider', default: false
-      end
     end
+
+    activity_provider :meetings, class_name: 'Activities::MeetingActivityProvider', default: false
 
     patches [:Project]
     patch_with_namespace :BasicData, :RoleSeeder
@@ -73,16 +80,8 @@ module OpenProject::Meeting
       mount ::API::V3::Meetings::MeetingContentsAPI
     end
 
-    initializer 'meeting.precompile_assets' do
-      Rails.application.config.assets.precompile += %w(meeting/meeting.css meeting/meeting.js)
-    end
-
-    initializer 'meeting.register_hooks' do
-      require 'open_project/meeting/hooks'
-    end
-
     initializer 'meeting.register_latest_project_activity' do
-      Project.register_latest_project_activity on: ::Meeting,
+      Project.register_latest_project_activity on: 'Meeting',
                                                attribute: :updated_at
     end
 

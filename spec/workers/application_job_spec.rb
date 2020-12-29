@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -47,10 +47,10 @@ describe ApplicationJob do
       end)
 
       RequestStore[:test_value] = 'my value'
-      expect { job.perform }.not_to change { RequestStore[:test_value] }
+      expect { job.perform_now }.not_to change { RequestStore[:test_value] }
 
       RequestStore[:test_value] = 'my value2'
-      expect { job.perform }.not_to change { RequestStore[:test_value] }
+      expect { job.perform_now }.not_to change { RequestStore[:test_value] }
 
       expect(RequestStore[:test_value]).to eq 'my value2'
     end

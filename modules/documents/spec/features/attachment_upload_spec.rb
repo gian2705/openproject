@@ -1,15 +1,12 @@
 #-- copyright
-# OpenProject Documents Plugin
-#
-# Former OpenProject Core functionality extracted into a plugin.
-#
-# Copyright (C) 2009-2014 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
 #
 # OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
-# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2006-2017 Jean-Philippe Lang
 # Copyright (C) 2010-2013 the ChiliProject Team
 #
 # This program is free software; you can redistribute it and/or
@@ -26,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 require 'spec_helper'
@@ -51,40 +48,61 @@ describe 'Upload attachment to documents', js: true do
     login_as(user)
   end
 
-  it 'can upload an image' do
-    visit project_documents_path(project)
+  shared_examples 'can upload an image' do
+    it 'can upload an image' do
+      visit new_project_document_path(project)
 
-    within '.toolbar-items' do
-      click_on 'Document'
+      expect(page).to have_selector('#new_document', wait: 10)
+      select(category.name, from: 'Category')
+      fill_in "Title", with: 'New documentation'
+
+      # adding an image
+      editor.drag_attachment image_fixture, 'Image uploaded on creation'
+      expect(page).to have_selector('attachment-list-item', text: 'image.png')
+
+      click_on 'Create'
+
+      # Expect it to be present on the index page
+      expect(page).to have_selector('.document-category-elements--header', text: 'New documentation')
+      expect(page).to have_selector('#content img', count: 1)
+      expect(page).to have_content('Image uploaded on creation')
+
+      document = ::Document.last
+      expect(document.title).to eq 'New documentation'
+
+      # Expect it to be present on the show page
+      find('.document-category-elements--header a', text: 'New documentation').click
+      expect(page).to have_current_path "/documents/#{document.id}", wait: 10
+      expect(page).to have_selector('#content img', count: 1)
+      expect(page).to have_content('Image uploaded on creation')
+
+      # Adding a second image
+      # We should be using the 'Edit' button at the top but that leads to flickering specs
+      visit edit_document_path(document)
+
+      #editor.click_and_type_slowly 'abc'
+      editor.drag_attachment image_fixture, 'Image uploaded the second time'
+      expect(page).to have_selector('attachment-list-item', text: 'image.png', count: 2)
+
+      click_on 'Save'
+
+      # Expect both images to be present on the show page
+      expect(page).to have_selector('#content img', count: 2)
+      expect(page).to have_content('Image uploaded on creation')
+      expect(page).to have_content('Image uploaded the second time')
+      expect(page).to have_selector('attachment-list-item', text: 'image.png', count: 2)
+    end
+  end
+
+  context 'with direct uploads (Regression #34285)', with_direct_uploads: true do
+    before do
+      allow_any_instance_of(Attachment).to receive(:diskfile).and_return Struct.new(:path).new(image_fixture.to_s)
     end
 
-    select(category.name, from: 'Category')
-    fill_in "Title", with: 'New documentation'
+    it_behaves_like 'can upload an image'
+  end
 
-    # adding an image
-    editor.drag_attachment image_fixture, 'Image uploaded on creation'
-
-    expect(page).to have_selector('attachment-list-item', text: 'image.png')
-
-    click_on 'Create'
-
-    expect(page).to have_selector('#content img', count: 1)
-    expect(page).to have_content('Image uploaded on creation')
-
-    click_on 'New documentation'
-
-    within '.toolbar-items' do
-      click_on 'Edit'
-    end
-
-    editor.drag_attachment image_fixture, 'Image uploaded the second time'
-    expect(page).to have_selector('attachment-list-item', text: 'image.png', count: 2)
-
-    click_on 'Save'
-
-    expect(page).to have_selector('#content img', count: 2)
-    expect(page).to have_content('Image uploaded on creation')
-    expect(page).to have_content('Image uploaded the second time')
-    expect(page).to have_selector('attachment-list-item', text: 'image.png', count: 2)
+  context 'internal upload', with_direct_uploads: false do
+    it_behaves_like 'can upload an image'
   end
 end

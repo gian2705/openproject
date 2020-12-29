@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -83,12 +83,12 @@ class WorkflowsController < ApplicationController
 
     if request.post?
       if params[:source_type_id].blank? || params[:source_role_id].blank? || (@source_type.nil? && @source_role.nil?)
-        flash.now[:error] = l(:error_workflow_copy_source)
+        flash.now[:error] = I18n.t(:error_workflow_copy_source)
       elsif @target_types.nil? || @target_roles.nil?
-        flash.now[:error] = l(:error_workflow_copy_target)
+        flash.now[:error] = I18n.t(:error_workflow_copy_target)
       else
         Workflow.copy(@source_type, @source_role, @target_types, @target_roles)
-        flash[:notice] = l(:notice_successful_update)
+        flash[:notice] = I18n.t(:notice_successful_update)
         redirect_to action: 'copy', source_type_id: @source_type, source_role_id: @source_role
       end
     end

@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -29,6 +29,18 @@
 
 require 'open_project/access_control'
 
+def edit_project_hash
+  permissions = {
+    projects: %i[edit update custom_fields],
+    project_settings: [:show]
+  }
+
+  ProjectSettingsHelper.project_settings_tabs.each do |node|
+    permissions["project_settings/#{node[:name]}"] = [:show]
+  end
+  permissions
+end
+
 OpenProject::AccessControl.map do |map|
   map.project_module nil, order: 100 do
     map.permission :view_project,
@@ -41,16 +53,12 @@ OpenProject::AccessControl.map do |map|
                    public: true
 
     map.permission :add_project,
-                   { projects: %i[new create],
-                     members: [:paginate_users] },
-                   require: :loggedin
+                   { projects: %i[new create] },
+                   require: :loggedin,
+                   global: true
 
     map.permission :edit_project,
-                   {
-                     projects: %i[edit update custom_fields],
-                     project_settings: [:show],
-                     members: [:paginate_users]
-                   },
+                   edit_project_hash,
                    require: :member
 
     map.permission :select_project_modules,
@@ -67,7 +75,7 @@ OpenProject::AccessControl.map do |map|
 
     map.permission :manage_versions,
                    {
-                     project_settings: [:show],
+                     "project_settings/versions": [:show],
                      versions: %i[new create edit update close_completed destroy]
                    },
                    require: :member
@@ -82,8 +90,7 @@ OpenProject::AccessControl.map do |map|
 
     map.permission :copy_projects,
                    {
-                     copy_projects: %i[copy copy_project],
-                     members: [:paginate_users]
+                     copy_projects: %i[copy copy_project]
                    },
                    require: :member
   end
@@ -98,42 +105,51 @@ OpenProject::AccessControl.map do |map|
                    :'work_packages/reports' => %i[report report_details]
 
     wpt.permission :add_work_packages,
-                   work_packages: %i[new new_type preview create],
-                   planning_elements: [:create]
+                   {}
 
     wpt.permission :edit_work_packages,
                    {
-                     :'work_packages/bulk' => %i[edit update],
-                     work_packages: %i[edit update new_type preview quoted],
-                     journals: :preview
+                     :'work_packages/bulk' => %i[edit update]
                    },
                    require: :member,
                    dependencies: :view_work_packages
 
     wpt.permission :move_work_packages,
                    { :'work_packages/moves' => %i[new create] },
-                   require: :loggedin
+                   require: :loggedin,
+                   dependencies: :view_work_packages
 
     wpt.permission :add_work_package_notes,
-                   work_packages: %i[edit update],
-                   journals: [:new]
+                   {
+                     # FIXME: Although the endpoint is removed, the code checking whether a user
+                     # is eligible to add work packages through the API still seems to rely on this.
+                     journals: [:new]
+                   },
+                   dependencies: :view_work_packages
 
     wpt.permission :edit_work_package_notes,
-                   { journals: %i[edit update] },
-                   require: :loggedin
+                   {},
+                   require: :loggedin,
+                   dependencies: :view_work_packages
 
     wpt.permission :edit_own_work_package_notes,
-                   { journals: %i[edit update] },
-                   require: :loggedin
+                   {},
+                   require: :loggedin,
+                   dependencies: :view_work_packages
 
     # WorkPackage categories
     wpt.permission :manage_categories,
-                   { project_settings: [:show],
-                     categories: %i[new create edit update destroy] },
+                   {
+                     "project_settings/categories": [:show],
+                     categories: %i[new create edit update destroy]
+                   },
                    require: :member
 
     wpt.permission :export_work_packages,
-                   work_packages: %i[index all]
+                   {
+                     work_packages: %i[index all],
+                   },
+                   dependencies: :view_work_packages
 
     wpt.permission :delete_work_packages,
                    {
@@ -144,10 +160,14 @@ OpenProject::AccessControl.map do |map|
                    dependencies: :view_work_packages
 
     wpt.permission :manage_work_package_relations,
-                   work_package_relations: %i[create destroy]
+                   {
+                     work_package_relations: %i[create destroy],
+                   },
+                   dependencies: :view_work_packages
 
     wpt.permission :manage_subtasks,
-                   {}
+                   {},
+                   dependencies: :view_work_packages
     # Queries
     wpt.permission :manage_public_queries,
                    {},
@@ -155,7 +175,8 @@ OpenProject::AccessControl.map do |map|
 
     wpt.permission :save_queries,
                    {},
-                   require: :loggedin
+                   require: :loggedin,
+                   dependencies: :view_work_packages
     # Watchers
     wpt.permission :view_work_package_watchers,
                    {},
@@ -170,32 +191,8 @@ OpenProject::AccessControl.map do |map|
                    dependencies: :view_work_packages
 
     wpt.permission :assign_versions,
-                   {}
-  end
-
-  map.project_module :time_tracking do |time|
-    time.permission :view_time_entries,
-                    timelog: %i[index show],
-                    time_entry_reports: [:report]
-
-    time.permission :log_time,
-                    { timelog: %i[new create edit update] },
-                    require: :loggedin
-
-    time.permission :edit_time_entries,
-                    { timelog: %i[new create edit update destroy] },
-                    require: :member
-
-    time.permission :view_own_time_entries,
-                    timelog: %i[index report]
-
-    time.permission :edit_own_time_entries,
-                    { timelog: %i[new create edit update destroy] },
-                    require: :loggedin
-
-    time.permission :manage_project_activities,
-                    { project_enumerations: %i[update destroy] },
-                    require: :member
+                   {},
+                   dependencies: :view_work_packages
   end
 
   map.project_module :news do |news|

@@ -3,19 +3,22 @@ vi:
     attributes:
       webhooks/webhook:
         url: 'Payload URL'
-        secret: 'Signature secret'
-        events: 'Events'
-        projects: 'Enabled projects'
+        secret: 'Chữ ký bí mật'
+        events: 'Sự kiện'
+        projects: 'Các dự án đã bật'
       webhooks/log:
-        event_name: 'Event name'
+        event_name: 'Tên sự kiện'
         url: 'Payload URL'
-        response_code: 'Response code'
-        response_body: 'Response'
+        response_code: 'Thông điệp phản hồi'
+        response_body: 'Phản hồi'
     models:
       webhooks/outgoing_webhook: "Outgoing webhook"
   webhooks:
     singular: Webhook
     plural: Webhooks
+    resources:
+      time_entry:
+        name: "Thời gian nhập"
     outgoing:
       no_results_table: No webhooks have been defined yet.
       label_add_new: Add new webhook
@@ -45,7 +48,7 @@ vi:
         events:
           title: 'Enabled events'
         project_ids:
-          title: 'Enabled projects'
+          title: 'Các dự án đã bật'
           description: 'Select for which projects this webhook should be executed for.'
           all: 'All projects'
           selected: 'Selected projects only'

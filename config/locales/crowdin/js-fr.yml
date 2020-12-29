@@ -1,6 +1,6 @@
 #-- copyright
-#OpenProject is a project management system.
-#Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+#OpenProject is an open source project management software.
+#Copyright (C) 2012-2020 the OpenProject GmbH
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License version 3.
 #OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
@@ -37,6 +37,7 @@ fr:
     close_filter_title: "Fermer le filtre"
     close_form_title: "Fermer le formulaire"
     button_add_watcher: "Ajouter observateur"
+    button_add: "Ajouter"
     button_back: "Retour"
     button_back_to_list_view: "Retour à la liste"
     button_cancel: "Annuler"
@@ -54,6 +55,8 @@ fr:
     button_duplicate: "Dupliquer"
     button_edit: "Éditer"
     button_filter: "Filtrer"
+    button_collapse_all: "Tout replier"
+    button_expand_all: "Tout déplier"
     button_advanced_filter: "Filtre avancé"
     button_list_view: "Vue en liste"
     button_show_view: "Affichage plein écran"
@@ -80,6 +83,7 @@ fr:
         inline: 'Surligner la ligne :'
         entire_card_by: 'Carte complète par'
       remove_from_list: 'Supprimer la carte de la liste'
+    caption_rate_history: "Historique des tarifs"
     clipboard:
       browser_error: "Votre navigateur ne prend pas en charge la copie dans le presse-papier. Veuillez copier manuellement le texte sélectionné."
       copied_successful: "Copié avec succès vers le presse-papier !"
@@ -114,6 +118,11 @@ fr:
         manual: 'Basculer en mode source Markdown'
         wysiwyg: 'Basculer vers l''éditeur WYSIWYG'
       macro:
+        error: 'Impossible d''étendre la macro : %{message}'
+        attribute_reference:
+          macro_help_tooltip: 'Ce segment de texte est rendu dynamiquement par une macro.'
+          not_found: 'La ressource demandée est introuvable'
+          invalid_attribute: "L'attribut « %{name} » n'existe pas."
         child_pages:
           button: 'Liens vers les pages enfants'
           include_parent: 'Inclure un parent'
@@ -162,6 +171,60 @@ fr:
         edit_query: 'Modifier la requête'
         new_group: 'Nouveau groupe'
         reset_to_defaults: 'Rétablir les valeurs par défaut'
+      enterprise:
+        trial:
+          confirmation: "Confirmation de l'adresse e-mail"
+          confirmation_info: >
+            Nous vous avons envoyé un e-mail le %{date} à l'adresse %{email}. Veuillez vérifier votre boîte de réception et cliquer sur le lien de confirmation fourni pour commencer votre essai de 14 jours.
+          form:
+            general_consent: >
+              J'accepte les <a target="_blank" href="%{link_terms}">conditions d'utilisation</a> et la <a target="_blank" href="%{link_privacy}">politique de confidentialité</a>.
+            invalid_email: "Adresse e-mail invalide"
+            label_company: "Société"
+            label_first_name: "Prénom"
+            label_last_name: "Nom de famille"
+            label_email: "Courriel"
+            label_domain: "Domaine"
+            label_subscriber: "Abonné"
+            label_maximum_users: "Nombre maximal d’utilisateurs actif"
+            label_starts_at: "Commence à"
+            label_expires_at: "Expire le"
+            receive_newsletter: Je veux recevoir la <a target="_blank" href="%{link}">newsletter OpenProject</a>.
+            taken_domain: Il ne peut y avoir qu'un seul essai actif par domaine.
+            taken_email: Chaque utilisateur ne peut créer qu'un essai.
+          email_not_received: "Vous n'avez pas reçu d'e-mail ? Vous pouvez renvoyer l'e-mail avec le lien à droite."
+          try_another_email: "Ou essayez avec une autre adresse e-mail."
+          next_steps: "Prochaines étapes"
+          resend_link: "Renvoyer"
+          resend_success: "L'e-mail a été renvoyé. Veuillez vérifier vos e-mails et cliquer sur le lien de confirmation fourni."
+          resend_warning: "Impossible de renvoyer l'e-mail"
+          session_timeout: "Votre session a expiré. Veuillez rafraîchir la page ou renvoyer l'e-mail."
+          status_label: "Statut :"
+          status_confirmed: "confirmé"
+          status_waiting: "e-mail envoyé - en attente de confirmation"
+          test_ee: "Essayez gratuitement la version Entreprise pendant 14 jours"
+          quick_overview: "Obtenez un aperçu rapide de la gestion de projets et de la collaboration en équipe avec OpenProject Enterprise Edition."
+        upsale:
+          become_hero: "Devenez un héros !"
+          benefits:
+            description: "Quels sont les avantages?"
+            high_security: "Fonctionnalités de sécurité"
+            high_security_text: "Authentification unique (SAML, OpenID Connect, CAS), authentification à deux facteurs et synchronisation automatique des groupes LDAP."
+            installation: "Assistance à l'installation"
+            installation_text: "Des ingénieurs logiciel expérimentés vous guident à travers le processus complet d'installation et de configuration de votre propre infrastructure."
+            premium_features: "Fonctionnalités premium"
+            premium_features_text: "Tableaux agiles, thème et logo personnalisés, graphiques, flux de travail intelligents avec actions personnalisées, recherche en plein texte des pièces jointes de lots de travaux et champs personnalisés à choix multiples"
+            professional_support: "Support professionnel"
+            professional_support_text: "Obtenez une assitance fiable et à haut contact de la part d'ingénieurs d'assistance expérimentés qui ont une connaissance approfondie de la mise en œuvre d'OpenProject dans des environnements critiques pour l'entreprise."
+          button_start_trial: "Commencer l'essai gratuit"
+          button_book_now: "Réserver maintenant"
+          confidence: >
+            Nous fournissons la confiance d'un logiciel de gestion de projet de classe entreprise testé et supporté - en Open Source et un avec esprit ouvert.
+          link_quote: "Obtenir un devis"
+          text: >
+            L'Entreprise Edition d'OpenProject s'appuie sur la Community Edition. Elle comprend des fonctionnalités premium et un support professionnel principalement destiné aux organisations comptant plus de 10 utilisateurs gérant des projets critiques avec OpenProject.
+          unlimited: "Illimité"
+          you_contribute: "Les développeurs ont aussi besoin payer leurs factures. Avec la version Entreprise, vous contribuez significativement à cet effort de la communauté Open Source."
     custom_actions:
       date:
         specific: 'le'
@@ -171,6 +234,9 @@ fr:
       cannot_save_changes_with_message: "Impossible d’enregistrer vos modifications en raison de l’erreur suivante : %{error}"
       query_saving: "La vue n'a pas pu être enregistrée."
       embedded_table_loading: "La vue intégrée n’a pas pu être chargée : %{message}"
+    enumeration_activities: "Activités (suivi de temps)"
+    enumeration_doc_categories: "Catégories de documents"
+    enumeration_work_package_priorities: "Priorités du Lot de Travaux"
     filter:
       description:
         text_open_filter: "Ouvrir ce filtre avec les touches « ALT » et fléchées."
@@ -203,10 +269,17 @@ fr:
       blocks:
         new_features:
           text_new_features: "En savoir plus sur les nouvelles fonctionnalités et les mises à jour des produits."
-          current_new_feature_html: "OpenProject contient une nouvelle <b>page d'aperçu</b> pour <b>afficher les informations importantes du projet</b> et montrer si le projet est sur la bonne voie. </br> Vous pouvez insérer divers widgets de statut, comme : <ul><li>statut du projet,</li> <li> aperçu du statut du lot de travaux,</li> <li>progression de tâches,</li> <li>tâches assignées aux utilisateurs.</li></ul>"
-          learn_about: "En savoir plus sur les nouveaux widgets de statut"
+          learn_about: "En savoir plus sur les nouvelles fonctionnalités"
+          standard:
+            learn_about_link: https://www.openproject.org/openproject-11-1-release
+            current_new_feature_html: >
+              La version contient diverses nouvelles fonctionnalités et améliorations : <br> <ul class="%{list_styling_class}"> <li><b>Amélioration des styles</b>  de l'éditeur WYSIWYG.</li> <li>Affichage direct du <b>nom d'utilisateur pour les @notifications</b> lors de l'édition.</li> <li>Profil d'authentification étendu avec un <b>fournisseur OpenID Connect.</b></li> <li>Affichez les <b>jalons agrégés</b> du projet sur une seule ligne dans le diagramme de Gantt.</li> <li><b>Réduisez tous les boutons pour les groupes</b> dans la liste des lots de travaux.</li> <li><b>Optimisation pour l'impression,</b> par exemple les pages wiki via la fonction d'impression du navigateur.</li> </ul>
+          bim:
+            learn_about_link: https://www.openproject.org/openproject-11-0-release
+            current_new_feature_html: >
+              La version contient diverses nouvelles fonctionnalités et améliorations : <br> <ul class="%{list_styling_class}"> <li><b>Amélioration des styles</b>  de l'éditeur WYSIWYG.</li> <li>Affichage direct du <b>nom d'utilisateur pour les @notifications</b> lors de l'édition.</li> <li>Profil d'authentification étendu avec un <b>fournisseur OpenID Connect.</b></li> <li>Affichez les <b>jalons agrégés</b> du projet sur une seule ligne dans le diagramme de Gantt.</li> <li><b>Réduisez tous les boutons pour les groupes</b> dans la liste des lots de travaux.</li> <li><b>Optimisation pour l'impression,</b> par exemple les pages wiki via la fonction d'impression du navigateur.</li> </ul>
     label_activate: "Activer"
-    label_add_column_after: "Ajouter une colonne au-dessus"
+    label_add_column_after: "Ajouter une colonne après"
     label_add_column_before: "Ajouter une colonne avant"
     label_add_columns: "Ajouter des colonnes"
     label_add_comment: "Ajouter un commentaire"
@@ -215,13 +288,14 @@ fr:
     label_add_row_before: "Ajouter une ligne avant"
     label_add_selected_columns: "Ajouter les colonnes sélectionnées"
     label_added_by: "Ajouté par"
-    label_added_time_by: "Ajouté par %{author} %{age}"
+    label_added_time_by: "Ajouté par <a href=%{authorLink}>%{author}</a> à %{age}"
     label_ago: "il y a quelques jours"
     label_all: "tous"
     label_all_work_packages: "tous les lots de travaux"
     label_and: "et"
     label_ascending: "Croissant"
     label_author: "Auteur : %{user}"
+    label_avatar: "Avatar"
     label_between: "entre"
     label_board: "Tableau"
     label_board_locked: "Verrouillé"
@@ -235,6 +309,8 @@ fr:
     label_deactivate: "Désactiver"
     label_descending: "Décroissant"
     label_description: "Description"
+    label_details: "Détails"
+    label_display: "Affichage"
     label_cancel_comment: "Annuler le commentaire"
     label_closed_work_packages: "clôturé"
     label_collapse: "Regrouper"
@@ -253,31 +329,41 @@ fr:
     label_expand_all: "Tout déplier"
     label_expand_project_menu: "Déplier le menu du projet"
     label_export: "Exporter"
+    label_export_preparing: "L'export est en cours de préparation et sera téléchargé sous peu."
     label_filename: "Fichier"
     label_filesize: "Taille"
+    label_general: "Général"
+    label_global_roles: "Rôles globaux"
     label_greater_or_equal: ">="
     label_group: 'Groupe'
     label_group_by: "Grouper par"
+    label_group_plural: "Groupes"
     label_hide_attributes: "Afficher moins"
     label_hide_column: "Masquer la colonne"
     label_hide_project_menu: "Replier le menu du projet"
     label_in: "dans"
     label_in_less_than: "dans moins de"
     label_in_more_than: "dans plus de"
+    label_incoming_emails: "Courriels entrants"
+    label_information_plural: "Information"
     label_import: "Importer"
     label_latest_activity: "Dernière activité"
     label_last_updated_on: "Dernière modification le"
+    label_learn_more_link: "En savoir plus"
     label_less_or_equal: "<="
     label_less_than_ago: "il y a moins de quelques jours"
     label_loading: "Chargement…"
+    label_mail_notification: "Notifications par courriel"
     label_me: "moi"
+    label_meeting_agenda: "Ordre du jour"
+    label_meeting_minutes: "Compte-rendu"
     label_menu_collapse: "réduire"
     label_menu_expand: "développer"
     label_more_than_ago: "il y a plus de quelques jours"
     label_next: "Suivante"
     label_no_color: "Aucune couleur"
     label_no_data: "Aucune donnée à afficher"
-    label_no_due_date: "pas d'échéance"
+    label_no_due_date: "no finish date"
     label_no_start_date: "pas de date de début"
     label_no_value: "Aucune valeur"
     label_none: "aucune"
@@ -291,12 +377,16 @@ fr:
     label_previous: "Précédent"
     label_per_page: "Par page:"
     label_please_wait: "Veuillez patienter"
+    label_project_plural: "Projets"
     label_visibility_settings: "Paramètres de visibilité"
     label_quote_comment: "Citer ce commentaire"
+    label_recent: "Récent"
     label_reset: "Réinitialiser"
     label_remove_column: "Supprimer la colonne"
     label_remove_columns: "Enlever les colonnes sélectionnées"
     label_remove_row: "Supprimer la ligne"
+    label_report: "Rapport"
+    label_repository_plural: "Dépôts"
     label_save_as: "Enregistrer sous"
     label_select_watcher: "Sélectionner un observateur…"
     label_selected_filter_list: "Filtres sélectionnés"
@@ -307,6 +397,7 @@ fr:
     label_sort_higher: "Déplacer vers le haut"
     label_sort_lower: "Déplacer vers le bas"
     label_sorting: "Tri"
+    label_spent_time: "Temps passé"
     label_star_query: "Préféré"
     label_press_enter_to_save: "Appuyer sur \"entrée\" pour enregistrer."
     label_public_query: "Public"
@@ -314,16 +405,20 @@ fr:
     label_sum_for: "Somme pour"
     label_subject: "Sujet"
     label_this_week: "cette semaine"
-    label_today: "aujourd'hui"
+    label_today: "Aujourd'hui"
+    label_time_entry_plural: "Temps passé"
     label_up: "Haut"
+    label_user_plural: "Utilisateurs"
     label_activity_show_only_comments: "Afficher les activités avec les commentaires seulement"
     label_activity_show_all: "Afficher toutes les activités"
     label_total_progress: "%{percent}% de progression totale"
     label_total_amount: "Total : %{amount}"
     label_updated_on: "mis à jour le"
     label_value_derived_from_children: "(valeur dérivée des enfants)"
+    label_children_derived_duration: "Durée dérivée des enfants du lot de travaux"
     label_warning: "Attention"
     label_work_package: "Lot de travaux"
+    label_work_package_parent: "Lot de Travaux parent"
     label_work_package_plural: "Lots de Travaux"
     label_watch: "Suivre"
     label_watch_work_package: "Suivre le lot de travaux"
@@ -357,6 +452,7 @@ fr:
     label_wait: "Veuillez patienter pendant la configuration…"
     label_upload_counter: "%{done} fichiers sur %{count} finis"
     label_validation_error: "Le lot de travaux n'a pas pu être enregistré en raison des erreurs suivantes :"
+    label_version_plural: "Versions"
     label_view_has_changed: "Cette vue a des changements non sauvegardés. Cliquez pour les enregistrer."
     help_texts:
       show_modal: 'Afficher l’aide de l’attribut de saisie de texte'
@@ -384,7 +480,7 @@ fr:
           drag: 'Glissez et déposez vos cartes dans une liste pour recommander ou vers une autre liste. Un double clic ouvrira l’affichage en détails.'
         wp:
           toggler: "Maintenant, jetons un coup d'oeil à la section <b>Paquet de Travail</b>, qui vous donne une vue plus détaillée de votre travail."
-          list: 'Il s''agit de la liste <b>Paquet de Travail</b> comprenant le travail important dans votre projet, tels que les tâches, les fonctionnalités, les jalons, les bogues, et plus encore. <br> vous pouvez créer ou modifier un paquet de travail directement dans cette liste. Pour voir ses détails, vous pouvez double-cliquer sur une rangée.'
+          list: 'Il s''agit de la liste <b>Paquet de Travail</b> comprenant le travail important dans votre projet, tels que les tâches, , les jalons, les phases, et plus encore. <br> vous pouvez créer ou modifier un paquet de travail directement dans cette liste. Pour voir ses détails, vous pouvez double-cliquer sur une rangée.'
           full_view: 'Dans les <b>détails du Paquet de Travail</b> vous trouverez toutes les informations pertinentes, telles que la description, l''état, la priorité, les activités, les dépendances ou les commentaires.'
           back_button: 'Avec la flèche, vous pouvez naviguer vers la liste de paquet de travail.'
           create_button: 'La touche <b>Créer</b> ajoutera un nouveau paquet de travail à votre projet.'
@@ -409,6 +505,7 @@ fr:
       context: 'Contexte du projet'
       work_package_belongs_to: 'Ce lot de travaux appartient au projet %{projectname}.'
       click_to_switch_context: 'Ouvrir ce lot de travaux dans ce projet.'
+      confirm_template_load: 'Changer de modèle rechargera la page et vous perdrez toutes les entrées de ce formulaire. Continuer ?'
       autocompleter:
         label: 'Remplissage automatique du projet'
     text_are_you_sure: "Êtes-vous sûr ?"
@@ -423,23 +520,22 @@ fr:
         upgrade_to_ee_text: "Waouh ! Si vous avez besoin de cette fonctionnalité, vous êtes un véritable pro ! Cela vous dérangerait-il de soutenir les développeurs Open Source en devenant un client de la Version Enterprise ?"
         more_information: "Plus d'informations"
         nevermind: "Peu importe"
-        filter_types:
-          parent: "étant enfant de"
-          precedes: "précédant"
-          follows: "suivant"
-          relates: "en relation avec"
-          duplicates: "dupliquant"
-          duplicated: "Dupliqué par"
-          blocks: "bloquant"
-          blocked: "bloqué par"
-          partof: "faisant partie de"
-          includes: "incluant"
-          requires: "requérant"
-          required: "requis par"
+      edit:
+        form_configuration: "Configuration du formulaire"
+        projects: "Projets"
+        settings: "Paramètres"
     time_entry:
+      project: 'Projet'
+      work_package: 'Lot de travaux'
+      work_package_required: 'Nécessite d''abord la sélection d''un lot de travaux.'
       activity: 'Activité'
       comment: 'Commentaire'
+      duration: 'Durée'
+      spent_on: 'date'
       hours: 'Heures'
+      title: 'Consigner temps'
+    two_factor_authentication:
+      label_two_factor_authentication: 'Authentification à deux facteurs'
     watchers:
       label_loading: observateurs en cours de chargement…
       label_error_loading: Une erreur s'est produite lors du chargement des observateurs
@@ -497,17 +593,10 @@ fr:
       select_tag: 'Sélectionner une étiquette'
       select_branch: 'Sélectionner une branche'
     field_value_enter_prompt: "Saisissez une valeur pour « %{field} »"
-    select2:
-      input_too_short:
-        one: "Veuillez saisir un caractère supplémentaire"
-        other: "Veuillez saisir {{count}} caractères supplémentaires"
-      load_more: "Chargement de plus de résultats ..."
-      no_matches: "Pas de correspondances trouvées"
-      searching: "Recherche…"
-      selection_too_big:
-        one: "Vous pouvez seulement sélectionner un élément"
-        other: "Vous pouvez seulement sélectionner {{limit}} éléments"
     project_menu_details: "Détails"
+    scheduling:
+      manual: 'Planification manuelle'
+      automatic: 'Planification automatique'
     sort:
       sorted_asc: 'Tri par ordre croissant appliqué, '
       sorted_dsc: 'Tri par ordre décroissant appliqué, '
@@ -673,6 +762,7 @@ fr:
         startDate: "Date de début"
         status: "Statut"
         subject: "Sujet"
+        subproject: "Sous-projet"
         title: "Titre"
         type: "Type"
         updatedAt: "Mis à jour le"
@@ -718,6 +808,9 @@ fr:
           not_found: "Cette vue n'existe pas"
           duplicate_query_title: "Le nom de cette vue existe déjà. Changer quand même ?"
         text_no_results: "Aucune vue correspondante n'a été trouvée."
+      scheduling:
+        is_parent: "Les dates de ce lot de travaux sont automatiquement déduites de ses enfants. Activez la « Planification manuelle » pour définir les dates."
+        is_switched_from_manual_to_automatic: "Les dates de ce lot de travaux peuvent avoir besoin d'être recalculées après avoir passé de la planification manuelle à la planification automatique en raison de relations avec d'autres lots de travaux."
       table:
         configure_button: 'Configurer le tableau du lot de travaux'
         summary: "Tableau avec lignes de lots de travaux et colonnes d’attributs de lots de travaux."
@@ -751,14 +844,13 @@ fr:
           automatic: 'Automatique'
           manually: 'Manuellement'
           warning: 'Vous perdrez votre tri précédent lors de l''activation du mode de tri automatique.'
-        columns_help_text: "Utilisez l’entrée ci-dessus pour ajouter ou supprimer des colonnes à votre vue du tableau. Vous pouvez déplacer les colonnes par glisser/déposer pour les réorganiser."
+        columns_help_text: "Utilisez l’entrée ci-dessus pour ajouter des colonnes à votre vue tableau. Vous pouvez déplacer les colonnes par glisser/déposer pour les réorganiser."
         upsale:
           attribute_highlighting: 'Vous avez besoin de lots de travaux qui sortent du lot ?'
           relation_columns: 'Besoin de voir les relations sur la liste des lots de travaux ?'
           check_out_link: 'Découvrez l’édition entreprise.'
         relation_filters:
-          first_part: "Afficher tous les lots de travaux"
-          second_part: "le package de travail actuel"
+          filter_work_packages_by_relation_type: 'Filtrer les lots de travaux par type de relation'
       tabs:
         overview: Vue globale
         activity: Activité
@@ -807,6 +899,9 @@ fr:
         has_children: "Le lot de travaux a %{childUnits} :"
         confirm_deletion_children: "Je reconnais que TOUS les descendants des lots de travaux de la liste seront supprimés récursivement."
         deletes_children: "Tous les lots de travaux enfants et leurs descendants seront également supprimés récursivement."
+      destroy_time_entry:
+        title: "Confirmer la suppression de l’entrée de temps"
+        text: "Êtes-vous sur de vouloir supprimer l'entrée de temps suivante ?"
     notice_no_results_to_display: "Aucun résultat visible à afficher."
     notice_successful_create: "Création réussie."
     notice_successful_delete: "Suppression réussie."
@@ -844,8 +939,9 @@ fr:
         one: "un lot de travaux enfant"
         other: "%{count} lots de travaux enfant"
       hour:
-        one: "1h"
-        other: "%{count}h"
+        zero: "0 h"
+        one: ""
+        other: ""
     zen_mode:
       button_activate: 'Activer le mode zen'
       button_deactivate: 'Désactiver le mode zen'

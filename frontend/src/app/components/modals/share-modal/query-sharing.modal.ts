@@ -1,6 +1,6 @@
 //-- copyright
-// OpenProject is a project management system.
-// Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+// OpenProject is an open source project management software.
+// Copyright (C) 2012-2020 the OpenProject GmbH
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License version 3.
@@ -23,7 +23,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// See doc/COPYRIGHT.rdoc for more details.
+// See docs/COPYRIGHT.rdoc for more details.
 //++
 
 import {WorkPackagesListService} from '../../wp-list/wp-list.service';
@@ -32,7 +32,7 @@ import {HalResourceNotificationService} from "core-app/modules/hal/services/hal-
 import {QueryResource} from 'core-app/modules/hal/resources/query-resource';
 import {NotificationsService} from "core-app/modules/common/notifications/notifications.service";
 import {OpModalComponent} from "core-components/op-modals/op-modal.component";
-import {ChangeDetectorRef, Component, ElementRef, Inject, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectorRef, Component, ElementRef, Inject, OnInit} from "@angular/core";
 import {OpModalLocalsToken} from "core-components/op-modals/op-modal.service";
 import {OpModalLocalsMap} from "core-components/op-modals/op-modal.types";
 import {QuerySharingChange} from "core-components/modals/share-modal/query-sharing-form.component";

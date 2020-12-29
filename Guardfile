@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2015 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -23,22 +23,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
-
-# :spork guard must come first
-# guard :spork, :cucumber_env => { 'RAILS_ENV' => 'test' }, :rspec_env => { 'RAILS_ENV' => 'test' } do
-#   watch('config/application.rb')
-#   watch('config/environment.rb')
-#   watch('config/environments/test.rb')
-#   watch(%r{^config/initializers/.+\.rb$})
-#   watch('Gemfile')
-#   watch('Gemfile.lock')
-#   watch('spec/spec_helper.rb') { :rspec }
-#   watch(%r{^spec/support/.+\.rb$}) { :rspec }
-#   watch('test/test_helper.rb') { :test }
-#   watch(%r{features/support/}) { :cucumber }
-# end
 
 guard :rspec do # , :cli => "--drb" do
   watch(%r{^spec/.+_spec\.rb$})
@@ -59,22 +45,4 @@ guard :rspec do # , :cli => "--drb" do
   # Turnip features and steps
   watch(%r{^spec/acceptance/(.+)\.feature$})
   watch(%r{^spec/acceptance/steps/(.+)_steps\.rb$})   { |m| Dir[File.join("**/#{m[1]}.feature")][0] || 'spec/acceptance' }
-end
-
-# guard :cucumber do # , :cli => "--drb" do
-#   watch(%r{^features/.+\.feature$})
-#   watch(%r{^features/support/.+$})          { 'features' }
-#   watch(%r{^features/step_definitions/(.+)_steps\.rb$}) { |m| Dir[File.join("**/#{m[1]}.feature")][0] || 'features' }
-# end
-
-guard :test, all_on_start: false, all_after_pass: false do # , :drb => true do
-  watch(%r{^lib/(.+)\.rb$})     { |m| "test/#{m[1]}_test.rb" }
-  watch(%r{^test/.+_test\.rb$})
-  watch('test/test_helper.rb')  { 'test' }
-
-  # Rails example
-  watch(%r{^app/models/(.+)\.rb$})                   { |m| "test/unit/#{m[1]}_test.rb" }
-  watch(%r{^app/controllers/(.+)\.rb$})              { |m| "test/functional/#{m[1]}_test.rb" }
-  watch(%r{^app/views/.+\.rb$})                      { 'test/integration' }
-  watch('app/controllers/application_controller.rb') { ['test/functional', 'test/integration'] }
 end

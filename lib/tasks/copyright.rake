@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -75,7 +75,6 @@ namespace :copyright do
   def exluded_paths
     %w(
       app/assets/javascripts/lib/
-      app/assets/javascripts/bundles/
       app/assets/javascripts/locales/
       coverage
       frontend/bower_components
@@ -206,9 +205,7 @@ namespace :copyright do
 
   desc 'Update the copyright on .js source files'
   task :update_js, :arg1 do |_task, args|
-    excluded = ['app/assets/javascripts/date-de-DE.js',
-                'app/assets/javascripts/date-en-US.js']
-
+    excluded = []
 
     rewrite_copyright('js', excluded, :js, args[:arg1])
   end

@@ -1,23 +1,23 @@
 import {Injector} from '@angular/core';
 import {States} from '../../../states.service';
-import {WorkPackageCacheService} from '../../../work-packages/work-package-cache.service';
 import {WorkPackageTable} from '../../wp-fast-table';
 import {commonRowClassName} from '../rows/single-row-builder';
 import {WorkPackageViewTimelineService} from "core-app/modules/work_packages/routing/wp-view-base/view-services/wp-view-timeline.service";
+import {InjectField} from "core-app/helpers/angular/inject-field.decorator";
+import {APIV3Service} from "core-app/modules/apiv3/api-v3.service";
 
 export const timelineCellClassName = 'wp-timeline-cell';
 
 export class TimelineRowBuilder {
 
-  public states = this.injector.get(States);
-  public wpTableTimeline = this.injector.get(WorkPackageViewTimelineService);
-  public wpCacheService = this.injector.get(WorkPackageCacheService);
+  @InjectField() public states:States;
+  @InjectField() public wpTableTimeline:WorkPackageViewTimelineService;
 
   constructor(public readonly injector:Injector,
               protected workPackageTable:WorkPackageTable) {
   }
 
-  public build(workPackageId:string | null) {
+  public build(workPackageId:string|null) {
     const cell = document.createElement('div');
     cell.classList.add(timelineCellClassName, commonRowClassName);
 
@@ -34,8 +34,8 @@ export class TimelineRowBuilder {
    * @param timelineBody
    * @param rowClasses
    */
-  public insert(workPackageId:string | null,
-                timelineBody:DocumentFragment | HTMLElement,
+  public insert(workPackageId:string|null,
+                timelineBody:DocumentFragment|HTMLElement,
                 rowClasses:string[] = []) {
 
     const cell = this.build(workPackageId);

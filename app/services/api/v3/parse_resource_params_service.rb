@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2017 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -23,47 +23,25 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# See doc/COPYRIGHT.rdoc for more details.
+# See docs/COPYRIGHT.rdoc for more details.
 #++
 
 module API
   module V3
-    class ParseResourceParamsService
-      attr_accessor :model,
-                    :representer,
-                    :current_user
-
-      def initialize(user, model: nil, representer: nil)
-        self.current_user = user
-        self.model = model
-
-        self.representer = if !representer && model
-                             "API::V3::#{model.to_s.pluralize}::#{model}Representer".constantize
-                           elsif representer
-                             representer
-                           else
-                             raise 'Representer not defined'
-                           end
-      end
-
-      def call(request_body)
-        parsed = if request_body
-                   parse_attributes(request_body)
-                 else
-                   {}
-                 end
-
-        ServiceResult.new(success: true,
-                          result: parsed)
-      end
-
+    class ParseResourceParamsService < ::API::ParseResourceParamsService
       private
 
-      def parse_attributes(request_body)
+      def deduce_representer(model)
+        "API::V3::#{model.to_s.pluralize}::#{model}PayloadRepresenter".constantize
+      end
+
+      def parsing_representer
         representer
           .create(struct, current_user: current_user)
-          .from_hash(request_body)
-          .to_h
+      end
+
+      def parse_attributes(request_body)
+        super
           .except(:available_custom_fields)
       end
 
@@ -71,7 +49,7 @@ module API
         if model&.respond_to?(:available_custom_fields)
           OpenStruct.new available_custom_fields: model.available_custom_fields(model.new)
         else
-          OpenStruct.new
+          super
         end
       end
     end

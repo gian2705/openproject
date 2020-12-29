@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -49,21 +49,6 @@ shared_examples_for 'acts_as_attachable included' do
     FactoryBot.create(:user)
   end
   let(:current_user) { add_permission_user }
-
-  describe '#attach_files' do
-    context 'with id hashes' do
-      it 'memoizes the attachments for later claiming but does not do so itself' do
-        params = { 1 => { 'id' => attachment1.id }, 2 => { 'id' => attachment2.id } }
-
-        model_instance.attach_files(params)
-
-        expect(model_instance.attachments_claimed.map(&:id)).to match_array [attachment1.id, attachment2.id]
-        expect(model_instance.attachments.reload).to be_empty
-        expect(attachment1.reload.container).to be_nil
-        expect(attachment2.reload.container).to be_nil
-      end
-    end
-  end
 
   describe '#validations on attachments_claimed' do
     before do
@@ -150,6 +135,20 @@ shared_examples_for 'acts_as_attachable included' do
 
       if described_class.journaled?
         expect(model_instance.journals.last.attachable_journals.map(&:attachment_id)).to match_array [attachment1.id, attachment2.id]
+      end
+    end
+  end
+
+  describe '#attachments_visible' do
+    let!(:attachment1) { FactoryBot.create(:attachment, container: model_instance, author: current_user) }
+
+    it 'allows access to a logged user when viewable_by_all_users is set' do
+      if model_instance.class.attachable_options[:viewable_by_all_users]
+        expect(model_instance.attachments_visible?(other_user)).to eq true
+        expect(attachment1.visible?(no_permission_user)).to eq true
+      else
+        expect(model_instance.attachments_visible?(other_user)).to eq false
+        expect(attachment1.visible?(other_user)).to eq false
       end
     end
   end

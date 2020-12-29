@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,18 +30,9 @@ module API
   module V3
     module Utilities
       module Endpoints
-        class Update < Modify
-          def default_instance_generator(model)
-            ->(_params) do
-              instance_variable_get("@#{model.name.demodulize.underscore}")
-            end
-          end
-
-          private
-
-          def update_or_create
-            "Update"
-          end
+        class Update < API::Utilities::Endpoints::Update
+          include V3Deductions
+          include V3PresentSingle
         end
       end
     end

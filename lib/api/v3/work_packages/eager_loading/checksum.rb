@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -49,7 +49,7 @@ module API
             def fetch_checksums_for(work_packages)
               WorkPackage
                 .where(id: work_packages.map(&:id).uniq)
-                .left_joins(:status, :author, :responsible, :assigned_to, :fixed_version, :priority, :category, :type)
+                .left_joins(*checksum_associations)
                 .pluck('work_packages.id', Arel.sql(md5_concat.squish))
                 .to_h
             end
@@ -57,24 +57,34 @@ module API
             protected
 
             def md5_concat
+              md5_parts = checksum_associations.map do |association_name|
+                table_name = md5_checksum_table_name(association_name)
+
+                %W[#{table_name}.id #{table_name}.updated_at]
+              end.flatten
+
               <<-SQL
-                MD5(CONCAT(statuses.id,
-                           statuses.updated_at,
-                           users.id,
-                           users.updated_on,
-                           responsibles_work_packages.id,
-                           responsibles_work_packages.updated_on,
-                           assigned_tos_work_packages.id,
-                           assigned_tos_work_packages.updated_on,
-                           versions.id,
-                           versions.updated_on,
-                           types.id,
-                           types.updated_at,
-                           enumerations.id,
-                           enumerations.updated_at,
-                           categories.id,
-                           categories.updated_at))
+                MD5(CONCAT(#{md5_parts.join(', ')}))
               SQL
+            end
+
+            def checksum_associations
+              %i[status author responsible assigned_to version priority category type]
+            end
+
+            def md5_checksum_table_name(association_name)
+              case association_name
+              when :responsible
+                'responsibles_work_packages'
+              when :assigned_to
+                'assigned_tos_work_packages'
+              else
+                association_class(association_name).table_name
+              end
+            end
+
+            def association_class(association_name)
+              WorkPackage.reflect_on_association(association_name).class_name.constantize
             end
           end
 

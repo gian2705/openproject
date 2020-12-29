@@ -1,8 +1,8 @@
 #-- encoding: UTF-8
 
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -30,12 +30,28 @@
 
 module Shared
   module ServiceContext
-    def in_context(send_notifications)
+    private
+
+    def in_context(model, send_notifications = true, &block)
+      if model
+        in_mutex_context(model, send_notifications, &block)
+      else
+        in_user_context(send_notifications, &block)
+      end
+    end
+
+    def in_mutex_context(model, send_notifications = true, &block)
+      OpenProject::Mutex.with_advisory_lock_transaction(model) do
+        in_user_context(send_notifications, &block)
+      end
+    end
+
+    def in_user_context(send_notifications = true)
       result = nil
 
       ActiveRecord::Base.transaction do
         User.execute_as user do
-          JournalManager.with_send_notifications send_notifications do
+          Journal::NotificationConfiguration.with(send_notifications) do
             result = yield
 
             if result.failure?

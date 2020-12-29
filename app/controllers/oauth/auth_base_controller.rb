@@ -1,7 +1,7 @@
 #-- encoding: UTF-8
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -27,7 +27,6 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-
 module OAuth
   ##
   # Base controller for doorkeeper to skip the login check
@@ -35,6 +34,17 @@ module OAuth
   # See config/initializers/doorkeeper.rb
   class AuthBaseController < ::ApplicationController
     skip_before_action :check_if_login_required
+    after_action :extend_content_security_policy
     layout 'only_logo'
+
+    def extend_content_security_policy
+      use_content_security_policy_named_append(:oauth)
+    end
+
+    def allowed_forms
+      allowed_redirect_urls = pre_auth&.client&.application&.redirect_uri
+      urls = allowed_redirect_urls.to_s.split
+      urls.map { |url| URI.join(url, '/') }.map(&:to_s)
+    end
   end
 end

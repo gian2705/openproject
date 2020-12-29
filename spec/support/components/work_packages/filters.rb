@@ -1,6 +1,6 @@
 #-- copyright
-# OpenProject is a project management system.
-# Copyright (C) 2012-2018 the OpenProject Foundation (OPF)
+# OpenProject is an open source project management software.
+# Copyright (C) 2012-2020 the OpenProject GmbH
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License version 3.
@@ -97,7 +97,9 @@ module Components
 
         set_operator(name, operator, selector)
 
-        set_value(id, value)
+        set_value(id, value) unless value.nil?
+
+        close_autocompleter(id)
       end
 
       def expect_filter_by(name, operator, value, selector = nil)
@@ -121,6 +123,12 @@ module Components
           page.raise_if_found_select("operators-#{id}")
           page.raise_if_found_select("values-#{id}")
         end
+      end
+
+      def expect_filter_order(name, values, selector = nil)
+        id = selector || name.downcase
+
+        expect(page.all("#values-#{id} .ng-value-label").map(&:text)).to eq(values)
       end
 
       def remove_filter(field)
@@ -185,6 +193,15 @@ module Components
       def within_values(id)
         page.within("#filter_#{id} .advanced-filters--filter-value", wait: 10) do
           yield page.has_selector?('.ng-select-container')
+        end
+      end
+
+      def close_autocompleter(id)
+        input = page.all("#filter_#{id} .advanced-filters--filter-value .ng-input input").first
+
+        if input
+          input.click
+          input.send_keys :escape
         end
       end
     end
